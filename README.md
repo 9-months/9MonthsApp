@@ -1,3 +1,20 @@
+# nine_months_app
+
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
+
 # 9Months - Pregnancy Support and Wellness App
 
 ![Logo](https://github.com/9-months/9months/blob/main/Logo/Blue/Logo-White%20BG_Blue%20-%20Without%20Glow.png)
@@ -7,12 +24,13 @@ The **9Months App** is a mobile application designed to support pregnant mothers
 ---
 
 ## Table of Contents
+
 1. [Project Description](#project-description)
 2. [Features](#features)
 3. [Technology Stack](#technology-stack)
 4. [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
+   - [Prerequisites](#prerequisites)
+   - [Installation](#installation)
 5. [Project Structure](#project-structure)
 6. [Contributing](#contributing)
 7. [License](#license)
@@ -21,12 +39,15 @@ The **9Months App** is a mobile application designed to support pregnant mothers
 ---
 
 ## Project Description
+
 **9Months** is built to bridge gaps in pregnancy care through technology and empathy. By combining expert medical insights and user-centered design, the app ensures that pregnant mothers and their partners receive the knowledge, emotional support, and real-time assistance they need.
 
 ---
 
 ## Features
+
 ### Core Features:
+
 - **Pregnancy Tracker**: Track pregnancy milestones with visual timelines and reminders.
 - **Emergency Button**: A hold-to-activate emergency feature to alert pre-saved contacts and share location.
 - **Guidance for Mothers and Partners**: Access to curated tips, blogs, and videos tailored to the current stage of pregnancy.
@@ -35,12 +56,14 @@ The **9Months App** is a mobile application designed to support pregnant mothers
 - **Push Notifications**: Regular updates, reminders, and health tips.
 
 ### Additional Features:
+
 - Localized content in Sinhala and English.
 - Integration with Firebase for real-time updates and notifications.
 
 ---
 
 ## Technology Stack
+
 - **Frontend**: Flutter (Dart)
 - **Backend**: Firebase (Authentication, Firestore, Cloud Messaging)
 - **Design Tools**: Figma
@@ -53,7 +76,9 @@ The **9Months App** is a mobile application designed to support pregnant mothers
 ## Getting Started
 
 ### Prerequisites
+
 Ensure you have the following installed:
+
 - Flutter SDK: [Flutter Installation Guide](https://flutter.dev/docs/get-started/install)
 - Android Studio or Visual Studio Code
 - Node.js (if required for Firebase CLI)
