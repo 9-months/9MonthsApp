@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "861414508634",
+    "project_id": "months-feebf",
+    "storage_bucket": "months-feebf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:861414508634:android:7222744acdef1ff36fb063",
+        "android_client_info": {
+          "package_name": "com.nine_months.nine_months_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIqLtSbT6_dvF1o17wNsqOEOdiao--PdE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
