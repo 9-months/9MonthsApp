@@ -1,0 +1,194 @@
+# ===========================
+#  FLUTTER SPECIFIC FILES
+# ===========================
+
+# Compiled binaries
+**/build/
+**/android/app/debug.keystore
+**/android/key.jks
+**/ios/Flutter/
+**/ios/.symlinks/
+**/ios/.generated/
+**/windows/flutter/
+**/windows/ephemeral/
+**/linux/flutter/
+**/linux/ephemeral/
+
+# Dart dependencies
+**/.dart_tool/
+**/.packages
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+pubspec.lock
+
+# Xcode specific (iOS/macOS)
+**/ios/Pods/
+**/ios/.generated/
+**/ios/Runner.xcworkspace/
+**/ios/Runner.xcodeproj/project.xcworkspace/
+**/ios/Runner.xcodeproj/xcuserdata/
+
+# IDE specific
+.idea/
+*.iml
+.vscode/
+*.log
+
+# Miscellaneous
+.flutter-plugins/
+.flutter-plugins-dependencies/
+.macos/
+.DS_Store
+
+# ===========================
+# NODE.JS (Backend) SPECIFIC FILES
+# ===========================
+
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn.lock
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env*.local
+
+# Logs & Debugging
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# TypeScript (if applicable)
+dist/
+*.tsbuildinfo
+
+# PM2 process manager logs
+pm2.log
+pm2.pid
+dump.pm2
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# ===========================
+# MONGODB & DATABASE FILES
+# ===========================
+
+# Local database data
+data/
+dump/
+mongod.lock
+*.pem
+*.key
+
+# SQLite (if applicable)
+*.sqlite
+*.sqlite3
+
+# PostgreSQL
+*.pgsql
+*.pgdata
+pgadmin/
+
+# MySQL
+*.sql
+*.db
+mysqldump.sql
+
+# ===========================
+# DOCKER SPECIFIC FILES
+# ===========================
+
+# Docker Build
+.dockerignore
+docker-compose.override.yml
+docker-compose.yml
+docker/
+**/tmp/docker/
+**/var/lib/docker/
+
+# ===========================
+# CI/CD & DEPLOYMENT FILES
+# ===========================
+
+# GitHub Actions
+.github/
+.github/workflows/
+
+# GitLab CI
+.gitlab-ci.yml
+
+# Travis CI
+.travis.yml
+
+# CircleCI
+.circleci/
+
+# Jenkins
+jenkinsfile
+
+# Firebase
+firebase.json
+firestore.rules
+firestore.indexes.json
+**/firebase-debug.log
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Kubernetes
+.k8s/
+
+# Helm Charts
+charts/
+*.tgz
+
+# Cloud Services (AWS, GCP, Azure)
+.aws/
+.gcloud/
+azure/
+
+# SSH Keys & Secrets
+*.pem
+*.pub
+*.key
+.ssh/
+
+# ===========================
+# MISCELLANEOUS IGNORE FILES
+# ===========================
+
+# macOS
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*.swp
+*.swo
+*~
+
+# Editor Specific
+*.sublime-workspace
+*.sublime-project
+*.idea/
+*.iml
+.vscode/
+*.code-workspace
+*.bak
+
