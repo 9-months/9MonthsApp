@@ -5,14 +5,14 @@ const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Pregnancy Support App API",
+      title: "9Months API - Pregnancy Support & Wellness",
       version: "1.0.0",
-      description: "API documentation for the Pregnancy Support App",
+      description: "API documentation for the 9Months app, providing pregnancy tracking, health monitoring, appointment reminders, partner guidance, and emergency support for expectant mothers in Sri Lanka.",
     },
     servers: [
       {
         url: "http://localhost:3000",
-        description: "Development server",
+        description: "Development Server",
       },
     ],
   },
