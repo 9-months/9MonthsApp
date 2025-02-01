@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
 
 const connection = mongoose
-  .createConnection(
-    "mongodb+srv://Irosh:Irosh9m@nine-months-db.kzccf.mongodb.net/?retryWrites=true&w=majority&appName=nine-months-db"
-  )
+  .createConnection(process.env.MONGODB_URI)
   .on("open", () => {
     console.log("Connected to MongoDB");
   })
