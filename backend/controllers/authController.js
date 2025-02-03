@@ -1,7 +1,8 @@
 const User = require("../models/User");
 
 const admin = require("firebase-admin");
-const crypto = require("crypto");
+const CryptoJS = require("crypto-js");  
+
 
 
 // exports.login = async (req, res) => {
@@ -35,39 +36,45 @@ const crypto = require("crypto");
 // }
 
 module.exports = {
-  createUser:async(req,res)=>{
+  createUser: async (req, res) => {
     const user = req.body;
-    try{
+    try {
       await admin.auth().getUserByEmail(user.email);
-
-      return res.status(400).json({message:"User already exists"});
-    }catch(error){
-      if(error.code === "auth/user-not-found"){
-        try{
+      return res.status(400).json({ message: "User already exists" });
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        try {
           const userResponse = await admin.auth().createUser({
-            email:user.email,
-            password:user.password,
-            emailVerified:false,
-            disabled:false,
-          }); 
+            email: user.email,
+            password: user.password,
+            emailVerified: false,
+            disabled: false,
+          });
+
           console.log(userResponse.uid);
 
-          const newUser = await new User({
-            uid:userResponse.uid,
-            email:user.email,
-            password:crypto.AES.encrypt(user.password,process.env.SECRET).toString(),
-            username:user.username,
-            location:user.location,
-            phone:user.phone,
-          }).newUser.save();  
-          res.status(201).json({stats:true});
-      }catch(error){
-        return res.status(500).json({error:"An error occured while creating user"});
-      } 
+          const newUser = new User({
+            uid: userResponse.uid,
+            email: user.email,
+            password: CryptoJS.AES.encrypt(user.password, process.env.SECRET).toString(),// Encrypt password
+            username: user.username,
+            location: user.location,
+            phone: user.phone,
+          });
+
+          await newUser.save();  // Save user to MongoDB
+        res.status(201).json({ status: true });// Send success response
+        } catch (error) {
+          console.error('MongoDB Save Error:', error);
+          return res.status(500).json({ error: "An error occurred while creating user" });
+        }
+      } else {
+        return res.status(500).json({ error: "Firebase error occurred" });
+      }
     }
   }
-}
-}
+};
+
 
 
 
