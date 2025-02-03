@@ -8,9 +8,8 @@
  last modified: 2025-02-03 | Melissa | CCS-9 API documentation update for emergency call feature
 */
 
-// emergencyRouter.js (your existing router file)
 const express = require('express');
-const emergencyController = require('./emergencyController');
+const emergencyController = require('../controllers/emergencyController');
 
 const router = express.Router();
 
@@ -18,8 +17,8 @@ const router = express.Router();
  * @swagger
  * /emergency:
  *   post:
- *     summary: Handle emergency requests from users.
- *     description: This endpoint processes emergency requests for pregnant users.
+ *     summary: Emergency call.
+ *     description: This endpoint processes emergency call requests from users.
  *     tags:
  *       - Emergency
  *     requestBody:

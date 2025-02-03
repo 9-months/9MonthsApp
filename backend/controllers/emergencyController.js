@@ -7,7 +7,7 @@
  last modified: 2025-02-03 | Dinith | CCS-9 Create Controller
 */
 
-const emergencyService = require('./emergencyService');
+const emergencyService = require('../services/emergencyService');
 
 class EmergencyController {
     async handleEmergencyRequest(req, res) {
