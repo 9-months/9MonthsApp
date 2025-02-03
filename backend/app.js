@@ -18,7 +18,7 @@ app.use(express.json());
 
 //Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/emergency", emergencyRouter);
+app.use("/emergency", emergencyRouter);
 
 // Routes
 app.get("/", (req, res) => {

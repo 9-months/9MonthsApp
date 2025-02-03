@@ -58,6 +58,6 @@ const router = express.Router();
  *       500:
  *         description: Internal server error.
  */
-router.post('/emergency', (req, res) => emergencyController.handleEmergencyRequest(req, res));
+router.post('/', (req, res) => emergencyController.handleEmergencyRequest(req, res));
 
 module.exports = router;
