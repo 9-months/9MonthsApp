@@ -1,48 +1,20 @@
-const express = require("express");
-const authController = require("../controllers/authController");
+/*
+ File: authRoutes.js
+ Purpose: Defines routes for authentication-related operations and swagger documentation.
+ Created Date: 2025-01-29 CCS-30 Irosh Perera
+ Author: Dinith Perera
 
+ last modified: 2025-02-03 | Dinith | CCS-41 Create Controllers 
+*/
+
+const express = require('express');
 const router = express.Router();
+const AuthController = require('../controllers/authController');
 
-/**
- * @swagger
- * /login:
- *   post:
- *     summary: User login
- *     description: Authenticates a user and returns a token.
- *     tags:
- *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 example: "user@example.com"
- *               password:
- *                 type: string
- *                 example: "securepassword"
- *     responses:
- *       200:
- *         description: Login successful, returns an access token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
- *       400:
- *         description: Bad request (missing or invalid parameters).
- *       401:
- *         description: Unauthorized (invalid credentials).
- */
-router.post("/login", authController.login);
+router.post('/register', AuthController.register);
+router.post('/login', AuthController.login);
+router.get('/:id', AuthController.getUser);
+router.put('/:id', AuthController.updateUser);
+router.delete('/:id', AuthController.deleteUser);
 
 module.exports = router;
