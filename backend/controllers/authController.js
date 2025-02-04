@@ -1,5 +1,4 @@
 const User = require("../models/User");
-
 const admin = require("firebase-admin");
 const CryptoJS = require("crypto-js");  
 
@@ -72,7 +71,88 @@ module.exports = {
         return res.status(500).json({ error: "Firebase error occurred" });
       }
     }
+  },
+
+  // Sign in with email and password
+  signIn: async (req, res) => {
+    const { email, password } = req.body;
+    try {
+      const userCredential = await admin.auth().getUserByEmail(email);
+      
+      // Get user from MongoDB to verify password
+      const user = await User.findOne({ uid: userCredential.uid });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Decrypt and verify password
+      const decryptedPassword = CryptoJS.AES.decrypt(
+        user.password,
+        process.env.SECRET
+      ).toString(CryptoJS.enc.Utf8);
+
+      if (decryptedPassword !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Create custom token
+      const customToken = await admin.auth().createCustomToken(userCredential.uid);
+      
+      res.status(200).json({ 
+        message:"Sign in successful",
+        // token: customToken,
+        user: {
+          uid: user.uid,
+          email: user.email,
+          username: user.username
+        }
+      });
+    } catch (error) {
+      console.error('Sign In Error:', error);
+      res.status(500).json({ error: "An error occurred during sign in" });
+    }
+  },
+
+  
+  // Google Sign In
+  googleSignIn: async (req, res) => {
+    const { idToken } = req.body;
+    try {
+      // Verify the Google ID token
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const { email, uid, name } = decodedToken;
+
+      // Check if user exists in MongoDB
+      let user = await User.findOne({ uid });
+      
+      if (!user) {
+        // Create new user in MongoDB if doesn't exist
+        user = new User({
+          uid,
+          email,
+          username: name,
+          password: CryptoJS.AES.encrypt(Math.random().toString(36), process.env.SECRET).toString(),
+        });
+        await user.save();
+      }
+
+      // Create custom token
+      const customToken = await admin.auth().createCustomToken(uid);
+      
+      res.status(200).json({ 
+        token: customToken,
+        user: {
+          uid: user.uid,
+          email: user.email,
+          username: user.username
+        }
+      });
+    } catch (error) {
+      console.error('Google Sign In Error:', error);
+      res.status(500).json({ error: "An error occurred during Google sign in" });
+    }
   }
+
 };
 
 
