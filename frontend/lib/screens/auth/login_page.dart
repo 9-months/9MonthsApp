@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:convert';
+import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,9 +16,9 @@ class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> _handleSignIn() async {
     if (!_formKey.currentState!.validate()) return;
@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('YOUR_BACKEND_URL/auth/signin'),
+        Uri.parse('http://localhost:3000/auth/signin'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'username': _usernameController.text,
@@ -37,54 +37,72 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // Handle successful login - Store token, navigate to home, etc.
+
+        if (!mounted) return;
+
+        // Store token and user data
+        // You might want to use a state management solution here
         print('Login successful: ${data['token']}');
+
+        Navigator.pushReplacementNamed(context, '/home');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Login failed: ${json.decode(response.body)['message']}')),
-        );
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'Login failed');
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An error occurred')),
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return;
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
-      // Get ID token to send to backend
       final String? idToken = googleAuth.idToken;
 
-      if (idToken != null) {
-        final response = await http.post(
-          Uri.parse('YOUR_BACKEND_URL/auth/google-signin'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({'idToken': idToken}),
-        );
+      if (idToken == null) {
+        throw Exception('Failed to get ID Token');
+      }
 
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          // Handle successful login - Store token, navigate to home, etc.
-          print('Google login successful: ${data['token']}');
-        } else {
-          throw Exception('Google sign in failed');
-        }
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/google-signin'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'idToken': idToken,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (!mounted) return;
+
+        // Store token and user data
+        // You might want to use a state management solution here
+        print('Google login successful: ${data['token']}');
+
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'Google sign-in failed');
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google sign in failed')),
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
       );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -125,11 +143,23 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -158,15 +188,26 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
-                  onPressed: _handleGoogleSignIn,
+                  onPressed: _isLoading ? null : _handleGoogleSignIn,
                   icon: Image.asset(
-                    'assets/google_logo.png',
+                    'assets/images/google_logo.png',
                     height: 24,
                   ),
                   label: const Text('Sign in with Google'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RegisterPage()),
+                    );
+                  },
+                  child: const Text("Don't have an account? Register"),
                 ),
               ],
             ),
