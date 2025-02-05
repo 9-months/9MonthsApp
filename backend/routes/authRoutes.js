@@ -44,7 +44,7 @@ const router = express.Router();
  *         description: Unauthorized (invalid credentials).
  */
 router.post("/signup", authController.createUser);
-router.post('/signin', authController.signIn);
-router.post('/google-signin', authController.googleSignIn);
+router.post("/signin", authController.signIn);
+router.post("/google-signin", authController.googleSignIn);
 
 module.exports = router;
