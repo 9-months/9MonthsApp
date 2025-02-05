@@ -20,13 +20,18 @@ module.exports = {
 
           console.log(userResponse.uid);
 
+          const encryptedPassword = CryptoJS.AES.encrypt(
+            user.password,
+            process.env.SECRET
+          ).toString();
+
+          console.log("Original Password:", user.password);
+          console.log("Encrypted Password:", encryptedPassword);
+
           const newUser = new User({
             uid: userResponse.uid,
             email: user.email,
-            password: CryptoJS.AES.encrypt(
-              user.password,
-              process.env.SECRET
-            ).toString(), // Encrypt password
+            password: encryptedPassword,
             username: user.username,
             location: user.location,
             phone: user.phone,
@@ -50,18 +55,30 @@ module.exports = {
   signIn: async (req, res) => {
     const { username, password } = req.body;
     try {
-      // Get user from MongoDB to verify password
+      // Get user from MongoDB
       const user = await User.findOne({ username });
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Decrypt and verify password
-      const decryptedPassword = CryptoJS.AES.decrypt(
-        user.password,
-        process.env.SECRET
-      ).toString(CryptoJS.enc.Utf8);
+      // Decrypt password with proper error handling
+      let decryptedPassword;
+      try {
+        const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET);
+        decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
 
+        console.log("Input Password:", password);
+        console.log("Decrypted Password:", decryptedPassword);
+
+        if (!decryptedPassword) {
+          throw new Error("Decryption failed");
+        }
+      } catch (decryptError) {
+        console.error("Decryption Error:", decryptError);
+        return res.status(500).json({ message: "Error verifying credentials" });
+      }
+
+      // Compare passwords
       if (decryptedPassword !== password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
