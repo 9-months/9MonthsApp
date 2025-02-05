@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -140,12 +140,12 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleSignIn,
-                  child: _isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text('Sign In'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text('Sign In'),
                 ),
                 const SizedBox(height: 16),
                 const Text(
