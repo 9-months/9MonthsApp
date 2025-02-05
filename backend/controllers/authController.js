@@ -1,38 +1,6 @@
 const User = require("../models/User");
 const admin = require("firebase-admin");
-const CryptoJS = require("crypto-js");  
-
-
-
-// exports.login = async (req, res) => {
-//   const { email, password } = req.body;
-//   try {
-//     const user = await User.findOne({ email, password });
-//     if (user) {
-//       res.status(200).json(user);
-//     } else {
-//       res.status(401).json({ message: "Invalid credentials" });
-//     }
-//   } catch (err) {
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
-
-// module.exports.login = async (req, res) => {
-//   const { email, password } = req.body;
-//   try {
-//     const user = await User.findOne({ email, password });
-//     if (user) {
-//       const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET);
-//       res.status(200).json({ token });
-//     } else {
-//       res.status(401).json({ message: "Invalid credentials" });
-//     }
-//   } catch (err) {
-//     res.status(500).json({ message: "Server error" });
-//   }
-// }
+const CryptoJS = require("crypto-js");
 
 module.exports = {
   createUser: async (req, res) => {
@@ -55,17 +23,22 @@ module.exports = {
           const newUser = new User({
             uid: userResponse.uid,
             email: user.email,
-            password: CryptoJS.AES.encrypt(user.password, process.env.SECRET).toString(),// Encrypt password
+            password: CryptoJS.AES.encrypt(
+              user.password,
+              process.env.SECRET
+            ).toString(), // Encrypt password
             username: user.username,
             location: user.location,
             phone: user.phone,
           });
 
-          await newUser.save();  // Save user to MongoDB
-        res.status(201).json({ status: true });// Send success response
+          await newUser.save(); // Save user to MongoDB
+          res.status(201).json({ status: true }); // Send success response
         } catch (error) {
-          console.error('MongoDB Save Error:', error);
-          return res.status(500).json({ error: "An error occurred while creating user" });
+          console.error("MongoDB Save Error:", error);
+          return res
+            .status(500)
+            .json({ error: "An error occurred while creating user" });
         }
       } else {
         return res.status(500).json({ error: "Firebase error occurred" });
@@ -78,7 +51,7 @@ module.exports = {
     const { email, password } = req.body;
     try {
       const userCredential = await admin.auth().getUserByEmail(email);
-      
+
       // Get user from MongoDB to verify password
       const user = await User.findOne({ uid: userCredential.uid });
       if (!user) {
@@ -96,24 +69,25 @@ module.exports = {
       }
 
       // Create custom token
-      const customToken = await admin.auth().createCustomToken(userCredential.uid);
-      
-      res.status(200).json({ 
-        message:"Sign in successful",
+      const customToken = await admin
+        .auth()
+        .createCustomToken(userCredential.uid);
+
+      res.status(200).json({
+        message: "Sign in successful",
         // token: customToken,
         user: {
           uid: user.uid,
           email: user.email,
-          username: user.username
-        }
+          username: user.username,
+        },
       });
     } catch (error) {
-      console.error('Sign In Error:', error);
+      console.error("Sign In Error:", error);
       res.status(500).json({ error: "An error occurred during sign in" });
     }
   },
 
-  
   // Google Sign In
   googleSignIn: async (req, res) => {
     const { idToken } = req.body;
@@ -124,37 +98,37 @@ module.exports = {
 
       // Check if user exists in MongoDB
       let user = await User.findOne({ uid });
-      
+
       if (!user) {
         // Create new user in MongoDB if doesn't exist
         user = new User({
           uid,
           email,
           username: name,
-          password: CryptoJS.AES.encrypt(Math.random().toString(36), process.env.SECRET).toString(),
+          password: CryptoJS.AES.encrypt(
+            Math.random().toString(36),
+            process.env.SECRET
+          ).toString(),
         });
         await user.save();
       }
 
       // Create custom token
       const customToken = await admin.auth().createCustomToken(uid);
-      
-      res.status(200).json({ 
+
+      res.status(200).json({
         token: customToken,
         user: {
           uid: user.uid,
           email: user.email,
-          username: user.username
-        }
+          username: user.username,
+        },
       });
     } catch (error) {
-      console.error('Google Sign In Error:', error);
-      res.status(500).json({ error: "An error occurred during Google sign in" });
+      console.error("Google Sign In Error:", error);
+      res
+        .status(500)
+        .json({ error: "An error occurred during Google sign in" });
     }
-  }
-
+  },
 };
-
-
-
-
