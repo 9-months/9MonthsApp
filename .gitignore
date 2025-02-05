@@ -1,195 +1,144 @@
 # ===========================
-#  FLUTTER SPECIFIC FILES
+# FRONTEND SPECIFIC FILES
 # ===========================
 
 # Compiled binaries
-**/build/
-**/android/app/debug.keystore
-**/android/key.jks
-**/ios/Flutter/
-**/ios/.symlinks/
-**/ios/.generated/
-**/windows/flutter/
-**/windows/ephemeral/
-**/linux/flutter/
-**/linux/ephemeral/
+frontend/build/
+frontend/android/app/debug.keystore
+frontend/android/key.jks
+frontend/ios/Flutter/
+frontend/ios/.symlinks/
+frontend/ios/.generated/
+frontend/windows/flutter/
+frontend/windows/ephemeral/
+frontend/linux/flutter/
+frontend/linux/ephemeral/
 
 # Dart dependencies
-**/.dart_tool/
-**/.packages
-**/.flutter-plugins
-**/.flutter-plugins-dependencies
-pubspec.lock
+frontend/.dart_tool/
+frontend/.packages
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/pubspec.lock
 
 # Xcode specific (iOS/macOS)
-**/ios/Pods/
-**/ios/.generated/
-**/ios/Runner.xcworkspace/
-**/ios/Runner.xcodeproj/project.xcworkspace/
-**/ios/Runner.xcodeproj/xcuserdata/
+frontend/ios/Pods/
+frontend/ios/.generated/
+frontend/ios/Runner.xcworkspace/
+frontend/ios/Runner.xcodeproj/project.xcworkspace/
+frontend/ios/Runner.xcodeproj/xcuserdata/
 
 # IDE specific
-.idea/
-*.iml
-.vscode/
-*.log
+frontend/.idea/
+frontend/*.iml
+frontend/.vscode/
+frontend/*.log
 
 # Miscellaneous
-.flutter-plugins/
-.flutter-plugins-dependencies/
-.macos/
-.DS_Store
+frontend/.flutter-plugins/
+frontend/.flutter-plugins-dependencies/
+frontend/.macos/
+frontend/.DS_Store
 
 # ===========================
-# NODE.JS (Backend) SPECIFIC FILES
+# BACKEND SPECIFIC FILES
 # ===========================
 
 # Node dependencies
-node_modules/
-npm-debug.log*
-yarn.lock
-package-lock.json
+backend/node_modules/
+backend/npm-debug.log*
+backend/yarn.lock
+backend/package-lock.json
 
 # Environment variables
-.env
-.env.local
-.env.development
-.env.production
-.env.test
-.env*.local
+backend/.env
+backend/.env.local
+backend/.env.development
+backend/.env.production
+backend/.env.test
+backend/.env*.local
 
 # Logs & Debugging
-logs/
-*.log
-*.pid
-*.seed
-*.pid.lock
+backend/logs/
+backend/*.log
+backend/*.pid
+backend/*.seed
+backend/*.pid.lock
 
 # TypeScript (if applicable)
-dist/
-*.tsbuildinfo
+backend/dist/
+backend/*.tsbuildinfo
 
 # PM2 process manager logs
-pm2.log
-pm2.pid
-dump.pm2
+backend/pm2.log
+backend/pm2.pid
+backend/dump.pm2
 
 # Coverage reports
-coverage/
-.nyc_output/
-
-# ===========================
-# MONGODB & DATABASE FILES
-# ===========================
+backend/coverage/
+backend/.nyc_output/
 
 # Local database data
-data/
-dump/
-mongod.lock
-*.pem
-*.key
+backend/data/
+backend/dump/
+backend/mongod.lock
+backend/*.pem
+backend/*.key
 
 # SQLite (if applicable)
-*.sqlite
-*.sqlite3
+backend/*.sqlite
+backend/*.sqlite3
 
 # PostgreSQL
-*.pgsql
-*.pgdata
-pgadmin/
+backend/*.pgsql
+backend/*.pgdata
+backend/pgadmin/
 
 # MySQL
-*.sql
-*.db
-mysqldump.sql
-
-# ===========================
-# DOCKER SPECIFIC FILES
-# ===========================
+backend/*.sql
+backend/*.db
+backend/mysqldump.sql
 
 # Docker Build
-.dockerignore
-docker-compose.override.yml
-docker-compose.yml
-docker/
-**/tmp/docker/
-**/var/lib/docker/
+backend/.dockerignore
+backend/docker-compose.override.yml
+backend/docker-compose.yml
+backend/docker/
+backend/tmp/docker/
+backend/var/lib/docker/
 
-# ===========================
 # CI/CD & DEPLOYMENT FILES
-# ===========================
-
-# GitHub Actions
-.github/
-.github/workflows/
-
-# GitLab CI
-.gitlab-ci.yml
-
-# Travis CI
-.travis.yml
-
-# CircleCI
-.circleci/
-
-# Jenkins
-jenkinsfile
-
-# Firebase
-firebase.json
-firestore.rules
-firestore.indexes.json
-**/firebase-debug.log
-
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.backup
-
-# Kubernetes
-.k8s/
-
-# Helm Charts
-charts/
-*.tgz
-
-# Cloud Services (AWS, GCP, Azure)
-.aws/
-.gcloud/
-azure/
-
-# SSH Keys & Secrets
-*.pem
-*.pub
-*.key
-.ssh/
-
-# ===========================
-# MISCELLANEOUS IGNORE FILES
-# ===========================
-
-# macOS
-*.DS_Store
-.AppleDouble
-.LSOverride
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Linux
-*.swp
-*.swo
-*~
+backend/.github/
+backend/.github/workflows/
+backend/.gitlab-ci.yml
+backend/.travis.yml
+backend/.circleci/
+backend/jenkinsfile
+backend/firebase.json
+backend/firestore.rules
+backend/firestore.indexes.json
+backend/firebase-debug.log
+backend/.terraform/
+backend/*.tfstate
+backend/*.tfstate.backup
+backend/.k8s/
+backend/charts/
+backend/*.tgz
+backend/.aws/
+backend/.gcloud/
+backend/azure/
+backend/*.pem
+backend/*.pub
+backend/*.key
+backend/.ssh/
 
 # Editor Specific
-*.sublime-workspace
-*.sublime-project
-*.idea/
-*.iml
-.vscode/
-*.code-workspace
-*.bak
+backend/*.sublime-workspace
+backend/*.sublime-project
+backend/.idea/
+backend/*.iml
+backend/.vscode/
+backend/*.code-workspace
+backend/*.bak
 
-*.DS_Store
+backend/.DS_Store
