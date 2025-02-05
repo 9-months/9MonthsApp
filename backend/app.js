@@ -8,6 +8,14 @@ const authRoutes = require("./routes/authRoutes");
 // Load environment variables
 dotenv.config();
 
+const admin = require("firebase-admin");
+const serviceAccount = require("./ServicesAccountKey.json");
+
+admin.initializeApp({
+  credential:admin.credential.cert(serviceAccount),
+});
+
+
 // Initialize Express app
 const app = express();
 
@@ -16,7 +24,7 @@ app.use(cors());
 app.use(express.json());
 
 //Routes
-app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 
 // Routes
 app.get("/", (req, res) => {
