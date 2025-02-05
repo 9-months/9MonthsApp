@@ -73,46 +73,43 @@ module.exports = {
     }
   },
 
-  // Sign in with email and password
-  signIn: async (req, res) => {
-    const { email, password } = req.body;
-    try {
-      const userCredential = await admin.auth().getUserByEmail(email);
-      
-      // Get user from MongoDB to verify password
-      const user = await User.findOne({ uid: userCredential.uid });
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Decrypt and verify password
-      const decryptedPassword = CryptoJS.AES.decrypt(
-        user.password,
-        process.env.SECRET
-      ).toString(CryptoJS.enc.Utf8);
-
-      if (decryptedPassword !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Create custom token
-      const customToken = await admin.auth().createCustomToken(userCredential.uid);
-      
-      res.status(200).json({ 
-        message:"Sign in successful",
-        // token: customToken,
-        user: {
-          uid: user.uid,
-          email: user.email,
-          username: user.username
-        }
-      });
-    } catch (error) {
-      console.error('Sign In Error:', error);
-      res.status(500).json({ error: "An error occurred during sign in" });
+// Sign in with username and password
+signIn: async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    // Get user from MongoDB to verify password
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  },
 
+    // Decrypt and verify password
+    const decryptedPassword = CryptoJS.AES.decrypt(
+      user.password,
+      process.env.SECRET
+    ).toString(CryptoJS.enc.Utf8);
+
+    if (decryptedPassword !== password) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Create custom token
+    const customToken = await admin.auth().createCustomToken(user.uid);
+    
+    res.status(200).json({ 
+      message: "Sign in successful",
+      token: customToken,
+      user: {
+        uid: user.uid,
+        email: user.email,
+        username: user.username
+      }
+    });
+  } catch (error) {
+    console.error('Sign In Error:', error);
+    res.status(500).json({ error: "An error occurred during sign in" });
+  }
+},
   
   // Google Sign In
   googleSignIn: async (req, res) => {
