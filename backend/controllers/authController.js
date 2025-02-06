@@ -1,69 +1,147 @@
-/*
- File: authController.js
- Purpose: Handles Handles HTTP requests for auth
- Created Date: 2025-01-29 CCS-30 Irosh Perera
- Author: Dinith Perera
+const User = require("../models/User");
+const admin = require("firebase-admin");
+const CryptoJS = require("crypto-js");
 
- last modified: 2025-02-03 | Dinith | CCS-41 Create Controllers 
-*/
-
-
-const AuthService = require('../services/authService');
-
-class AuthController {
-
-  // create user
-  async register(req, res) {
+module.exports = {
+  createUser: async (req, res) => {
+    const user = req.body;
     try {
-      const user = await AuthService.register(req.body);
-      res.status(201).json(user);
+      await admin.auth().getUserByEmail(user.email);
+      return res.status(400).json({ message: "User already exists" });
     } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+      if (error.code === "auth/user-not-found") {
+        try {
+          const userResponse = await admin.auth().createUser({
+            email: user.email,
+            password: user.password,
+            emailVerified: false,
+            disabled: false,
+          });
 
-  // login
-  async login(req, res) {
+          console.log(userResponse.uid);
+
+          const encryptedPassword = CryptoJS.AES.encrypt(
+            user.password,
+            process.env.SECRET
+          ).toString();
+
+          console.log("Original Password:", user.password);
+          console.log("Encrypted Password:", encryptedPassword);
+
+          const newUser = new User({
+            uid: userResponse.uid,
+            email: user.email,
+            password: encryptedPassword,
+            username: user.username,
+            location: user.location,
+            phone: user.phone,
+          });
+
+          await newUser.save(); // Save user to MongoDB
+          res.status(201).json({ status: true }); // Send success response
+        } catch (error) {
+          console.error("MongoDB Save Error:", error);
+          return res
+            .status(500)
+            .json({ error: "An error occurred while creating user" });
+        }
+      } else {
+        return res.status(500).json({ error: "Firebase error occurred" });
+      }
+    }
+  },
+
+  // Sign in with username and password
+  signIn: async (req, res) => {
+    const { username, password } = req.body;
     try {
-      const user = await AuthService.login(req.body);
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+      // Get user from MongoDB
+      const user = await User.findOne({ username });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
 
-  // get user by id
-  async getUser(req, res) {
+      // Decrypt password with proper error handling
+      let decryptedPassword;
+      try {
+        const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET);
+        decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
+
+        console.log("Input Password:", password);
+        console.log("Decrypted Password:", decryptedPassword);
+
+        if (!decryptedPassword) {
+          throw new Error("Decryption failed");
+        }
+      } catch (decryptError) {
+        console.error("Decryption Error:", decryptError);
+        return res.status(500).json({ message: "Error verifying credentials" });
+      }
+
+      // Compare passwords
+      if (decryptedPassword !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Create custom token
+      const customToken = await admin.auth().createCustomToken(user.uid);
+
+      res.status(200).json({
+        message: "Sign in successful",
+        token: customToken,
+        user: {
+          uid: user.uid,
+          email: user.email,
+          username: user.username,
+        },
+      });
+    } catch (error) {
+      console.error("Sign In Error:", error);
+      res.status(500).json({ error: "An error occurred during sign in" });
+    }
+  },
+
+  // Google Sign In
+  googleSignIn: async (req, res) => {
+    const { idToken } = req.body;
     try {
-      const user = await AuthService.getUserById(req.params.id);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+      // Verify the Google ID token
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const { email, uid, name } = decodedToken;
 
-  // update user
-  async updateUser(req, res) {
-    try {
-      const user = await AuthService.updateUser(req.params.id, req.body);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+      // Check if user exists in MongoDB
+      let user = await User.findOne({ uid });
 
-  // Delete user
-  async deleteUser(req, res) {
-    try {
-      const deleted = await AuthService.deleteUser(req.params.id);
-      if (!deleted) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json({ message: 'User deleted' });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-}
+      if (!user) {
+        // Create new user in MongoDB if doesn't exist
+        user = new User({
+          uid,
+          email,
+          username: name,
+          password: CryptoJS.AES.encrypt(
+            Math.random().toString(36),
+            process.env.SECRET
+          ).toString(),
+        });
+        await user.save();
+      }
 
-module.exports = new AuthController();
+      // Create custom token
+      const customToken = await admin.auth().createCustomToken(uid);
+
+      res.status(200).json({
+        token: customToken,
+        user: {
+          uid: user.uid,
+          email: user.email,
+          username: user.username,
+        },
+      });
+    } catch (error) {
+      console.error("Google Sign In Error:", error);
+      res
+        .status(500)
+        .json({ error: "An error occurred during Google sign in" });
+    }
+  },
+};

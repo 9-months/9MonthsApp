@@ -1,9 +1,13 @@
-class User {
-  constructor(id, username, password) {
-    this.id = id;
-    this.username = username;
-    this.password = password;
-  }
-}
+const mongoose = require('mongoose');
 
-module.exports = User;
+const UserSchema = new mongoose.Schema({
+  uid: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  username: { type: String, required: true },
+  location: { type: String },
+  phone: { type: String },
+}, { collection: 'users' });  // Ensure it points to 'users' collection
+
+
+module.exports = mongoose.model('User', UserSchema);
