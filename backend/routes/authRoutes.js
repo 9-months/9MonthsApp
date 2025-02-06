@@ -107,7 +107,7 @@ router.post("/signup", authController.createUser);
  *       401:
  *         description: Unauthorized (invalid credentials).
  */
-router.post("/signin", authController.signIn);
+router.post("/login", authController.logIn);
 
 /**
  * @swagger
