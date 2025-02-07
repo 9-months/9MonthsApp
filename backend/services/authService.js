@@ -1,13 +1,55 @@
 const User = require("../models/User");
 const admin = require("firebase-admin");
 const CryptoJS = require("crypto-js");
+const emailValidator = require("email-validator");
+const validator = require("validator");
 
 class AuthService {
   async createUser(userData) {
+    // Validate email
+    if (!emailValidator.validate(userData.email)) {
+      throw new Error("Invalid email format");
+    }
+
+    // Check if email already exists in MongoDB
+    const existingEmailUser = await User.findOne({ email: userData.email });
+    if (existingEmailUser) {
+      throw new Error("Email is already registered");
+    }
+
+    // Validate password
+    if (userData.password.length < 6) {
+      throw new Error("Password must be at least 6 characters long");
+    }
+
+    // Validate username
+    if (!userData.username || userData.username.trim().length === 0) {
+      throw new Error("Username is required");
+    }
+
+    // Check if username already exists in MongoDB
+    const existingUsername = await User.findOne({ username: userData.username });
+    if (existingUsername) {
+      throw new Error("Username is already taken");
+    }
+
+    // Validate phone (Sri Lanka format: +94xxxxxxxxx)
+    if (userData.phone && !/^\+94\d{9}$/.test(userData.phone)) {
+      throw new Error("Phone number must be in the format +94xxxxxxxxx (e.g., +94716332188)");
+    }
+
+    // Check if phone number already exists in MongoDB
+    if (userData.phone) {
+      const existingPhoneUser = await User.findOne({ phone: userData.phone });
+      if (existingPhoneUser) {
+        throw new Error("Phone number is already registered");
+      }
+    }
+
     try {
       // Check if user exists in Firebase
       await admin.auth().getUserByEmail(userData.email);
-      throw new Error("User already exists");
+      throw new Error("User already exists in Firebase");
     } catch (error) {
       if (error.code === "auth/user-not-found") {
         // Create user in Firebase
@@ -42,6 +84,11 @@ class AuthService {
   }
 
   async logIn(usernameOrEmail, password) {
+    // Validate password
+    if (password.length < 6) {
+      throw new Error("Password must be at least 6 characters long");
+    }
+
     // Get user from MongoDB by username or email
     const user = await User.findOne({
       $or: [
