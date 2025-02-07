@@ -5,7 +5,7 @@
  Author: Ryan Fernando
  Input validation and error handling: Melissa Joanne
 
- last modified: 2025-02-07 | Melissa | CCS-7 Input validation
+ Last Modified: 2025-02-08 | Melissa | CCS-7 Improved validation for email, phone, and password
 */
 
 const User = require("../models/User");
@@ -24,8 +24,28 @@ class AuthService {
                 }
             }
 
+            // Validate email format
             if (!emailValidator.validate(userData.email)) {
-                return { status: false, message: `Invalid email format: ${userData.email}` };
+                return { 
+                    status: false, 
+                    message: `Invalid email format: ${userData.email}. Please enter a valid email address in the format: username@example.com (e.g., john.doe@domain.com).`
+                };
+            }
+
+            // Validate phone number format (must start with +94 and be followed by 9 digits)
+            if (!/^\+94\d{9}$/.test(userData.phone)) {
+                return { 
+                    status: false, 
+                    message: "Invalid phone number format. It must start with +94 and be followed by 9 digits (e.g., +94712345678)." 
+                };
+            }
+
+            // Validate password (at least 6 characters, must contain at least one special character)
+            if (userData.password.length < 6 || !/[!@#$%^&*(),.?":{}|<>]/.test(userData.password)) {
+                return { 
+                    status: false, 
+                    message: "Password must be at least 6 characters long and include at least one special character (e.g., @, #, $, %)." 
+                };
             }
 
             // Check for existing email
@@ -40,15 +60,13 @@ class AuthService {
                 return { status: false, message: `Phone number is already registered: ${userData.phone}` };
             }
 
-            if (userData.password.length < 6) {
-                return { status: false, message: "Password must be at least 6 characters long" };
-            }
-
+            // Check for existing username
             const existingUsername = await User.findOne({ username: userData.username });
             if (existingUsername) {
                 return { status: false, message: `Username is already taken: ${userData.username}` };
             }
 
+            // Check if user exists in Firebase
             try {
                 await admin.auth().getUserByEmail(userData.email);
                 return { status: false, message: `User already exists in Firebase: ${userData.email}` };
@@ -91,7 +109,7 @@ class AuthService {
             console.log("Login attempt with:", { email, password });
 
             if (!email || !password || email.trim().length === 0 || password.trim().length === 0) {
-                return { status: false, message: "Email/username and password are required" };
+                return { status: false, message: "Invalid credentials." };
             }
 
             // Check for user by email, username, or phone number
@@ -99,21 +117,23 @@ class AuthService {
                 $or: [
                     { email: email.toLowerCase() },
                     { username: email.toLowerCase() },
-                    { phone: email }  // If you're allowing phone number login
+                    { phone: email }
                 ]
             });
 
             if (!user) {
-                return { status: false, message: "Invalid credentials: User not found" };
+                return { status: false, message: "Invalid credentials." };
             }
 
+            // Decrypt password and compare
             const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET);
             const decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
 
             if (decryptedPassword !== password) {
-                return { status: false, message: "Invalid credentials: Incorrect password" };
+                return { status: false, message: "Invalid credentials." };
             }
 
+            // Generate a custom Firebase authentication token
             const customToken = await admin.auth().createCustomToken(user.uid);
 
             return {
@@ -128,7 +148,7 @@ class AuthService {
             };
         } catch (err) {
             console.error("Login error:", err);
-            return { status: false, message: `Login failed: ${err.message}` };
+            return { status: false, message: "Invalid credentials." };
         }
     }
 }
