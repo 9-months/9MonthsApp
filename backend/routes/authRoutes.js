@@ -39,10 +39,13 @@ const router = express.Router();
  *                 example: "JohnDoe"
  *               email:
  *                 type: string
- *                 example: "user@example.com"
+ *                 format: email
+ *                 example: "john.doe@example.com"
  *               password:
  *                 type: string
- *                 example: "securepassword"
+ *                 format: password
+ *                 minLength: 6
+ *                 example: "securepassword123"
  *               location:
  *                 type: string
  *                 example: "New York, USA"
@@ -57,22 +60,47 @@ const router = express.Router();
  *             schema:
  *               type: object
  *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
- *                   example: "User registered successfully."
+ *                   example: "User created successfully"
  *       400:
  *         description: Bad request (missing or invalid parameters).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid email format"
  *       409:
- *         description: Conflict (email already in use).
+ *         description: Conflict (email or username already in use).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Email is already registered"
  */
 router.post("/signup", authController.createUser);
 
 /**
  * @swagger
- * /signin:
+ * /login:
  *   post:
  *     summary: User login
- *     description: Authenticates a user and returns a token.
+ *     description: Authenticates a user using either email or username and returns a token.
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -80,35 +108,89 @@ router.post("/signup", authController.createUser);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 example: "user@example.com"
- *               password:
- *                 type: string
- *                 example: "securepassword"
+ *             oneOf:
+ *               - type: object
+ *                 required:
+ *                   - email
+ *                   - password
+ *                 properties:
+ *                   email:
+ *                     type: string
+ *                     format: email
+ *                     example: "john.doe@example.com"
+ *                   password:
+ *                     type: string
+ *                     format: password
+ *                     example: "securepassword123"
+ *               - type: object
+ *                 required:
+ *                   - username
+ *                   - password
+ *                 properties:
+ *                   username:
+ *                     type: string
+ *                     example: "JohnDoe"
+ *                   password:
+ *                     type: string
+ *                     format: password
+ *                     example: "securepassword123"
  *     responses:
  *       200:
- *         description: Login successful, returns an access token.
+ *         description: Login successful
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Logged in successfully"
  *                 token:
  *                   type: string
  *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     uid:
+ *                       type: string
+ *                       example: "user123"
+ *                     email:
+ *                       type: string
+ *                       example: "john.doe@example.com"
+ *                     username:
+ *                       type: string
+ *                       example: "JohnDoe"
  *       400:
- *         description: Bad request (missing or invalid parameters).
+ *         description: Bad request (missing or invalid parameters)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Email/username and password are required"
  *       401:
- *         description: Unauthorized (invalid credentials).
+ *         description: Unauthorized (invalid credentials)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid credentials"
  */
 router.post("/login", authController.logIn);
-
 /**
  * @swagger
  * /google-signin:
