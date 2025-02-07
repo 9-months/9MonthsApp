@@ -2,58 +2,37 @@ const User = require("../models/User");
 const admin = require("firebase-admin");
 const CryptoJS = require("crypto-js");
 const emailValidator = require("email-validator");
-const validator = require("validator");
 
 class AuthService {
   async createUser(userData) {
     try {
-      // Validate email
       if (!emailValidator.validate(userData.email)) {
-        throw new Error(`Invalid email format: ${userData.email}`);
+        return { status: false, message: `Invalid email format: ${userData.email}` };
       }
 
-      // Check if email already exists in MongoDB
       const existingEmailUser = await User.findOne({ email: userData.email });
       if (existingEmailUser) {
-        throw new Error(`Email is already registered: ${userData.email}`);
+        return { status: false, message: `Email is already registered: ${userData.email}` };
       }
 
-      // Validate password
       if (userData.password.length < 6) {
-        throw new Error("Password must be at least 6 characters long");
+        return { status: false, message: "Password must be at least 6 characters long" };
       }
 
-      // Validate username
       if (!userData.username || userData.username.trim().length === 0) {
-        throw new Error("Username is required");
+        return { status: false, message: "Username is required" };
       }
 
-      // Check if username already exists in MongoDB
       const existingUsername = await User.findOne({ username: userData.username });
       if (existingUsername) {
-        throw new Error(`Username is already taken: ${userData.username}`);
-      }
-
-      // Validate phone (Sri Lanka format: +94xxxxxxxxx)
-      if (userData.phone && !/^\+94\d{9}$/.test(userData.phone)) {
-        throw new Error("Phone number must be in the format +94xxxxxxxxx (e.g., +94716332188)");
-      }
-
-      // Check if phone number already exists in MongoDB
-      if (userData.phone) {
-        const existingPhoneUser = await User.findOne({ phone: userData.phone });
-        if (existingPhoneUser) {
-          throw new Error(`Phone number is already registered: ${userData.phone}`);
-        }
+        return { status: false, message: `Username is already taken: ${userData.username}` };
       }
 
       try {
-        // Check if user exists in Firebase
         await admin.auth().getUserByEmail(userData.email);
-        throw new Error(`User already exists in Firebase: ${userData.email}`);
+        return { status: false, message: `User already exists in Firebase: ${userData.email}` };
       } catch (error) {
         if (error.code === "auth/user-not-found") {
-          // Create user in Firebase
           const userResponse = await admin.auth().createUser({
             email: userData.email,
             password: userData.password,
@@ -61,13 +40,11 @@ class AuthService {
             disabled: false,
           });
 
-          // Encrypt password
           const encryptedPassword = CryptoJS.AES.encrypt(
             userData.password,
             process.env.SECRET
           ).toString();
 
-          // Create user in MongoDB
           const newUser = new User({
             uid: userResponse.uid,
             email: userData.email,
@@ -78,57 +55,48 @@ class AuthService {
           });
 
           await newUser.save();
-          return { status: true };
+          return { status: true, message: "User created successfully" };
         }
         throw error;
       }
     } catch (err) {
       console.error("Error creating user:", err);
-      throw new Error(`Error creating user: ${err.message}`);
+      return { status: false, message: `Error creating user: ${err.message}` };
     }
   }
 
-  async logIn(usernameOrEmail, password) {
+  async logIn(email, password) {
     try {
-      // Validate password
-      if (password.length < 6) {
-        throw new Error("Password must be at least 6 characters long");
+      // Add debug logging
+      console.log("Login attempt with:", { email, password });
+
+      if (!email || !password) {
+        return { status: false, message: "Email/username and password are required" };
       }
 
-      // Get user from MongoDB by username or email
+      // Find user by either email or username
       const user = await User.findOne({
         $or: [
-          { username: usernameOrEmail },
-          { email: usernameOrEmail }
+          { email: email.toLowerCase() },
+          { username: email.toLowerCase() } // using email parameter for both email and username
         ]
       });
 
       if (!user) {
-        throw new Error(`User not found with username/email: ${usernameOrEmail}`);
+        return { status: false, message: "Invalid credentials: User not found" };
       }
 
-      // Decrypt and verify password
-      let decryptedPassword;
-      try {
-        const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET);
-        decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
+      const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET);
+      const decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
 
-        if (!decryptedPassword) {
-          throw new Error("Decryption failed");
-        }
-      } catch (decryptError) {
-        throw new Error(`Error decrypting password: ${decryptError.message}`);
-      }
-
-      // Compare passwords
       if (decryptedPassword !== password) {
-        throw new Error("Invalid credentials: Incorrect password");
+        return { status: false, message: "Invalid credentials: Incorrect password" };
       }
 
-      // Create custom token
       const customToken = await admin.auth().createCustomToken(user.uid);
 
       return {
+        status: true,
         message: "Logged in successfully",
         token: customToken,
         user: {
@@ -139,47 +107,7 @@ class AuthService {
       };
     } catch (err) {
       console.error("Login error:", err);
-      throw new Error(`Login failed: ${err.message}`);
-    }
-  }
-
-  async googleSignIn(idToken) {
-    try {
-      // Verify the Google ID token
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
-      const { email, uid, name } = decodedToken;
-
-      // Check if user exists in MongoDB
-      let user = await User.findOne({ uid });
-
-      if (!user) {
-        // Create new user in MongoDB if doesn't exist
-        user = new User({
-          uid,
-          email,
-          username: name,
-          password: CryptoJS.AES.encrypt(
-            Math.random().toString(36),
-            process.env.SECRET
-          ).toString(),
-        });
-        await user.save();
-      }
-
-      // Create custom token
-      const customToken = await admin.auth().createCustomToken(uid);
-
-      return {
-        token: customToken,
-        user: {
-          uid: user.uid,
-          email: user.email,
-          username: user.username,
-        },
-      };
-    } catch (err) {
-      console.error("Google Sign-In error:", err);
-      throw new Error(`Google Sign-In failed: ${err.message}`);
+      return { status: false, message: `Login failed: ${err.message}` };
     }
   }
 }
