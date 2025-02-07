@@ -1,3 +1,13 @@
+/*
+ File: authService.js
+ Purpose: Business logic for Authentication.
+ Created Date: 2025-02-06 CCS-7 Ryan Fernando
+ Author: Ryan Fernando
+ Input validation and error handling: Melissa Joanne
+
+ last modified: 2025-02-07 | Melissa | CCS-7 Input validation
+*/
+
 const User = require("../models/User");
 const admin = require("firebase-admin");
 const CryptoJS = require("crypto-js");
@@ -18,9 +28,16 @@ class AuthService {
                 return { status: false, message: `Invalid email format: ${userData.email}` };
             }
 
+            // Check for existing email
             const existingEmailUser = await User.findOne({ email: userData.email });
             if (existingEmailUser) {
                 return { status: false, message: `Email is already registered: ${userData.email}` };
+            }
+
+            // Check for existing phone number
+            const existingPhoneUser = await User.findOne({ phone: userData.phone });
+            if (existingPhoneUser) {
+                return { status: false, message: `Phone number is already registered: ${userData.phone}` };
             }
 
             if (userData.password.length < 6) {
@@ -77,10 +94,12 @@ class AuthService {
                 return { status: false, message: "Email/username and password are required" };
             }
 
+            // Check for user by email, username, or phone number
             const user = await User.findOne({
                 $or: [
                     { email: email.toLowerCase() },
-                    { username: email.toLowerCase() }
+                    { username: email.toLowerCase() },
+                    { phone: email }  // If you're allowing phone number login
                 ]
             });
 

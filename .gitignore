@@ -19,7 +19,6 @@ frontend/.dart_tool/
 frontend/.packages
 frontend/.flutter-plugins
 frontend/.flutter-plugins-dependencies
-frontend/pubspec.lock
 
 # Xcode specific (iOS/macOS)
 frontend/ios/Pods/
@@ -38,7 +37,7 @@ frontend/*.log
 frontend/.flutter-plugins/
 frontend/.flutter-plugins-dependencies/
 frontend/.macos/
-frontend/.DS_Store
+*.DS_Store
 
 # ===========================
 # BACKEND SPECIFIC FILES
@@ -48,7 +47,6 @@ frontend/.DS_Store
 backend/node_modules/
 backend/npm-debug.log*
 backend/yarn.lock
-
 
 # Environment variables
 backend/.env
@@ -64,10 +62,9 @@ backend/*.log
 backend/*.pid
 backend/*.seed
 backend/*.pid.lock
-
-# TypeScript (if applicable)
-backend/dist/
-backend/*.tsbuildinfo
+backend/debug.log
+backend/error.log
+backend/out.log
 
 # PM2 process manager logs
 backend/pm2.log
@@ -78,28 +75,14 @@ backend/dump.pm2
 backend/coverage/
 backend/.nyc_output/
 
-# Local database data
+# Local database data (Only MongoDB, Removed SQL-related ignores)
 backend/data/
 backend/dump/
 backend/mongod.lock
 backend/*.pem
 backend/*.key
 
-# SQLite (if applicable)
-backend/*.sqlite
-backend/*.sqlite3
-
-# PostgreSQL
-backend/*.pgsql
-backend/*.pgdata
-backend/pgadmin/
-
-# MySQL
-backend/*.sql
-backend/*.db
-backend/mysqldump.sql
-
-# Docker Build
+# Docker Build (Keeping just in case)
 backend/.dockerignore
 backend/docker-compose.override.yml
 backend/docker-compose.yml
@@ -107,7 +90,7 @@ backend/docker/
 backend/tmp/docker/
 backend/var/lib/docker/
 
-# CI/CD & DEPLOYMENT FILES
+# CI/CD & DEPLOYMENT FILES (Keeping just in case)
 backend/.github/
 backend/.github/workflows/
 backend/.gitlab-ci.yml
@@ -132,6 +115,11 @@ backend/*.pub
 backend/*.key
 backend/.ssh/
 
+# Temporary & Session Files
+backend/sessions/
+backend/cache/
+backend/tmp/
+
 # Editor Specific
 backend/*.sublime-workspace
 backend/*.sublime-project
@@ -140,5 +128,4 @@ backend/*.iml
 backend/.vscode/
 backend/*.code-workspace
 backend/*.bak
-
 backend/*.DS_Store
