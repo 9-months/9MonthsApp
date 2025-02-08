@@ -5,6 +5,7 @@ const cors = require("cors");
 const swaggerSetup = require("./swagger");
 const authRoutes = require("./routes/authRoutes");
 const emergencyRouter = require("./routes/emergencyRouter");
+const pregnancyRouter = require("./routes/pregnancyRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/emergency", emergencyRouter);
 app.use("/auth", authRoutes);
+app.use("/pregnancy", pregnancyRouter);
 
 // Routes
 app.get("/", (req, res) => {
