@@ -28,7 +28,7 @@ class AuthService {
             if (!emailValidator.validate(userData.email)) {
                 return { 
                     status: false, 
-                    message: `Invalid email format: ${userData.email}. Please enter a valid email address in the format: username@example.com (e.g., john.doe@domain.com).`
+                    message: `Invalid email format: ${userData.email}. Please enter a valid email address in the format: username@example.com.`
                 };
             }
 

@@ -5,12 +5,12 @@ module.exports = {
     try {
       const result = await authService.createUser(req.body);
 
-      // If user creation fails (status is false)
+      // If user creation fails
       if (!result.status) {
         return res.status(400).json({ message: result.message });
       }
 
-      // If user is created successfully (status is true)
+      // If user is created successfully
       return res.status(200).json({ message: result.message });
     } catch (error) {
       console.error("Create User Error:", error);
@@ -22,7 +22,7 @@ module.exports = {
 
       // Handle other server errors
       return res.status(500).json({
-        error: "An error occurred while creating the user"
+        message: "An error occurred while creating the user"
       });
     }
   },
@@ -37,7 +37,6 @@ module.exports = {
       // Ensure both credential and password are provided
       if (!credential || !password) {
         return res.status(400).json({
-          status: false,
           message: "Email/username and password are required"
         });
       }
@@ -45,11 +44,19 @@ module.exports = {
       const result = await authService.logIn(credential, password);
 
       // If login is successful
-      if (result.status) {
-        return res.status(200).json(result);
+      if (result.token) {
+        return res.status(200).json({
+          message: "Logged in successfully",
+          token: result.token,
+          user: {
+            uid: result.user.uid,
+            email: result.user.email,
+            username: result.user.username,
+          },
+        });
       } else {
         // If login failed due to invalid credentials
-        return res.status(401).json(result);
+        return res.status(401).json({ message: result.message });
       }
     } catch (error) {
       console.error("Log In Error:", error);
@@ -57,7 +64,6 @@ module.exports = {
       // Handle specific error for user not found
       if (error.message === "User not found") {
         return res.status(404).json({
-          status: false,
           message: error.message
         });
       }
@@ -65,14 +71,12 @@ module.exports = {
       // Handle specific error for invalid credentials
       if (error.message === "Invalid credentials") {
         return res.status(401).json({
-          status: false,
           message: error.message
         });
       }
 
       // Handle general server errors
       return res.status(500).json({
-        status: false,
         message: "An error occurred during Log In"
       });
     }
@@ -86,7 +90,7 @@ module.exports = {
     } catch (error) {
       console.error("Google Sign In Error:", error);
       res.status(500).json({
-        error: "An error occurred during Google sign in"
+        message: "An error occurred during Google sign in"
       });
     }
   },
