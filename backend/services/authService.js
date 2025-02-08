@@ -16,6 +16,9 @@ const emailValidator = require("email-validator");
 class AuthService {
     async createUser(userData) {
         try {
+            // Normalize email: convert to lowercase and trim spaces
+            userData.email = userData.email.toLowerCase().trim();
+
             // Check for missing fields
             const requiredFields = ["email", "password", "username", "location", "phone"];
             for (const field of requiredFields) {
@@ -28,7 +31,7 @@ class AuthService {
             if (!emailValidator.validate(userData.email)) {
                 return { 
                     status: false, 
-                    message: `Invalid email format: ${userData.email}. Please enter a valid email address in the format: username@example.com.`
+                    message: "Invalid email format. Please enter a valid email address (e.g., username@example.com)."
                 };
             }
 
@@ -36,7 +39,7 @@ class AuthService {
             if (!/^\+94\d{9}$/.test(userData.phone)) {
                 return { 
                     status: false, 
-                    message: "Invalid phone number format. It must start with +94 and be followed by 9 digits (e.g., +94712345678)." 
+                    message: "Invalid phone number. Use the format +94712345678." 
                 };
             }
 
@@ -44,32 +47,40 @@ class AuthService {
             if (userData.password.length < 6 || !/[!@#$%^&*(),.?":{}|<>]/.test(userData.password)) {
                 return { 
                     status: false, 
-                    message: "Password must be at least 6 characters long and include at least one special character (e.g., @, #, $, %)." 
+                    message: "Password must be at least 6 characters long and include one special character." 
                 };
+            }
+
+            // Normalize username: convert to lowercase and trim spaces
+            userData.username = userData.username.toLowerCase().trim();
+
+            // Validate username: must only contain lowercase letters and numbers, no spaces
+            if (!/^[a-z0-9]+$/.test(userData.username)) {
+                return { status: false, message: "Username can only contain lowercase letters and numbers, no spaces." };
             }
 
             // Check for existing email
             const existingEmailUser = await User.findOne({ email: userData.email });
             if (existingEmailUser) {
-                return { status: false, message: `Email is already registered: ${userData.email}` };
+                return { status: false, message: `This email is already registered.` };
             }
 
             // Check for existing phone number
             const existingPhoneUser = await User.findOne({ phone: userData.phone });
             if (existingPhoneUser) {
-                return { status: false, message: `Phone number is already registered: ${userData.phone}` };
+                return { status: false, message: "This phone number is already in use." };
             }
 
             // Check for existing username
             const existingUsername = await User.findOne({ username: userData.username });
             if (existingUsername) {
-                return { status: false, message: `Username is already taken: ${userData.username}` };
+                return { status: false, message: "This username is already taken." };
             }
 
             // Check if user exists in Firebase
             try {
                 await admin.auth().getUserByEmail(userData.email);
-                return { status: false, message: `User already exists in Firebase: ${userData.email}` };
+                return { status: false, message: "An account with this email already exists." };
             } catch (error) {
                 if (error.code === "auth/user-not-found") {
                     const userResponse = await admin.auth().createUser({
@@ -94,61 +105,13 @@ class AuthService {
                     });
 
                     await newUser.save();
-                    return { status: true, message: "User created successfully" };
+                    return { status: true, message: "User registered successfully." };
                 }
                 throw error;
             }
         } catch (err) {
             console.error("Error creating user:", err);
-            return { status: false, message: `Error creating user: ${err.message}` };
-        }
-    }
-
-    async logIn(email, password) {
-        try {
-            console.log("Login attempt with:", { email, password });
-
-            if (!email || !password || email.trim().length === 0 || password.trim().length === 0) {
-                return { status: false, message: "Invalid credentials." };
-            }
-
-            // Check for user by email, username, or phone number
-            const user = await User.findOne({
-                $or: [
-                    { email: email.toLowerCase() },
-                    { username: email.toLowerCase() },
-                    { phone: email }
-                ]
-            });
-
-            if (!user) {
-                return { status: false, message: "Invalid credentials." };
-            }
-
-            // Decrypt password and compare
-            const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET);
-            const decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
-
-            if (decryptedPassword !== password) {
-                return { status: false, message: "Invalid credentials." };
-            }
-
-            // Generate a custom Firebase authentication token
-            const customToken = await admin.auth().createCustomToken(user.uid);
-
-            return {
-                status: true,
-                message: "Logged in successfully",
-                token: customToken,
-                user: {
-                    uid: user.uid,
-                    email: user.email,
-                    username: user.username,
-                },
-            };
-        } catch (err) {
-            console.error("Login error:", err);
-            return { status: false, message: "Invalid credentials." };
+            return { status: false, message: "An error occurred during registration." };
         }
     }
 }
