@@ -1,3 +1,12 @@
+/**
+ File: profile_page.dart
+ Purpose: 
+ Created Date: 2025-02-08 CCS-42 Melissa Joanne
+ Author: Melissa Joanne
+
+ last modified: 2025-02-09 | Melissa | CCS-42 Editable UI elements update
+ */
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
