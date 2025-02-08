@@ -56,7 +56,7 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Dashboard Grid
               GridView.count(
                 shrinkWrap: true,
@@ -84,6 +84,10 @@ class HomePage extends StatelessWidget {
                     icon: Icons.person,
                     title: 'Profile',
                     color: Colors.purple,
+                    onTap: () {
+                      Navigator.pushNamed(
+                          context, '/profile'); // Navigate to the profile page
+                    },
                   ),
                 ],
               ),
@@ -98,13 +102,12 @@ class HomePage extends StatelessWidget {
     required IconData icon,
     required String title,
     required Color color,
+    VoidCallback? onTap,
   }) {
     return Card(
       elevation: 4,
       child: InkWell(
-        onTap: () {
-          // Add navigation logic here
-        },
+        onTap: onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
