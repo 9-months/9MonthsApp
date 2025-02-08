@@ -1,3 +1,12 @@
+/*
+ File: home_page.dart
+ Purpose: 
+ Created Date: CCS-29 
+ Author: 
+
+ last modified: 2025-02-09 | Dinith | CCS-9 Emergency button 
+*/
+
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
