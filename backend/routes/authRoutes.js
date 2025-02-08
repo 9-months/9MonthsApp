@@ -5,7 +5,7 @@
  Author: Ryan Fernando
  swagger doc: Melissa Joanne 
 
- last modified: 2025-02-05 | Melissa | CCS-7 API documentation update for authentication
+ last modified: 2025-02-08 | Melissa | CCS-7 API documentation update for authentication
 */
 
 const express = require("express");
@@ -39,40 +39,39 @@ const router = express.Router();
  *                 example: "JohnDoe"
  *               email:
  *                 type: string
- *                 example: "user@example.com"
+ *                 format: email
+ *                 example: "john.doe@example.com"
  *               password:
  *                 type: string
- *                 example: "securepassword"
+ *                 format: password
+ *                 minLength: 6
+ *                 example: "securepassword123"
  *               location:
  *                 type: string
  *                 example: "New York, USA"
  *               phone:
  *                 type: string
- *                 example: "+1234567890"
+ *                 example: "+94712345678"
  *     responses:
  *       201:
- *         description: User registered successfully.
+ *         description: User created successfully.
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "User registered successfully."
+ *             example:
+ *               message: "User created successfully."
  *       400:
  *         description: Bad request (missing or invalid parameters).
  *       409:
- *         description: Conflict (email already in use).
+ *         description: Conflict (email or username already in use).
  */
 router.post("/signup", authController.createUser);
 
 /**
  * @swagger
- * /signin:
+ * /login:
  *   post:
  *     summary: User login
- *     description: Authenticates a user and returns a token.
+ *     description: Authenticates a user using either email or username and returns a token.
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -81,33 +80,39 @@ router.post("/signup", authController.createUser);
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - email
- *               - password
  *             properties:
  *               email:
  *                 type: string
- *                 example: "user@example.com"
+ *                 format: email
+ *                 example: "john.doe@example.com"
+ *               username:
+ *                 type: string
+ *                 example: "JohnDoe"
  *               password:
  *                 type: string
- *                 example: "securepassword"
+ *                 format: password
+ *                 example: "securepassword123"
+ *             oneOf:
+ *               - required: [email, password]
+ *               - required: [username, password]
  *     responses:
  *       200:
- *         description: Login successful, returns an access token.
+ *         description: Login successful.
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *             example:
+ *               message: "Logged in successfully."
+ *               token: "your_jwt_token_here"
+ *               user:
+ *                 uid: "user_id"
+ *                 email: "user@example.com"
+ *                 username: "username"
  *       400:
  *         description: Bad request (missing or invalid parameters).
  *       401:
  *         description: Unauthorized (invalid credentials).
  */
-router.post("/signin", authController.signIn);
+router.post("/login", authController.logIn);
 
 /**
  * @swagger
@@ -124,27 +129,24 @@ router.post("/signin", authController.signIn);
  *           schema:
  *             type: object
  *             required:
- *               - token
+ *               - idToken
  *             properties:
- *               token:
+ *               idToken:
  *                 type: string
  *                 example: "google-oauth-token"
  *     responses:
  *       200:
- *         description: Google sign-in successful, returns an access token.
+ *         description: Google sign-in successful.
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *             example:
+ *               message: "Google sign-in successful."
  *       400:
  *         description: Bad request (invalid token).
  *       401:
  *         description: Unauthorized (invalid credentials).
  */
 router.post("/google-signin", authController.googleSignIn);
+
 
 module.exports = router;
