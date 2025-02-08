@@ -1,69 +1,50 @@
-/*
- File: authController.js
- Purpose: Handles Handles HTTP requests for auth
- Created Date: 2025-01-29 CCS-30 Irosh Perera
- Author: Dinith Perera
+const authService = require("../services/authService");
 
- last modified: 2025-02-03 | Dinith | CCS-41 Create Controllers 
-*/
-
-
-const AuthService = require('../services/authService');
-
-class AuthController {
-
-  // create user
-  async register(req, res) {
+module.exports = {
+  createUser: async (req, res) => {
     try {
-      const user = await AuthService.register(req.body);
-      res.status(201).json(user);
+      const result = await authService.createUser(req.body);
+      res.status(201).json(result);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Create User Error:", error);
+      if (error.message === "User already exists") {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ 
+        error: "An error occurred while creating user" 
+      });
     }
-  }
+  },
 
-  // login
-  async login(req, res) {
+  logIn: async (req, res) => {
     try {
-      const user = await AuthService.login(req.body);
-      res.status(200).json(user);
+      const { username, password } = req.body;
+      const result = await authService.logIn(username, password);
+      res.status(200).json(result);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Log In Error:", error);
+      if (error.message === "User not found") {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message === "Invalid credentials") {
+        return res.status(401).json({ message: error.message });
+      }
+      res.status(500).json({ 
+        error: "An error occurred during Log In" 
+      });
     }
-  }
+  },
 
-  // get user by id
-  async getUser(req, res) {
+  googleSignIn: async (req, res) => {
     try {
-      const user = await AuthService.getUserById(req.params.id);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json(user);
+      const { idToken } = req.body;
+      const result = await authService.googleSignIn(idToken);
+      res.status(200).json(result);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Google Sign In Error:", error);
+      res.status(500).json({ 
+        error: "An error occurred during Google sign in" 
+      });
     }
-  }
-
-  // update user
-  async updateUser(req, res) {
-    try {
-      const user = await AuthService.updateUser(req.params.id, req.body);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-
-  // Delete user
-  async deleteUser(req, res) {
-    try {
-      const deleted = await AuthService.deleteUser(req.params.id);
-      if (!deleted) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json({ message: 'User deleted' });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-}
-
-module.exports = new AuthController();
+  },
+};

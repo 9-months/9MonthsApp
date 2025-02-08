@@ -9,6 +9,14 @@ const emergencyRouter = require("./routes/emergencyRouter");
 // Load environment variables
 dotenv.config();
 
+const admin = require("firebase-admin");
+const serviceAccount = require("./ServicesAccountKey.json");
+
+admin.initializeApp({
+  credential:admin.credential.cert(serviceAccount),
+});
+
+
 // Initialize Express app
 const app = express();
 
@@ -19,6 +27,7 @@ app.use(express.json());
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/emergency", emergencyRouter);
+app.use("/auth", authRoutes);
 
 // Routes
 app.get("/", (req, res) => {
