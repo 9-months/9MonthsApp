@@ -76,7 +76,7 @@ class HomePage extends StatelessWidget {
         onTap: () => _handleEmergency(context),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
+          padding: const EdgeInsets.symmetric(vertical: 60.0),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
