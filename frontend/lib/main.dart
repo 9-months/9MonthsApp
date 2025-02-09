@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
 import 'screens/home/home_page.dart';
+import 'screens/profile/profile_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
+        '/profile': (context) => const ProfilePage(), // Add the profile route
       },
     );
   }
