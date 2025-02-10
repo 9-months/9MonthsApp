@@ -52,55 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Timer(const Duration(milliseconds: 500), () {
-          Navigator.of(context).pushReplacement(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const RegisterPage(),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                // Fade transition
-                const begin = 0.0;
-                const end = 1.0;
-                var fade = Tween(begin: begin, end: end).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeInOut,
-                  ),
-                );
-
-                // Scale transition
-                var scale = Tween(begin: 0.5, end: 1.0).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeInOut,
-                  ),
-                );
-
-                // Slide transition
-                var slide = Tween(
-                  begin: const Offset(0.0, 0.2),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeInOut,
-                  ),
-                );
-
-                return FadeTransition(
-                  opacity: fade,
-                  child: SlideTransition(
-                    position: slide,
-                    child: ScaleTransition(
-                      scale: scale,
-                      child: child,
-                    ),
-                  ),
-                );
-              },
-              transitionDuration: const Duration(milliseconds: 800),
-            ),
-          );
+          Navigator.of(context).pushReplacementNamed('/step');
         });
       }
     });
