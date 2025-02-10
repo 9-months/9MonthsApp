@@ -27,7 +27,6 @@ flutter_icons:
   ios: true
   image_path: "assets/icon/app_icon.png"
 
-
 flutter:
   uses-material-design: true
 
@@ -40,6 +39,7 @@ flutter:
     - assets/guideScreenImages/mom_dad.png
     - assets/guideScreenImages/dad.png
     - assets/guideScreenImages/watch.png
+    - assets/images/profile_picture.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
