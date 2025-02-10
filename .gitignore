@@ -240,3 +240,4 @@ backend/*.code-workspace
 backend/*.bak
 
 backend/*.DS_Store
+backend/package-lock.json
