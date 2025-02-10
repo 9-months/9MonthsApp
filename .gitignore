@@ -238,7 +238,4 @@ backend/*.iml
 backend/.vscode/
 backend/*.code-workspace
 backend/*.bak
-
 backend/*.DS_Store
-backend/package-lock.json
-frontend/ios/Podfile.lock
