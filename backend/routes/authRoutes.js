@@ -147,4 +147,9 @@ router.post("/login", authController.logIn);
  */
 router.post("/google-signin", authController.googleSignIn);
 
+router.get("/user/:uid", authController.getUser);
+router.get("/users", authController.getAllUsers);
+router.put("/user/:uid", authController.updateUser);
+router.delete("/user/:uid", authController.deleteUser);
+
 module.exports = router;

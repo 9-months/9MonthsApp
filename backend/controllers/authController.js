@@ -7,12 +7,7 @@ module.exports = {
       res.status(201).json(result);
     } catch (error) {
       console.error("Create User Error:", error);
-      if (error.message === "User already exists") {
-        return res.status(400).json({ message: error.message });
-      }
-      return res.status(500).json({ 
-        error: "An error occurred while creating user" 
-      });
+      res.status(500).json({ error: "An error occurred while creating user" });
     }
   },
 
@@ -23,15 +18,7 @@ module.exports = {
       res.status(200).json(result);
     } catch (error) {
       console.error("Log In Error:", error);
-      if (error.message === "User not found") {
-        return res.status(404).json({ message: error.message });
-      }
-      if (error.message === "Invalid credentials") {
-        return res.status(401).json({ message: error.message });
-      }
-      res.status(500).json({ 
-        error: "An error occurred during Log In" 
-      });
+      res.status(500).json({ error: "An error occurred during login" });
     }
   },
 
@@ -42,9 +29,57 @@ module.exports = {
       res.status(200).json(result);
     } catch (error) {
       console.error("Google Sign In Error:", error);
-      res.status(500).json({ 
-        error: "An error occurred during Google sign in" 
-      });
+      res.status(500).json({ error: "An error occurred during Google sign in" });
     }
   },
+
+  getUser: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const user = await authService.getUser(uid);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.status(200).json(user);
+    } catch (error) {
+      console.error("Get User Error:", error);
+      res.status(500).json({ error: "An error occurred while retrieving user" });
+    }
+  },
+
+  getAllUsers: async (req, res) => {
+    try {
+      const users = await authService.getAllUsers();
+      res.status(200).json(users);
+    } catch (error) {
+      console.error("Get All Users Error:", error);
+      res.status(500).json({ error: "An error occurred while retrieving users" });
+    }
+  },
+
+  updateUser: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const updatedData = req.body; // Ensure you're passing the correct data in the request body
+      const updatedUser = await authService.updateUser(uid, updatedData);
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json(updatedUser); // Respond with updated user details
+    } catch (error) {
+      console.error("Update User Error:", error);
+      res.status(500).json({ error: "An error occurred while updating user" });
+    }
+  },
+
+  deleteUser: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const result = await authService.deleteUser(uid);
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Delete User Error:", error);
+      res.status(500).json({ error: "An error occurred while deleting user" });
+    }
+  }
 };
