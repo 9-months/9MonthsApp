@@ -14,12 +14,13 @@ class CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
+            color: theme.shadowColor.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -31,13 +32,15 @@ class CustomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home'),
-              _buildNavItem(1, Icons.book_outlined, Icons.book, 'Journal'),
-              _buildEmergencyButton(),
               _buildNavItem(
-                  3, Icons.analytics_outlined, Icons.analytics, 'Stats'),
+                  context, 0, Icons.home_outlined, Icons.home, 'Home'),
               _buildNavItem(
-                  4, Icons.settings_outlined, Icons.settings, 'Settings'),
+                  context, 1, Icons.book_outlined, Icons.book, 'Journal'),
+              _buildEmergencyButton(context),
+              _buildNavItem(context, 3, Icons.analytics_outlined,
+                  Icons.analytics, 'Stats'),
+              _buildNavItem(
+                  context, 4, Icons.person_outlined, Icons.person, 'Profile'),
             ],
           ),
         ),
@@ -45,9 +48,10 @@ class CustomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(
-      int index, IconData outlinedIcon, IconData filledIcon, String label) {
+  Widget _buildNavItem(BuildContext context, int index, IconData outlinedIcon,
+      IconData filledIcon, String label) {
     final isSelected = currentIndex == index;
+    final theme = Theme.of(context);
     return InkWell(
       onTap: () => onTap(index),
       child: Column(
@@ -55,15 +59,18 @@ class CustomNavBar extends StatelessWidget {
         children: [
           Icon(
             isSelected ? filledIcon : outlinedIcon,
-            color: isSelected ? Colors.deepPurple : Colors.grey,
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurface.withOpacity(0.64),
             size: 24,
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isSelected ? Colors.deepPurple : Colors.grey,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withOpacity(0.64),
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -72,25 +79,26 @@ class CustomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildEmergencyButton() {
+  Widget _buildEmergencyButton(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onEmergencyPress,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.red,
+          color: theme.colorScheme.error,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.red.withOpacity(0.3),
+              color: theme.colorScheme.error.withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: const Icon(
+        child: Icon(
           Icons.emergency,
-          color: Colors.white,
+          color: theme.colorScheme.onError,
           size: 32,
         ),
       ),
