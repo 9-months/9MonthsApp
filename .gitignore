@@ -241,3 +241,4 @@ backend/*.bak
 
 backend/*.DS_Store
 backend/package-lock.json
+frontend/ios/Podfile.lock
