@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
+import '../../config/config.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -93,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/login'),
+        Uri.parse('${Config.apiBaseUrl}/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'username': _usernameController.text,
@@ -143,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/google'),
+        Uri.parse('${Config.apiBaseUrl}/auth/google'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'idToken': idToken,

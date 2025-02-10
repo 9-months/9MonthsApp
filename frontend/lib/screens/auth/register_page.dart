@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../config/config.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -87,13 +88,14 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register() async {
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/signup'),
+        Uri.parse('${Config.apiBaseUrl}/auth/signup'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text,
@@ -140,7 +142,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/google'),
+        Uri.parse('${Config.apiBaseUrl}/auth/google'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'idToken':

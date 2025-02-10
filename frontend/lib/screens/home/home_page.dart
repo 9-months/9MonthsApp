@@ -1,37 +1,38 @@
 /*
  File: home_page.dart
- Purpose: 
- Created Date: CCS-29 
- Author: 
+ Purpose: Dashboard for the user
+ Created Date: CCS-29
+ Author: Irosh Perera
 
  last modified: 2025-02-09 | Melissa | CCS-43 Profile navigation
 */
 
 import 'package:flutter/material.dart';
+import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  // Handles the emergency call request and shows a SnackBar based on the result
-  Future<void> _handleEmergency(BuildContext context) async {
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+
+  Future<void> _handleEmergency() async {
     try {
       await EmergencyService().sendEmergencyAlert();
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Emergency services have been notified'),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('Emergency services notified')),
         );
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to contact emergency services'),
-            backgroundColor: Colors.red,
-          ),
+          const SnackBar(content: Text('Failed to contact emergency services')),
         );
       }
     }
@@ -40,145 +41,204 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          // Logout button
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // Emergency button
-              _buildEmergencyButton(context),
-              const SizedBox(height: 20),
-              // Dashboard grid
-              _buildDashboardGrid(context),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Builds the emergency button widget
-  Widget _buildEmergencyButton(BuildContext context) {
-    return Card(
-      elevation: 4,
-      color: Colors.red,
-      child: InkWell(
-        onTap: () => _handleEmergency(context),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.call,
-                size: 48,
-                color: Colors.white,
-              ),
-              SizedBox(width: 16),
-              Text(
-                'EMERGENCY',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello Isurukamiss',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '16th Week of Pregnancy',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/profile'),
+                      child: const CircleAvatar(
+                        radius: 24,
+                        backgroundImage:
+                            AssetImage('assets/images/profile_picture.png'),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+
+                // Week Selector
+                SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 7,
+                    itemBuilder: (context, index) {
+                      final day = 16 + index;
+                      final isSelected = index == 2;
+                      return Container(
+                        width: 45,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              day.toString(),
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Wed',
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Baby Info Card
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        const CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.blue,
+                          child: Icon(Icons.child_care,
+                              color: Colors.white, size: 36),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Your baby is the size of a pear',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildInfoColumn('Baby Height', '17 cm'),
+                            _buildInfoColumn('Baby Weight', '110 gr'),
+                            _buildInfoColumn('Days Left', '168 days'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Menu Grid
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  children: [
+                    _buildMenuCard(Icons.medication, 'Medicines',
+                        Theme.of(context).colorScheme.secondary),
+                    _buildMenuCard(
+                        Icons.fitness_center, 'Exercises', Colors.green),
+                    _buildMenuCard(
+                        Icons.local_hospital, 'Hospitals', Colors.red),
+                    _buildMenuCard(Icons.article, 'Articles', Colors.purple),
+                    _buildMenuCard(Icons.video_library, 'Videos', Colors.blue),
+                    _buildMenuCard(Icons.restaurant_menu, 'Food', Colors.teal),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+      bottomNavigationBar: CustomNavBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        onEmergencyPress: _handleEmergency,
       ),
     );
   }
 
-  // Builds the dashboard grid with various options
-  Widget _buildDashboardGrid(BuildContext context) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
+  Widget _buildInfoColumn(String label, String value) {
+    return Column(
       children: [
-        _buildDashboardCard(
-          context: context,
-          icon: Icons.calendar_today,
-          title: 'Appointments',
-          color: Colors.blue,
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+          ),
         ),
-        _buildDashboardCard(
-          context: context,
-          icon: Icons.medical_information,
-          title: 'Medical Records',
-          color: Colors.green,
-        ),
-        _buildDashboardCard(
-          context: context,
-          icon: Icons.notifications,
-          title: 'Reminders',
-          color: Colors.orange,
-        ),
-        _buildDashboardCard(
-          context: context,
-          icon: Icons.person,
-          title: 'Profile',
-          color: Colors.purple,
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
       ],
     );
   }
 
-  // Builds a single dashboard card with navigation functionality
-  Widget _buildDashboardCard({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required Color color,
-  }) {
+  Widget _buildMenuCard(IconData icon, String title, Color color) {
     return Card(
-      elevation: 4,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: InkWell(
-        onTap: () {
-          switch (title) {
-            case 'Profile':
-              Navigator.pushNamed(context, '/profile');
-              break;
-            case 'Appointments':
-              Navigator.pushNamed(context, '/appointments');
-              break;
-            case 'Medical Records':
-              Navigator.pushNamed(context, '/medical-records');
-              break;
-            case 'Reminders':
-              Navigator.pushNamed(context, '/reminders');
-              break;
-          }
-        },
+        onTap: () {},
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: 48,
+              size: 32,
               color: color,
             ),
             const SizedBox(height: 8),
             Text(
               title,
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
                 color: color,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],

@@ -11,8 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  http: ^1.1.0
+  http: ^1.3.0
   google_sign_in: ^5.3.1
+  flutter_dotenv: ^5.2.1
   image_picker: ^1.0.7
 
 dev_dependencies:
@@ -32,6 +33,13 @@ flutter:
   assets:
     - assets/images/
     - assets/images/google_logo.png
+    - .env
+    - assets/images/Logo_Blue.png
+    - assets/guideScreenImages/pregnant_girl.png
+    - assets/guideScreenImages/mom_dad.png
+    - assets/guideScreenImages/dad.png
+    - assets/guideScreenImages/watch.png
+    - assets/images/profile_picture.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
