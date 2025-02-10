@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
 import 'screens/home/home_page.dart';
 
-void main() {
+Future <void> main() async {
+  await dotenv.load(fileName: '.env');
   runApp(const MyApp());
 }
 
