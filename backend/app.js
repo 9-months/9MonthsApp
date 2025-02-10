@@ -3,6 +3,8 @@
  Purpose: This file is the main entry point for the application.
  Created Date: 2025-01-29 CCS-1 Irosh Perera
  Author: Irosh Perera
+
+ last modified: 11-02-2025 | Dinith | CCS-48 add mood routes
 */
 
 const express = require("express");
