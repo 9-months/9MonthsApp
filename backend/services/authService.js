@@ -84,8 +84,8 @@ class AuthService {
         token: customToken,
         user: {
           uid: user.uid,
-          username: user.username,
           email: user.email,
+          username: user.username,
         },
       };
     } catch (error) {
@@ -96,20 +96,36 @@ class AuthService {
 
   async googleSignIn(idToken) {
     try {
+      // Verify the Google ID token
       const decodedToken = await admin.auth().verifyIdToken(idToken);
-      const user = await User.findOne({ uid: decodedToken.uid });
+      const { email, uid, name } = decodedToken;
+
+      // Check if user exists in MongoDB
+      let user = await User.findOne({ uid });
 
       if (!user) {
-        throw new Error("User not found");
+        // Create new user in MongoDB if doesn't exist
+        user = new User({
+          uid,
+          email,
+          username: name,
+          password: CryptoJS.AES.encrypt(
+            Math.random().toString(36),
+            process.env.SECRET
+          ).toString(),
+        });
+        await user.save();
       }
 
+      // Create custom token
+      const customToken = await admin.auth().createCustomToken(uid);
+
       return {
-        message: "Google sign-in successful",
-        token: await admin.auth().createCustomToken(decodedToken.uid),
+        token: customToken,
         user: {
           uid: user.uid,
-          username: user.username,
           email: user.email,
+          username: user.username,
         },
       };
     } catch (error) {
@@ -120,41 +136,55 @@ class AuthService {
 
   async getUser(uid) {
     try {
-      return await User.findOne({ uid });
+      const user = await User.findOne({ uid });
+      return user;
     } catch (error) {
       console.error("Get User Service Error:", error);
-      throw error;
+      throw new Error("An error occurred while retrieving user");
     }
   }
 
   async getAllUsers() {
     try {
-      return await User.find();
+      const users = await User.find({});
+      return users;
     } catch (error) {
       console.error("Get All Users Service Error:", error);
-      throw error;
+      throw new Error("An error occurred while retrieving users");
     }
   }
 
   async updateUser(uid, updatedData) {
     try {
-      return await User.findOneAndUpdate({ uid }, updatedData, { new: true });
+      // Allow only location, email, and phone to be updated
+      const allowedUpdates = {};
+      if (updatedData.location) allowedUpdates.location = updatedData.location;
+      if (updatedData.email) allowedUpdates.email = updatedData.email;
+      if (updatedData.phone) allowedUpdates.phone = updatedData.phone;
+
+      const updatedUser = await User.findOneAndUpdate({ uid }, allowedUpdates, {
+        new: true,
+      });
+      if (!updatedUser) {
+        throw new Error("User not found");
+      }
+      return updatedUser;
     } catch (error) {
       console.error("Update User Service Error:", error);
-      throw error;
+      throw new Error("An error occurred while updating user");
     }
   }
 
   async deleteUser(uid) {
     try {
-      const result = await User.findOneAndDelete({ uid });
-      if (!result) {
+      const user = await User.findOneAndDelete({ uid });
+      if (!user) {
         throw new Error("User not found");
       }
       return { message: "User deleted successfully" };
     } catch (error) {
       console.error("Delete User Service Error:", error);
-      throw error;
+      throw new Error("An error occurred while deleting user");
     }
   }
 }
