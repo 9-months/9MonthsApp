@@ -1,3 +1,10 @@
+/*
+ File: App.js
+ Purpose: This file is the main entry point for the application.
+ Created Date: 2025-01-29 CCS-1 Irosh Perera
+ Author: Irosh Perera
+*/
+
 const express = require("express");
 const db = require("./config/db");
 const dotenv = require("dotenv");
@@ -13,9 +20,8 @@ const admin = require("firebase-admin");
 const serviceAccount = require("./ServicesAccountKey.json");
 
 admin.initializeApp({
-  credential:admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount),
 });
-
 
 // Initialize Express app
 const app = express();
