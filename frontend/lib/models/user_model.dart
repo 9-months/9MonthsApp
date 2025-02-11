@@ -6,7 +6,6 @@
 
  last modified: 11/02/2021 | Dinith | CCS-55 model for user created
 */
-// lib/models/user_model.dart
 
 class User {
   final String uid;
