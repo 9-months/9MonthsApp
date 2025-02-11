@@ -44,7 +44,7 @@ class CustomNavBar extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const MoodTrackingScreen(userId: 'USER_ID'),
+                      builder: (context) => const MoodTrackingScreen(),
                     ),
                   );
                   onTap(1);
