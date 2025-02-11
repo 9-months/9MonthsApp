@@ -6,10 +6,19 @@ import 'screens/home/home_page.dart';
 import 'screens/profile/profile_page.dart';
 import 'screens/splash/splash.dart';
 import 'screens/onboarding/step_screen.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
 
-Future<void> main() async {
+void main() async {
   await dotenv.load(fileName: '.env');
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
