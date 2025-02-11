@@ -4,9 +4,15 @@ import 'dart:convert';
 import '../models/user_model.dart';
 import '../config/config.dart';
 
+/// Service class that handles all authentication-related operations
 class AuthService {
+  /// Instance of GoogleSignIn for handling Google authentication
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
+  /// Authenticates a user with username and password
+  ///
+  /// Returns a [User] object if successful
+  /// Throws an exception if authentication fails
   Future<User> login(String username, String password) async {
     try {
       final response = await http.post(
@@ -30,6 +36,19 @@ class AuthService {
     }
   }
 
+  /// Registers a new user with the provided information
+  ///
+  /// Required parameters:
+  /// - [email]: User's email address
+  /// - [password]: User's password
+  /// - [username]: User's chosen username
+  ///
+  /// Optional parameters:
+  /// - [location]: User's location
+  /// - [phone]: User's phone number
+  ///
+  /// Returns a [User] object if registration is successful
+  /// Throws an exception if registration fails
   Future<User> register({
     required String email,
     required String password,
@@ -38,6 +57,7 @@ class AuthService {
     String? phone,
   }) async {
     try {
+      // Send registration request to the server
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/signup'),
         headers: {'Content-Type': 'application/json'},
@@ -51,11 +71,13 @@ class AuthService {
       );
 
       if (response.statusCode == 201) {
+        // Parse the response and extract user data
         final Map<String, dynamic> data = json.decode(response.body);
-        // Check if user data is nested inside a 'user' field
+        // Handle both nested and direct user data structures
         final Map<String, dynamic> userData = data['user'] ?? data;
         return User.fromJson(userData);
       } else {
+        // Handle registration error
         final error = json.decode(response.body);
         throw Exception(error['message'] ?? 'Registration failed');
       }
@@ -64,17 +86,29 @@ class AuthService {
     }
   }
 
+  /// Handles Google Sign-In authentication
+  ///
+  /// This method:
+  /// 1. Initiates Google Sign-In flow
+  /// 2. Gets authentication token
+  /// 3. Verifies token with our backend
+  ///
+  /// Returns a [User] object if successful
+  /// Throws an exception if any step fails
   Future<User> googleSignIn() async {
     try {
+      // Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) throw Exception('Google sign in cancelled');
 
+      // Get authentication details
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) throw Exception('Failed to get ID Token');
 
+      // Verify token with backend
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/google'),
         headers: {'Content-Type': 'application/json'},
@@ -93,6 +127,9 @@ class AuthService {
     }
   }
 
+  /// Signs out the current user
+  ///
+  /// This includes signing out from Google if it was used for authentication
   Future<void> logout() async {
     await _googleSignIn.signOut();
   }
