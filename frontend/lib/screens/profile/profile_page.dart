@@ -6,9 +6,9 @@
 
  last modified: 2025-02-09 | Melissa | CCS-42 Editable UI elements update
 */
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 class ProfilePage extends StatefulWidget {
@@ -21,8 +21,27 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String _dateOfBirth = '01/01/1990';
   String _location = 'Colombo';
+  String _username = '';
+  String _email = '';
+  String _phone = '';
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _username = prefs.getString('username') ?? 'isurukamiss';
+      _email = prefs.getString('email') ?? 'isurukamiss@gmail.com';
+      _location = prefs.getString('location') ?? 'Colombo';
+      _phone = prefs.getString('phone') ?? '+94123456789';
+    });
+  }
 
   Future<void> _selectImage() async {
     try {
@@ -110,10 +129,48 @@ class _ProfilePageState extends State<ProfilePage> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               setState(() {
                 _location = locationController.text;
               });
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('location', _location);
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updatePhone() async {
+    final TextEditingController phoneController =
+        TextEditingController(text: _phone);
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Update Phone Number'),
+        content: TextField(
+          controller: phoneController,
+          decoration: const InputDecoration(
+            labelText: 'Phone',
+            hintText: 'Enter your phone number',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              setState(() {
+                _phone = phoneController.text;
+              });
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('phone', _phone);
               Navigator.pop(context);
             },
             child: const Text('Save'),
@@ -189,7 +246,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   children: [
                     Text(
-                      'isurukamiss',
+                      _username,
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -260,10 +317,15 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                       ),
                       const SizedBox(height: 16),
-                      _buildInfoRow(
-                          Icons.email, 'Email', 'isurukamiss@gmail.com'),
+                      _buildInfoRow(Icons.email, 'Email', _email),
                       const SizedBox(height: 12),
-                      _buildInfoRow(Icons.phone, 'Phone', '+94123456789'),
+                      _buildEditableInfoRow(
+                        context,
+                        Icons.phone,
+                        'Phone',
+                        _phone,
+                        onEdit: _updatePhone,
+                      ),
                       const SizedBox(height: 12),
                       _buildEditableInfoRow(
                         context,

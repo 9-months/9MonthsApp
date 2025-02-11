@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/config.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -88,7 +89,6 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register() async {
-
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -108,6 +108,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (response.statusCode == 201) {
         if (!mounted) return;
+
+        // Save user data to local storage
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('username', _usernameController.text);
+        await prefs.setString('email', _emailController.text);
+        await prefs.setString('location', _locationController.text);
+        await prefs.setString('phone', _phoneController.text);
 
         // Show success message
         _showSuccessSnackBar(

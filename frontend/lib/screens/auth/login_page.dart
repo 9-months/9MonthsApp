@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../config/config.dart';
 import 'register_page.dart';
@@ -107,6 +108,11 @@ class _LoginPageState extends State<LoginPage> {
 
         if (!mounted) return;
 
+        // Save user data to local storage
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('username', data['user']['username']);
+        await prefs.setString('email', data['user']['email']);
+
         // Show success message
         _showSuccessSnackBar('Welcome back, ${data['user']['username']}!');
 
@@ -155,6 +161,11 @@ class _LoginPageState extends State<LoginPage> {
         final data = json.decode(response.body);
 
         if (!mounted) return;
+
+        // Save user data to local storage
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('username', data['user']['username']);
+        await prefs.setString('email', data['user']['email']);
 
         // Show success message
         _showSuccessSnackBar('Welcome back, ${data['user']['username']}!');
