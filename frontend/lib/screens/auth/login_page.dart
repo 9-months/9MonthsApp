@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
+import 'package:provider/provider.dart';
 import '../../config/config.dart';
+import '../../providers/user_provider.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -44,12 +46,6 @@ class _LoginPageState extends State<LoginPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        margin: const EdgeInsets.only(
-          bottom: 20,
-          right: 20,
-          left: 20,
-        ),
-        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -61,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.white),
+              const Icon(Icons.error, color: Colors.white),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -73,225 +69,125 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.red.shade800,
+        backgroundColor: Colors.red,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        margin: const EdgeInsets.only(
-          bottom: 20,
-          right: 20,
-          left: 20,
-        ),
-        duration: const Duration(seconds: 4),
       ),
     );
   }
 
-  Future<void> _handleSignIn() async {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    setState(() => _isLoading = true);
+      try {
+        String username = _usernameController.text;
+        String password = _passwordController.text;
 
-    try {
-      final response = await http.post(
-        Uri.parse('${Config.apiBaseUrl}/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'username': _usernameController.text,
-          'password': _passwordController.text,
-        }),
-      );
+        // Simulate a network request
+        await Provider.of<UserProvider>(context, listen: false)
+            .login(username, password);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        if (!mounted) return;
-
-        // Show success message
-        _showSuccessSnackBar('Welcome back, ${data['user']['username']}!');
-
-        // Navigate after a short delay to allow the user to see the message
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/home');
-          }
+        _showSuccessSnackBar('Login successful');
+      } catch (e) {
+        _showErrorSnackBar('Login failed');
+      } finally {
+        setState(() {
+          _isLoading = false;
         });
-      } else {
-        final error = json.decode(response.body);
-        throw Exception(error['message'] ?? 'Login failed');
       }
-    } catch (e) {
-      if (!mounted) return;
-      _showErrorSnackBar(e.toString().replaceAll('Exception: ', ''));
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _handleGoogleSignIn() async {
-    setState(() => _isLoading = true);
-
+  Future<void> _googleLogin() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        final response = await http.post(
+          Uri.parse('${Config.apiUrl}/auth/google'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'token': googleAuth.idToken}),
+        );
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
-
-      if (idToken == null) {
-        throw Exception('Failed to get ID Token');
-      }
-
-      final response = await http.post(
-        Uri.parse('${Config.apiBaseUrl}/auth/google'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'idToken': idToken,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        if (!mounted) return;
-
-        // Show success message
-        _showSuccessSnackBar('Welcome back, ${data['user']['username']}!');
-
-        // Navigate after a short delay
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/home');
-          }
-        });
-      } else {
-        final error = json.decode(response.body);
-        throw Exception(error['message'] ?? 'Google sign-in failed');
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final userProvider =
+              Provider.of<UserProvider>(context, listen: false);
+          userProvider.login(data['username'], data['email']);
+          _showSuccessSnackBar('Google login successful');
+        } else {
+          _showErrorSnackBar('Google login failed');
+        }
       }
     } catch (e) {
-      if (!mounted) return;
-      _showErrorSnackBar(e.toString().replaceAll('Exception: ', ''));
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+      _showErrorSnackBar('Google login failed');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Welcome Back!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Username',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your username';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+      appBar: AppBar(
+        title: Text('Login'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(labelText: 'Username'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your username';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: 'Password'),
+                obscureText: _obscurePassword,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _login,
+                      child: Text('Login'),
                     ),
-                  ),
-                  obscureText: _obscurePassword,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _handleSignIn,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text('Log In'),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'OR',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _handleGoogleSignIn,
-                  icon: Image.asset(
-                    'assets/images/google_logo.png',
-                    height: 24,
-                  ),
-                  label: const Text('Sign in with Google'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const RegisterPage()),
-                    );
-                  },
-                  child: const Text("Don't have an account? Register"),
-                ),
-              ],
-            ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _googleLogin,
+                child: Text('Login with Google'),
+              ),
+              SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterPage()),
+                  );
+                },
+                child: Text('Don\'t have an account? Register'),
+              ),
+            ],
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 }
