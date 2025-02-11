@@ -1,15 +1,16 @@
 /*
  File: authController.js
- Purpose: Handles HTTP requests for authentication.
+ Purpose: Handles HTTP requests for authentication with CRUD functionality.
  Created Date: 2025-02-03 CCS-7 Ryan Fernando
  Author: Ryan Fernando
 
- Last Modified: 2025-02-08 | Melissa Joanne | CCS-19 Updated error handling to display only the message
+ Last Modified: 2025-02-11 | Melissa Joanne | CCS-19 login issue fix
 */
 
 const authService = require("../services/authService");
 
 module.exports = {
+  // Create User
   createUser: async (req, res) => {
     try {
       const result = await authService.createUser(req.body);
@@ -30,6 +31,7 @@ module.exports = {
     }
   },
 
+  // Log In
   logIn: async (req, res) => {
     try {
       const { email, username, password } = req.body;
@@ -64,6 +66,7 @@ module.exports = {
     }
   },
 
+  // Google Sign In
   googleSignIn: async (req, res) => {
     try {
       const { idToken } = req.body;
@@ -88,54 +91,62 @@ module.exports = {
     }
   },
 
-
+  // Get User by UID
   getUser: async (req, res) => {
     try {
       const { uid } = req.params;
-      const user = await authService.getUser(uid);
-      if (!user) return res.status(404).json({ message: "User not found" });
-      res.status(200).json(user);
+      const result = await authService.getUser(uid);
+      if (!result.status) {
+        return res.status(404).json({ message: result.message });
+      }
+      res.status(200).json(result.user);
     } catch (error) {
       console.error("Get User Error:", error);
-      res.status(500).json({ error: "An error occurred while retrieving user" });
+      res.status(500).json({ message: "An error occurred while retrieving user" });
     }
   },
 
+  // Get All Users
   getAllUsers: async (req, res) => {
     try {
       const users = await authService.getAllUsers();
       res.status(200).json(users);
     } catch (error) {
       console.error("Get All Users Error:", error);
-      res.status(500).json({ error: "An error occurred while retrieving users" });
+      res.status(500).json({ message: "An error occurred while retrieving users" });
     }
   },
 
+  // Update User
   updateUser: async (req, res) => {
     try {
       const { uid } = req.params;
       const updatedData = req.body; // Ensure you're passing the correct data in the request body
-      const updatedUser = await authService.updateUser(uid, updatedData);
+      const result = await authService.updateUser(uid, updatedData);
 
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
+      if (!result.status) {
+        return res.status(404).json({ message: result.message });
       }
 
-      res.status(200).json(updatedUser); // Respond with updated user details
+      res.status(200).json(result.user); // Respond with updated user details
     } catch (error) {
       console.error("Update User Error:", error);
-      res.status(500).json({ error: "An error occurred while updating user" });
+      res.status(500).json({ message: "An error occurred while updating user" });
     }
   },
 
+  // Delete User
   deleteUser: async (req, res) => {
     try {
       const { uid } = req.params;
       const result = await authService.deleteUser(uid);
+      if (!result.status) {
+        return res.status(404).json({ message: result.message });
+      }
       res.status(200).json(result);
     } catch (error) {
       console.error("Delete User Error:", error);
-      res.status(500).json({ error: "An error occurred while deleting user" });
+      res.status(500).json({ message: "An error occurred while deleting user" });
     }
   }
 };
