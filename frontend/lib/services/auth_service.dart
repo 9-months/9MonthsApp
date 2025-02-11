@@ -51,11 +51,13 @@ class AuthService {
       );
 
       if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return User.fromJson(data['user']);
+        final Map<String, dynamic> data = json.decode(response.body);
+        // Check if user data is nested inside a 'user' field
+        final Map<String, dynamic> userData = data['user'] ?? data;
+        return User.fromJson(userData);
       } else {
-        throw Exception(
-            json.decode(response.body)['message'] ?? 'Registration failed');
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'Registration failed');
       }
     } catch (e) {
       throw Exception('Registration failed: ${e.toString()}');
