@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/auth/login_page.dart';
+import 'providers/user_provider.dart';
 import 'screens/auth/register_page.dart';
 import 'screens/home/home_page.dart';
 import 'screens/profile/profile_page.dart';
 import 'screens/splash/splash.dart';
 import 'screens/onboarding/step_screen.dart';
 
-Future<void> main() async {
+void main() async {
   await dotenv.load(fileName: '.env');
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
