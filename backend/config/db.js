@@ -1,3 +1,10 @@
+/*
+ File: db.js
+ Purpose: Create a connection to the MongoDB database.
+ Created Date: 2025-02-02 CCS-7 Irosh Perera
+ Author: Irosh Perera
+*/
+
 const mongoose = require('mongoose');
 require ('dotenv').config();
 
