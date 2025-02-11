@@ -15,6 +15,7 @@ const swaggerSetup = require("./swagger");
 const authRoutes = require("./routes/authRoutes");
 const moodRoutes = require('./routes/moodRoutes');
 const emergencyRouter = require("./routes/emergencyRouter");
+const pregnancyRouter = require("./routes/pregnancyRoutes");
 
 
 // Load environment variables
@@ -39,6 +40,7 @@ app.use("/api/auth", authRoutes);
 app.use("/emergency", emergencyRouter);
 app.use("/auth", authRoutes);
 app.use('/moods', moodRoutes);
+app.use("/pregnancy", pregnancyRouter);
 
 // Routes
 app.get("/", (req, res) => {
