@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
         final GoogleSignInAuthentication googleAuth =
             await googleUser.authentication;
         final response = await http.post(
-          Uri.parse('${Config.apiUrl}/auth/google'),
+          Uri.parse('${Config.apiBaseUrl}/auth/google'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'token': googleAuth.idToken}),
         );

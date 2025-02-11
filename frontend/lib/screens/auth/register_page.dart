@@ -91,7 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
         String phone = _phoneController.text;
 
         final response = await http.post(
-          Uri.parse('${Config.apiUrl}/auth/register'),
+          Uri.parse('${Config.apiBaseUrl}/auth/register'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'username': username,
