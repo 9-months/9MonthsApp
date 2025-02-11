@@ -3,6 +3,8 @@
  Purpose: This file is the main entry point for the application.
  Created Date: 2025-01-29 CCS-1 Irosh Perera
  Author: Irosh Perera
+
+ last modified: 11-02-2025 | Dinith | CCS-48 add mood routes
 */
 
 const express = require("express");
@@ -11,7 +13,9 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const swaggerSetup = require("./swagger");
 const authRoutes = require("./routes/authRoutes");
+const moodRoutes = require('./routes/moodRoutes');
 const emergencyRouter = require("./routes/emergencyRouter");
+
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +38,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/emergency", emergencyRouter);
 app.use("/auth", authRoutes);
+app.use('/moods', moodRoutes);
 
 // Routes
 app.get("/", (req, res) => {

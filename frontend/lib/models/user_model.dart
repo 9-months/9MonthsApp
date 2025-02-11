@@ -1,10 +1,10 @@
 /*
  File: user-model.dart
- Purpose: 
- Created Date: 
- Author:
+ Purpose: Contains the user model class.
+ Created Date: 11/02/2021 CCS-55 State Management
+ Author: Dinith Perera
 
- last modified: 
+ last modified: 11/02/2021 | Dinith | CCS-55 model for user created
 */
 // lib/models/user_model.dart
 

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/config.dart';
+import '../../providers/user_provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -45,12 +46,6 @@ class _RegisterPageState extends State<RegisterPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        margin: const EdgeInsets.only(
-          bottom: 20,
-          right: 20,
-          left: 20,
-        ),
-        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -62,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.white),
+              const Icon(Icons.error, color: Colors.white),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -74,16 +69,10 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.red.shade800,
+        backgroundColor: Colors.red,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        margin: const EdgeInsets.only(
-          bottom: 20,
-          right: 20,
-          left: 20,
-        ),
-        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -93,18 +82,24 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() => _isLoading = true);
 
-    try {
-      final response = await http.post(
-        Uri.parse('${Config.apiBaseUrl}/auth/signup'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': _emailController.text,
-          'password': _passwordController.text,
-          'username': _usernameController.text,
-          'location': _locationController.text,
-          'phone': _phoneController.text,
-        }),
-      );
+      try {
+        String username = _usernameController.text;
+        String email = _emailController.text;
+        String password = _passwordController.text;
+        String location = _locationController.text;
+        String phone = _phoneController.text;
+
+        final response = await http.post(
+          Uri.parse('${Config.apiBaseUrl}/auth/register'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'username': username,
+            'email': email,
+            'password': password,
+            'location': location,
+            'phone': phone,
+          }),
+        );
 
       if (response.statusCode == 201) {
         if (!mounted) return;
@@ -191,152 +186,64 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: Text('Register'),
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
+                controller: _usernameController,
+                decoration: InputDecoration(labelText: 'Username'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Please enter a valid email';
+                    return 'Please enter your username';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  return null;
+                },
+              ),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                ),
+                decoration: InputDecoration(labelText: 'Password'),
                 obscureText: _obscurePassword,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
                   }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a username';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
               TextFormField(
                 controller: _locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your location';
-                  }
-                  return null;
-                },
+                decoration: InputDecoration(labelText: 'Location'),
               ),
-              const SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
+                decoration: InputDecoration(labelText: 'Phone'),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _register,
-                child: _isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Register'),
-              ),
-              const SizedBox(height: 16),
-              const Row(
-                children: [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('OR'),
-                  ),
-                  Expanded(child: Divider()),
-                ],
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: _isLoading ? null : _googleSignIn,
-                icon: Image.asset(
-                  'assets/images/google_logo.png',
-                  height: 24,
-                ),
-                label: const Text('Sign up with Google'),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () =>
-                    Navigator.pushReplacementNamed(context, '/login'),
-                child: const Text('Already have an account? Login'),
-              ),
+              SizedBox(height: 20),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _register,
+                      child: Text('Register'),
+                    ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _usernameController.dispose();
-    _locationController.dispose();
-    _phoneController.dispose();
-    super.dispose();
   }
 }

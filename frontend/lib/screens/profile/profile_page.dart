@@ -4,12 +4,14 @@
  Created Date: 2025-02-08 CCS-42 Melissa Joanne
  Author: Melissa Joanne
 
- last modified: 2025-02-09 | Melissa | CCS-42 Editable UI elements update
+ last modified: 11-02-2025 | Dinith | CCS-55 use provider to get user data
 */
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -188,168 +190,176 @@ class _ProfilePageState extends State<ProfilePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const Icon(Icons.logout),
             onPressed: () {
-              // Add edit profile logic here
+              Provider.of<UserProvider>(context, listen: false).logout();
             },
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile Image Section
-              Center(
-                child: Stack(
-                  children: [
-                    Card(
-                      elevation: 4,
-                      shape: const CircleBorder(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundColor: Colors.deepPurple.shade50,
-                          backgroundImage: _imageFile != null
-                              ? FileImage(_imageFile!)
-                              : const AssetImage(
-                                      'assets/images/profile_picture.png')
-                                  as ImageProvider,
+      body: Consumer<UserProvider>(
+        builder: (context, userProvider, child) {
+          final user = userProvider.user;
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Profile Image Section
+                  Center(
+                    child: Stack(
+                      children: [
+                        Card(
+                          elevation: 4,
+                          shape: const CircleBorder(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: CircleAvatar(
+                              radius: 60,
+                              backgroundColor: Colors.deepPurple.shade50,
+                              backgroundImage: _imageFile != null
+                                  ? FileImage(_imageFile!)
+                                  : const AssetImage(
+                                          'assets/images/profile_picture.png')
+                                      as ImageProvider,
+                            ),
+                          ),
                         ),
-                      ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.camera_alt,
+                                  color: Colors.white),
+                              onPressed: _selectImage,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.deepPurple,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: IconButton(
-                          icon:
-                              const Icon(Icons.camera_alt, color: Colors.white),
-                          onPressed: _selectImage,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
+                  ),
+                  const SizedBox(height: 20),
 
-              // Name and Role Section
-              Center(
-                child: Column(
-                  children: [
-                    Text(
-                      _username,
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  // Name and Role Section
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          user?.username ?? 'Guest',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.deepPurple,
                               ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 24),
 
-              // Quick Actions Section
-              Card(
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Quick Actions',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  // Quick Actions Section
+                  Card(
+                    elevation: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildQuickActionButton(
-                            context,
-                            Icons.calendar_today,
-                            'Appointments',
-                            Colors.blue,
+                          Text(
+                            'Quick Actions',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
-                          _buildQuickActionButton(
-                            context,
-                            Icons.medical_information,
-                            'Records',
-                            Colors.green,
-                          ),
-                          _buildQuickActionButton(
-                            context,
-                            Icons.notifications,
-                            'Reminders',
-                            Colors.orange,
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildQuickActionButton(
+                                context,
+                                Icons.calendar_today,
+                                'Appointments',
+                                Colors.blue,
+                              ),
+                              _buildQuickActionButton(
+                                context,
+                                Icons.medical_information,
+                                'Records',
+                                Colors.green,
+                              ),
+                              _buildQuickActionButton(
+                                context,
+                                Icons.notifications,
+                                'Reminders',
+                                Colors.orange,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-              // Personal Information Section
-              Card(
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Personal Information',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                  // Personal Information Section
+                  Card(
+                    elevation: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Personal Information',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildInfoRow(
+                              Icons.email, 'Email', user?.email ?? 'N/A'),
+                          const SizedBox(height: 12),
+                          _buildInfoRow(Icons.phone, 'Phone', '+94123456789'),
+                          const SizedBox(height: 12),
+                          _buildEditableInfoRow(
+                            context,
+                            Icons.calendar_month,
+                            'Date of Birth',
+                            _dateOfBirth,
+                            onEdit: () => _selectDate(context),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildEditableInfoRow(
+                            context,
+                            Icons.location_on,
+                            'Address',
+                            _location,
+                            onEdit: _updateLocation,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      _buildInfoRow(Icons.email, 'Email', _email),
-                      const SizedBox(height: 12),
-                      _buildEditableInfoRow(
-                        context,
-                        Icons.phone,
-                        'Phone',
-                        _phone,
-                        onEdit: _updatePhone,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildEditableInfoRow(
-                        context,
-                        Icons.calendar_month,
-                        'Date of Birth',
-                        _dateOfBirth,
-                        onEdit: () => _selectDate(context),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildEditableInfoRow(
-                        context,
-                        Icons.location_on,
-                        'Address',
-                        _location,
-                        onEdit: _updateLocation,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                ],
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
