@@ -27,6 +27,14 @@ frontend/ios/Runner.xcworkspace/
 frontend/ios/Runner.xcodeproj/project.xcworkspace/
 frontend/ios/Runner.xcodeproj/xcuserdata/
 
+#Environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+frontend/.env.test
+frontend/.env*.local
+
 # IDE specific
 frontend/.idea/
 frontend/*.iml
