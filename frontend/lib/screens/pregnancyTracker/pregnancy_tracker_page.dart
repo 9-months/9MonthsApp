@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import '../../models/pregnancy_model.dart';
-import '../../services/pregnancy_service.dart';
-import '../../widgets/pregnancytracker.dart'; 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class PregnancyTrackerPage extends StatefulWidget {
   const PregnancyTrackerPage({Key? key}) : super(key: key);
@@ -11,355 +9,209 @@ class PregnancyTrackerPage extends StatefulWidget {
   _PregnancyTrackerPageState createState() => _PregnancyTrackerPageState();
 }
 
-class _PregnancyTrackerPageState extends State<PregnancyTrackerPage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  late Future<Pregnancy> _pregnancyFuture;
-  final _pregnancyService = PregnancyService();
+class _PregnancyTrackerPageState extends State<PregnancyTrackerPage> {
+  bool isLoading = true;
+  Map<String, dynamic>? pregnancyData;
+  String? error;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _pregnancyFuture = _pregnancyService.getPregnancy('USER_ID');
+    fetchPregnancyData();
+  }
+
+  Future<void> fetchPregnancyData() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:3000/pregnancy/user123'),
+      );
+
+      setState(() {
+        isLoading = false;
+        if (response.statusCode == 200) {
+          pregnancyData = json.decode(response.body);
+        } else {
+          error = 'Failed to load pregnancy data';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        error = 'Error connecting to server';
+      });
+    }
+  }
+
+  Future<void> createPregnancyData() async {
+    try {
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:3000/pregnancy'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userId': 'user123',
+          'lastPeriodDate': DateTime.now().subtract(Duration(days: 30)).toIso8601String(),
+        }),
+      );
+
+      setState(() {
+        isLoading = false;
+        if (response.statusCode == 201) {
+          pregnancyData = json.decode(response.body);
+        } else {
+          error = 'Failed to create pregnancy data';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        error = 'Error connecting to server';
+      });
+    }
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
- Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pregnancy Tracker'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Timeline'),
-            Tab(text: 'Milestones'),
-          ],
-        ),
+        title: Text('Pregnancy Tracker'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: fetchPregnancyData,
+          ),
+        ],
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: isLoading 
+        ? Center(child: CircularProgressIndicator())
+        : error != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(error!),
+                  ElevatedButton(
+                    onPressed: createPregnancyData,
+                    child: Text('Create New Pregnancy Data'),
+                  ),
+                ],
+              ),
+            )
+          : _buildPregnancyContent(),
+    );
+  }
+
+  Widget _buildPregnancyContent() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildOverviewTab(),
-          _buildTimelineTab(),
-          _buildMilestonesTab(),
+          _buildProgressCard(),
+          SizedBox(height: 16),
+          _buildBabySizeCard(),
+          SizedBox(height: 16),
+          _buildTipsCard(),
         ],
       ),
     );
   }
 
-  Widget _buildOverviewTab() {
-    return FutureBuilder<Pregnancy>(
-      future: _pregnancyFuture,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Pregnancytracker(
-                  currentWeek: snapshot.data!.currentWeek,
-                  babySize: snapshot.data!.babySize,
-                  babyHeight: 17.0,
-                  babyWeight: 110.0,
-                  dueDate: snapshot.data!.dueDate,
-                  weeklyTips: snapshot.data!.weeklyTips,
-                ),
-                const SizedBox(height: 24),
-                _buildUpcomingAppointments(),
-                const SizedBox(height: 24),
-                _buildWeightTracker(),
-              ],
+  Widget _buildProgressCard() {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pregnancy Progress',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-          );
-        }
-        if (snapshot.hasError) {
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
-        }
-        return const Center(child: CircularProgressIndicator());
-      },
+            SizedBox(height: 16),
+            LinearProgressIndicator(
+              value: (pregnancyData?['currentWeek'] ?? 0) / 40,
+              backgroundColor: Colors.grey[200],
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Week ${pregnancyData?['currentWeek']} of 40',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Due Date: ${pregnancyData?['dueDate']?.toString().split('T')[0]}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildTimelineTab() {
-    return FutureBuilder<Pregnancy>(
-      future: _pregnancyFuture,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+  Widget _buildBabySizeCard() {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Baby Size',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                Icon(Icons.child_care, size: 24),
+                SizedBox(width: 8),
+                Text(
+                  'Your baby is the size of a ${pregnancyData?['babySize']}',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: snapshot.data!.currentWeek,
-          itemBuilder: (context, index) {
-            final weekNumber = index + 1;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: ExpansionTile(
-                title: Text('Week $weekNumber'),
-                subtitle: Text(_getWeekDescription(weekNumber)),
+  Widget _buildTipsCard() {
+    List<String> tips = List<String>.from(pregnancyData?['weeklyTips'] ?? []);
+    
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Weekly Tips',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            SizedBox(height: 16),
+            ...tips.map((tip) => Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Baby Development',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(_getBabyDevelopment(weekNumber)),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Mom\'s Changes',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(_getMomChanges(weekNumber)),
-                      ],
-                    ),
+                  Icon(Icons.check_circle, size: 20, color: Colors.green),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(tip),
                   ),
                 ],
               ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildMilestonesTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _buildMilestoneCard(
-          'First Trimester',
-          [
-            'First Ultrasound',
-            'Heartbeat Detection',
-            'End of Morning Sickness',
-          ],
-          [true, true, false],
-        ),
-        const SizedBox(height: 16),
-        _buildMilestoneCard(
-          'Second Trimester',
-          [
-            'Gender Reveal',
-            'First Kick',
-            'Anatomy Scan',
-          ],
-          [false, false, false],
-        ),
-        const SizedBox(height: 16),
-        _buildMilestoneCard(
-          'Third Trimester',
-          [
-            'Baby Shower',
-            'Hospital Tour',
-            'Birth Plan Ready',
-          ],
-          [false, false, false],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUpcomingAppointments() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Upcoming Appointments',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            _buildAppointmentItem(
-              DateTime.now().add(const Duration(days: 7)),
-              'Regular Checkup',
-              'Dr. Sarah Johnson',
-            ),
-            const SizedBox(height: 8),
-            _buildAppointmentItem(
-              DateTime.now().add(const Duration(days: 14)),
-              'Ultrasound Scan',
-              'City Hospital',
-            ),
+            )).toList(),
           ],
         ),
       ),
     );
-  }
-
-  Widget _buildAppointmentItem(DateTime date, String title, String doctor) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            children: [
-              Text(
-                DateFormat('dd').format(date),
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                DateFormat('MMM').format(date),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                doctor,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-            ],
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: () {
-            // TODO: Implement appointment editing
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWeightTracker() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Weight Tracker',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildWeightItem('Starting', '65 kg'),
-                _buildWeightItem('Current', '68 kg'),
-                _buildWeightItem('Gained', '+3 kg'),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Implement weight update
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Add Weight'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWeightItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMilestoneCard(String title, List<String> milestones, List<bool> completed) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(
-              milestones.length,
-              (index) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      completed[index]
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                      color: completed[index]
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(milestones[index]),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _getWeekDescription(int week) {
-    // TODO: Implement actual week descriptions
-    return 'Key developments and changes during week $week';
-  }
-
-  String _getBabyDevelopment(int week) {
-    // TODO: Implement actual baby development information
-    return 'Baby development information for week $week';
-  }
-
-  String _getMomChanges(int week) {
-    // TODO: Implement actual mom changes information
-    return 'Common changes and symptoms for mom during week $week';
   }
 }
