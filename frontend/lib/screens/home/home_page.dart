@@ -8,8 +8,10 @@
 */
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
+import '../../providers/auth_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,6 +42,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the current user from AuthProvider
+    final user = context.read<AuthProvider>().user;
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -56,7 +61,7 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hello Isurukamiss',
+                          'Hello ${user?.username ?? 'Guest'}',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 4),
