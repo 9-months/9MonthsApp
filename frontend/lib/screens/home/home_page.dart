@@ -4,15 +4,17 @@
  Created Date: CCS-29
  Author: Irosh Perera
 
- last modified: 2025-02-09 | Melissa | CCS-43 Profile navigation
+ last modified: 2025-02-11 | Chamod | CCS-8 Pregnancy Tracker
 */
 
 import 'package:flutter/material.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
+import '../pregnancyTracker/create_pregnancy.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+  final String  username='Isurukamiss';
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -127,7 +129,9 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 24),
 
                 // Baby Info Card
-                Card(
+                GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/pregnancyTracker'),
+                  child: Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -160,7 +164,21 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
+                ),
                 const SizedBox(height: 24),
+
+                // Preganancy Button
+                 ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreatePregnancyScreen(),
+                      ),
+                    );
+                  },
+                  child: Text('Add Pregnancy Details'),
+                ),
 
                 // Menu Grid
                 GridView.count(

@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
 import 'screens/home/home_page.dart';
+import 'screens/pregnancyTracker/pregnancy_tracker_page.dart';
 import 'screens/profile/profile_page.dart';
 import 'screens/splash/splash.dart';
 import 'screens/onboarding/step_screen.dart';
@@ -116,6 +117,7 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfilePage(),
+        '/pregnancyTracker': (context) => PregnancyTrackerPage(),
       },
     );
   }
