@@ -16,6 +16,7 @@ const authRoutes = require("./routes/authRoutes");
 const moodRoutes = require('./routes/moodRoutes');
 const emergencyRouter = require("./routes/emergencyRouter");
 const pregnancyRouter = require("./routes/pregnancyRoutes");
+const reminderRoutes = require('./routes/reminderRoutes');
 
 
 // Load environment variables
@@ -41,6 +42,7 @@ app.use("/emergency", emergencyRouter);
 app.use("/auth", authRoutes);
 app.use('/moods', moodRoutes);
 app.use("/pregnancy", pregnancyRouter);
+app.use('/reminder', reminderRoutes);
 
 // Routes
 app.get("/", (req, res) => {

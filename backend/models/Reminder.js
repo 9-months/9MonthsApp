@@ -4,7 +4,7 @@
  Created Date: 13-02-2025 CCS-48 Ryan Fernando
  Author: Ryan Fernando
 
- last modified: 13-02-2025 | Ryan | CCS-56 Create Schema
+ last modified: 14-02-2025 | Ryan | CCS-56 Create Reminder Schema
 */
 const mongoose = require('mongoose');
 
