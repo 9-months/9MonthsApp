@@ -66,12 +66,8 @@ class AuthProvider extends ChangeNotifier {
         phone: phone,
       );
 
-      if (newUser != null) {
-        // Directly set the user
-        _user = newUser;
-        // Save in background
-        _saveUser(newUser);
-      }
+      _user = newUser;
+      await _saveUser(newUser);
     } catch (e) {
       _user = null;
       throw e;
@@ -132,5 +128,13 @@ class AuthProvider extends ChangeNotifier {
       return User.fromJson(jsonDecode(userData));
     }
     return null;
+  }
+
+  // Add this method to load user data
+  Future<void> loadUserData() async {
+    if (_user == null) {
+      _user = await _getUser();
+      notifyListeners();
+    }
   }
 }

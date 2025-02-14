@@ -4,7 +4,7 @@
  Created Date: 2025-02-03 CCS-7 Ryan Fernando
  Author: Ryan Fernando
 
- Last Modified: 2025-02-11 | Melissa Joanne | CCS-19 login issue fix
+ Last Modified: 2022-02-14 | Irosh Perera | CCS-42-returned user data after registration
 */
 
 const authService = require("../services/authService");
@@ -21,7 +21,9 @@ module.exports = {
       }
 
       console.log("User created successfully:", req.body.email);
-      return res.status(201).json({ message: result.message });
+      return res
+        .status(201)
+        .json({ message: result.message, user: result.user });
     } catch (error) {
       console.error("Create User Error:", error.message || error);
 
@@ -102,7 +104,9 @@ module.exports = {
       res.status(200).json(result.user);
     } catch (error) {
       console.error("Get User Error:", error);
-      res.status(500).json({ message: "An error occurred while retrieving user" });
+      res
+        .status(500)
+        .json({ message: "An error occurred while retrieving user" });
     }
   },
 
@@ -113,7 +117,9 @@ module.exports = {
       res.status(200).json(users);
     } catch (error) {
       console.error("Get All Users Error:", error);
-      res.status(500).json({ message: "An error occurred while retrieving users" });
+      res
+        .status(500)
+        .json({ message: "An error occurred while retrieving users" });
     }
   },
 
@@ -131,7 +137,9 @@ module.exports = {
       res.status(200).json(result.user); // Respond with updated user details
     } catch (error) {
       console.error("Update User Error:", error);
-      res.status(500).json({ message: "An error occurred while updating user" });
+      res
+        .status(500)
+        .json({ message: "An error occurred while updating user" });
     }
   },
 
@@ -146,7 +154,9 @@ module.exports = {
       res.status(200).json(result);
     } catch (error) {
       console.error("Delete User Error:", error);
-      res.status(500).json({ message: "An error occurred while deleting user" });
+      res
+        .status(500)
+        .json({ message: "An error occurred while deleting user" });
     }
-  }
+  },
 };

@@ -3,7 +3,6 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/user_model.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,7 +21,9 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthProvider>().loadUserData();
+    });
   }
 
   // Load user data when the page is initialized
@@ -32,7 +33,6 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         _location = user.location ?? _location;
         _phone = user.phone ?? _phone;
-        // You can add other fields if necessary
       });
     }
   }
@@ -52,10 +52,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
 
-    // Ensure user data is loaded when user signs up or logs in
-    if (user != null) {
-      _loadUserData();
-    }
+    _loadUserData();
 
     return Scaffold(
       appBar: AppBar(
