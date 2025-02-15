@@ -1,20 +1,24 @@
 /*
  File: home_page.dart
- Purpose: Dashboard for the user
+ Purpose: Pregnancy tracker home page
  Created Date: CCS-29
  Author: Irosh Perera
 
- last modified: 2025-02-11 | Chamod | CCS-8 Pregnancy Tracker
+ last modified: 2025-02-15 | Chamod | CCS-8 Pregnancy Tracker
 */
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/pregnancy_provider.dart';
+import '../../widgets/homePregnancy.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
-import '../pregnancyTracker/create_pregnancy.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-  final String  username='Isurukamiss';
+  final String username = 'Isurukamiss';
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -42,6 +46,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final pregnancyProvider = Provider.of<PregnancyProvider>(context);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -58,7 +65,7 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hello Isurukamiss',
+                          'Hello ${authProvider.username}',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 4),
@@ -128,58 +135,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Baby Info Card
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/pregnancyTracker'),
-                  child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        const CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.blue,
-                          child: Icon(Icons.child_care,
-                              color: Colors.white, size: 36),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Your baby is the size of a pear',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildInfoColumn('Baby Height', '17 cm'),
-                            _buildInfoColumn('Baby Weight', '110 gr'),
-                            _buildInfoColumn('Days Left', '168 days'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                ),
-                const SizedBox(height: 24),
-
-                // Preganancy Button
-                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CreatePregnancyScreen(),
-                      ),
-                    );
-                  },
-                  child: Text('Add Pregnancy Details'),
-                ),
-
+                HomePregnancyWidget(),
+            
                 // Menu Grid
                 GridView.count(
                   shrinkWrap: true,

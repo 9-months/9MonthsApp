@@ -1,217 +1,108 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/pregnancy_provider.dart';
+import 'create_pregnancy_form.dart';
+import 'pregnancy_info.dart';
 
-class PregnancyTrackerPage extends StatefulWidget {
-  const PregnancyTrackerPage({Key? key}) : super(key: key);
 
-  @override
-  _PregnancyTrackerPageState createState() => _PregnancyTrackerPageState();
-}
-
-class _PregnancyTrackerPageState extends State<PregnancyTrackerPage> {
-  bool isLoading = true;
-  Map<String, dynamic>? pregnancyData;
-  String? error;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchPregnancyData();
-  }
-
-  Future<void> fetchPregnancyData() async {
-    try {
-      final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/pregnancy/user123'),
-      );
-
-      setState(() {
-        isLoading = false;
-        if (response.statusCode == 200) {
-          pregnancyData = json.decode(response.body);
-        } else {
-          error = 'Failed to load pregnancy data';
-        }
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-        error = 'Error connecting to server';
-      });
-    }
-  }
-
-  Future<void> createPregnancyData() async {
-    try {
-      setState(() {
-        isLoading = true;
-        error = null;
-      });
-
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/pregnancy'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'userId': 'user123',
-          'lastPeriodDate': DateTime.now().subtract(Duration(days: 30)).toIso8601String(),
-        }),
-      );
-
-      setState(() {
-        isLoading = false;
-        if (response.statusCode == 201) {
-          pregnancyData = json.decode(response.body);
-        } else {
-          error = 'Failed to create pregnancy data';
-        }
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-        error = 'Error connecting to server';
-      });
-    }
-  }
+class PregnancyTrackerPage extends StatelessWidget {
+  const PregnancyTrackerPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final pregnancyProvider = Provider.of<PregnancyProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pregnancy Tracker'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: fetchPregnancyData,
-          ),
-        ],
+        title: const Text('Pregnancy Journey'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
       ),
-      body: isLoading 
-        ? Center(child: CircularProgressIndicator())
-        : error != null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(error!),
-                  ElevatedButton(
-                    onPressed: createPregnancyData,
-                    child: Text('Create New Pregnancy Data'),
-                  ),
-                ],
-              ),
+      body: authProvider.isLoggedIn
+          ? FutureBuilder(
+              future: pregnancyProvider.fetchPregnancyData(authProvider.username),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.blue),
+                        const SizedBox(height: 16),
+                        Text('Error: ${snapshot.error}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PregnancyTrackerPage(),
+                              ),
+                            );
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (!snapshot.hasData) {
+                  return Center(
+                    child: Card(
+                      margin: const EdgeInsets.all(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.favorite, size: 64, color: Colors.pink),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Start Your Pregnancy Journey',
+                              style: Theme.of(context).textTheme.headlineSmall,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Track your pregnancy progress, get weekly updates, and helpful tips for your journey to motherhood.',
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.add),
+                              label: const Text('Create Pregnancy Tracker'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.pink,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 16,
+                                ),
+                              ),
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (context) => CreatePregnancyForm(),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                } else {
+                  return PregnancyInfo(pregnancyData: snapshot.data!);
+                }
+              },
             )
-          : _buildPregnancyContent(),
-    );
-  }
-
-  Widget _buildPregnancyContent() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildProgressCard(),
-          SizedBox(height: 16),
-          _buildBabySizeCard(),
-          SizedBox(height: 16),
-          _buildTipsCard(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressCard() {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Pregnancy Progress',
-              style: Theme.of(context).textTheme.titleLarge,
+          : const Center(
+              child: Text('Please login to track your pregnancy'),
             ),
-            SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: (pregnancyData?['currentWeek'] ?? 0) / 40,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Week ${pregnancyData?['currentWeek']} of 40',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Due Date: ${pregnancyData?['dueDate']?.toString().split('T')[0]}',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBabySizeCard() {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Baby Size',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Icon(Icons.child_care, size: 24),
-                SizedBox(width: 8),
-                Text(
-                  'Your baby is the size of a ${pregnancyData?['babySize']}',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTipsCard() {
-    List<String> tips = List<String>.from(pregnancyData?['weeklyTips'] ?? []);
-    
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Weekly Tips',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            SizedBox(height: 16),
-            ...tips.map((tip) => Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.check_circle, size: 20, color: Colors.green),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(tip),
-                  ),
-                ],
-              ),
-            )).toList(),
-          ],
-        ),
-      ),
     );
   }
 }
