@@ -12,11 +12,12 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String _dateOfBirth = '01/01/1990'; // Placeholder
-  String _location = 'Colombo'; // Placeholder
-  String _phone = ''; // Placeholder
+  String _dateOfBirth = '01/01/1990';
+  String _location = 'Colombo';
+  String _phone = '';
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -26,7 +27,6 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  // Load user data when the page is initialized
   void _loadUserData() {
     final user = context.read<AuthProvider>().user;
     if (user != null) {
@@ -37,17 +37,141 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Method to pick an image
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+  Future<void> _showImagePickerModal() async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                height: 4,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Change Profile Picture',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildImagePickerOption(
+                icon: Icons.photo_camera,
+                title: 'Take Photo',
+                onTap: () => _pickImage(ImageSource.camera),
+              ),
+              _buildImagePickerOption(
+                icon: Icons.photo_library,
+                title: 'Choose from Gallery',
+                onTap: () => _pickImage(ImageSource.gallery),
+              ),
+              if (_imageFile != null)
+                _buildImagePickerOption(
+                  icon: Icons.delete,
+                  title: 'Remove Photo',
+                  color: Colors.red,
+                  onTap: _removeImage,
+                ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImagePickerOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+        child: Row(
+          children: [
+            Icon(icon, color: color ?? Colors.deepPurple, size: 28),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                color: color ?? Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      setState(() => _isLoading = true);
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 1000,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile picture updated successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update profile picture'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  // Listen to changes in AuthProvider for updating UI
+  void _removeImage() {
+    setState(() {
+      _imageFile = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profile picture removed'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
@@ -75,33 +199,65 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Profile Image Section
                     Center(
                       child: Stack(
                         children: [
-                          Card(
-                            elevation: 4,
-                            shape: const CircleBorder(),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: CircleAvatar(
-                                radius: 60,
-                                backgroundColor: Colors.deepPurple.shade50,
-                                backgroundImage: _imageFile != null
-                                    ? FileImage(_imageFile!)
-                                    : const AssetImage(
-                                            'assets/images/profile_picture.png')
-                                        as ImageProvider,
+                          GestureDetector(
+                            onTap: _showImagePickerModal,
+                            child: Card(
+                              elevation: 4,
+                              shape: const CircleBorder(),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 60,
+                                      backgroundColor:
+                                          Colors.deepPurple.shade50,
+                                      backgroundImage: _imageFile != null
+                                          ? FileImage(_imageFile!)
+                                          : const AssetImage(
+                                              'assets/images/profile_picture.png',
+                                            ) as ImageProvider,
+                                    ),
+                                    if (_isLoading)
+                                      Container(
+                                        width: 120,
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.5),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                           Positioned(
                             bottom: 0,
                             right: 0,
-                            child: IconButton(
-                              icon: const Icon(Icons.edit,
-                                  color: Colors.deepPurple),
-                              onPressed: _pickImage,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.deepPurple,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                ),
+                                onPressed: _showImagePickerModal,
+                              ),
                             ),
                           ),
                         ],
