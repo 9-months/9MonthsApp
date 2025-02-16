@@ -2,11 +2,12 @@ const reminderService = require('../services/reminderService');
 
 const createReminder = async (req, res) => {
   try {
-    const { userId, title, date, time, type } = req.body;
+    const { title, description, date, time, type } = req.body;
+    const userId = req.params.userId;
     if (!userId || !title || !date || !time || !type) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    const reminder = await reminderService.createReminder(req.body);
+    const reminder = await reminderService.createReminder(userId, { title, description, date, time, type });
     res.status(201).json(reminder);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -22,9 +23,18 @@ const getRemindersByUser = async (req, res) => {
   }
 };
 
+const getReminder = async (req, res) => {
+  try {
+    const reminder = await reminderService.getReminder(req.params.userId, req.params.reminderId);
+    res.status(200).json(reminder);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const updateReminder = async (req, res) => {
   try {
-    const reminder = await reminderService.updateReminder(req.params.id, req.body);
+    const reminder = await reminderService.updateReminder(req.params.userId, req.params.reminderId, req.body);
     res.status(200).json(reminder);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -33,8 +43,8 @@ const updateReminder = async (req, res) => {
 
 const deleteReminder = async (req, res) => {
   try {
-    await reminderService.deleteReminder(req.params.id);
-    res.status(204).send();
+    await reminderService.deleteReminder(req.params.userId, req.params.reminderId);
+    res.status(200).json({ message: 'Reminder deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -43,6 +53,7 @@ const deleteReminder = async (req, res) => {
 module.exports = {
   createReminder,
   getRemindersByUser,
+  getReminder,
   updateReminder,
   deleteReminder
 };
