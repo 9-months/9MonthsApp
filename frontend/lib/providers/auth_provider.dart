@@ -4,7 +4,7 @@
  Created Date: 11/02/2021 CCS-55 State Management
  Author: Dinith Perera
 
- last modified: 12/02/2021 | Dinith | CCS-55 provider functionality updated
+ last modified: 15/02/2024 | Chamod | CCS-55 provider functionality updated
 */
 
 import 'package:flutter/foundation.dart';
@@ -55,6 +55,7 @@ class AuthProvider extends ChangeNotifier {
     String? location,
     String? phone,
   }) async {
+    _username = username;
     _isLoading = true;
     notifyListeners();
 
