@@ -1,3 +1,12 @@
+/*
+ File: reminderRoutes.js
+ Purpose: Routes for Reminders.
+ Created Date: 11-02-2025 CCS-51 Ryan Fernando
+ Author: Ryan Fernando
+
+ last modified: 16-02-2025 | Ryan | CCS-51 reminder backend Test
+*/
+
 const express = require('express');
 const reminderController = require('../controllers/reminderController');
 const router = express.Router();

@@ -1,3 +1,12 @@
+/*
+ File: reminderController.js
+ Purpose: Controllers for reminder.
+ Created Date: 11-02-2025 CCS-51 Ryan Fernando
+ Author: Ryan Fernando
+
+ last modified: 16-02-2025 | Ryan | CCS-51 reminder backend Test
+*/
+
 const reminderService = require('../services/reminderService');
 
 const createReminder = async (req, res) => {
