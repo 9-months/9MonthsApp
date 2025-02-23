@@ -7,26 +7,63 @@
  last modified: 2025-02-23 | Melissa | CCS-50 Create Service
 */
 
+// diaryService.js
+// Purpose: Handles all the logic for interacting with the Diary model
+// Created Date: 23-02-2025 CCS-50 Melissa Joanne
+// Author: Melissa Joanne
+
 const Diary = require("../models/diary");
 
-exports.createOrUpdateDiary = async (userId, moodId, description) => {
-  const today = new Date().setHours(0, 0, 0, 0); // Normalize to start of the day
-
-  return await Diary.findOneAndUpdate(
-    { userId, date: today }, // Search for existing entry
-    { moodId, description, date: today }, // Update or set new values
-    { upsert: true, new: true } // Create if not exists, return updated
-  );
+const createDiaryEntry = async (userId, description) => {
+  try {
+    const newDiaryEntry = new Diary({ userId, description });
+    await newDiaryEntry.save();
+    return newDiaryEntry;
+  } catch (err) {
+    throw new Error(err.message);
+  }
 };
 
-exports.getAllDiaries = async (userId) => {
-  return await Diary.find({ userId }).sort({ date: -1 }).populate("moodId");
+const getDiariesByUserId = async (userId) => {
+  try {
+    const diaries = await Diary.find({ userId }).sort({ date: -1 });
+    return diaries;
+  } catch (err) {
+    throw new Error(err.message);
+  }
 };
 
-exports.getDiaryById = async (userId, diaryId) => {
-  return await Diary.findOne({ _id: diaryId, userId }).populate("moodId");
+const updateDiaryEntry = async (userId, diaryId, description) => {
+  try {
+    const updatedDiary = await Diary.findOneAndUpdate(
+      { _id: diaryId, userId },
+      { description, date: Date.now() },
+      { new: true }
+    );
+    if (!updatedDiary) {
+      throw new Error("Diary entry not found");
+    }
+    return updatedDiary;
+  } catch (err) {
+    throw new Error(err.message);
+  }
 };
 
-exports.deleteDiary = async (userId, diaryId) => {
-  return await Diary.findOneAndDelete({ _id: diaryId, userId });
+const deleteDiaryEntry = async (userId, diaryId) => {
+  try {
+    const deletedDiary = await Diary.findOneAndDelete({ _id: diaryId, userId });
+    if (!deletedDiary) {
+      throw new Error("Diary entry not found");
+    }
+    return true;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+module.exports = {
+  createDiaryEntry,
+  getDiariesByUserId,
+  updateDiaryEntry,
+  deleteDiaryEntry,
 };

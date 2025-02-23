@@ -6,19 +6,14 @@
 
  last modified: 23-02-2025 | Melissa | CCS-50 Create Schema
 */
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const diarySchema = new mongoose.Schema({
-  description: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  date: { type: Date, default: Date.now },
+  description: { type: String, required: true }
 });
 
-const Diary = mongoose.model('Diary', diarySchema);
+const Diary = mongoose.model("Diary", diarySchema);
 
 module.exports = Diary;
