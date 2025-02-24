@@ -1,84 +1,126 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../models/diary_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/diary_service.dart';
+import '../../widgets/diary_card.dart';
 
-class DiaryScreen extends StatelessWidget {
+class DiaryScreen extends StatefulWidget {
+  @override
+  _DiaryScreenState createState() => _DiaryScreenState();
+}
+
+class _DiaryScreenState extends State<DiaryScreen> {
+  late DiaryService _diaryService;
+  late String _userId;
+  List<DiaryEntry> _diaries = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initialize();
+  }
+
+  void _initialize() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    _userId = authProvider.user?.uid ?? '';
+    _diaryService = DiaryService();
+    await _fetchDiaries();
+  }
+
+  Future<void> _fetchDiaries() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final diaries = await _diaryService.getDiaries(_userId);
+      setState(() {
+        _diaries = diaries;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _createDiary(String description) async {
+    try {
+      final newDiary = await _diaryService.createDiary(_userId, description);
+      setState(() {
+        _diaries.add(newDiary);
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
+  Future<void> _updateDiary(String diaryId, String description) async {
+    try {
+      final updatedDiary =
+          await _diaryService.updateDiary(_userId, diaryId, description);
+      setState(() {
+        final index = _diaries.indexWhere((diary) => diary.diaryId == diaryId);
+        if (index != -1) {
+          _diaries[index] = updatedDiary;
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
+  Future<void> _deleteDiary(String diaryId) async {
+    try {
+      await _diaryService.deleteDiary(_userId, diaryId);
+      setState(() {
+        _diaries.removeWhere((diary) => diary.diaryId == diaryId);
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'My Diary',
-          style: Theme.of(context).appBarTheme.titleTextStyle,
-        ),
+        title: Text('Diary'),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Your Entries',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Capture your journey, one day at a time',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              SizedBox(height: 24),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: 0, // Replace with actual diary entries count
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(child: Text(_errorMessage!))
+              : ListView.builder(
+                  itemCount: _diaries.length,
                   itemBuilder: (context, index) {
-                    return Card(
-                      margin: EdgeInsets.only(bottom: 16),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.all(16),
-                        title: Text(
-                          'Entry Title', // Replace with actual entry title
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: 8),
-                            Text(
-                              'Entry preview...', // Replace with actual entry preview
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Date', // Replace with actual date
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          // Handle entry tap
-                        },
-                      ),
+                    final diary = _diaries[index];
+                    return DiaryCard(
+                      diary: diary,
+                      onEdit: () {
+                        // Handle update
+                      },
+                      onDelete: () => _deleteDiary(diary.diaryId!),
                     );
                   },
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to create new entry screen
+          // Handle create
         },
         child: Icon(Icons.add),
       ),
