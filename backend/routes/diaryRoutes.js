@@ -98,6 +98,24 @@ router.get("/get/:userId", diaryController.getDiariesByUser);
 
 /**
  * @swagger
+ * /getAll:
+ *   get:
+ *     tags:
+ *       - Diary
+ *     summary: Get all diary entries
+ *     description: Retrieves all diary entries from the database.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved all diary entries.
+ *         schema:
+ *           type: array
+ *           items:
+ *             $ref: '#/definitions/DiaryEntry'
+ */
+router.get("/getAll", diaryController.getAllDiaries);
+
+/**
+ * @swagger
  * /update/{userId}/{diaryId}:
  *   put:
  *     tags:

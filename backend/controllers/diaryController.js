@@ -75,3 +75,12 @@ exports.deleteDiary = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+  exports.getAllDiaries = async (req, res) => {
+    try {
+      const diaries = await Diary.find();
+      res.status(200).json(diaries);
+    } catch (error) {
+      res.status(500).json({ message: 'Error retrieving diaries', error });
+    }
+  };
