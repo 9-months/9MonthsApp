@@ -7,6 +7,7 @@
  last modified: 11-02-2025 | Dinith | CCS-50 Create Controller
 */
 const Diary = require("../models/diary");
+const diaryService = require("../services/diaryService");
 
 // CREATE: Add a new diary entry
 exports.createDiary = async (req, res) => {
@@ -14,13 +15,22 @@ exports.createDiary = async (req, res) => {
     const { userId } = req.params; // Get userId from URL
     const { description } = req.body; // User provides description
 
-    const newDiaryEntry = new Diary({
-      userId,
-      description
-    });
-
-    await newDiaryEntry.save();
+    const newDiaryEntry = await diaryService.createDiaryEntry(userId, description);
     res.status(201).json({ message: "Diary entry created successfully", newDiaryEntry });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// READ: Get a specific diary entry for a user
+exports.getDiaryById = async (req, res) => {
+  try {
+    const { userId, diaryId } = req.params; // Get userId and diaryId from URL
+    const diary = await diaryService.getDiaryById(userId, diaryId);
+    if (!diary) {
+      return res.status(404).json({ message: "Diary entry not found" });
+    }
+    res.status(200).json(diary);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -30,7 +40,7 @@ exports.createDiary = async (req, res) => {
 exports.getDiariesByUser = async (req, res) => {
   try {
     const { userId } = req.params; // Get userId from URL
-    const diaries = await Diary.find({ userId }).sort({ date: -1 });
+    const diaries = await diaryService.getDiariesByUserId(userId);
     res.status(200).json(diaries);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -43,12 +53,7 @@ exports.updateDiary = async (req, res) => {
     const { userId, diaryId } = req.params; // Get userId and diaryId from URL
     const { description } = req.body; // User provides updated description
 
-    const updatedDiary = await Diary.findOneAndUpdate(
-      { _id: diaryId, userId }, // Ensure it's the correct user and entry
-      { description, date: Date.now() }, // Automatically update date
-      { new: true }
-    );
-
+    const updatedDiary = await diaryService.updateDiaryEntry(userId, diaryId, description);
     if (!updatedDiary) {
       return res.status(404).json({ message: "Diary entry not found" });
     }
@@ -64,8 +69,7 @@ exports.deleteDiary = async (req, res) => {
   try {
     const { userId, diaryId } = req.params; // Get userId and diaryId from URL
 
-    const deletedDiary = await Diary.findOneAndDelete({ _id: diaryId, userId });
-
+    const deletedDiary = await diaryService.deleteDiaryEntry(userId, diaryId);
     if (!deletedDiary) {
       return res.status(404).json({ message: "Diary entry not found" });
     }
@@ -75,12 +79,3 @@ exports.deleteDiary = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-  exports.getAllDiaries = async (req, res) => {
-    try {
-      const diaries = await Diary.find();
-      res.status(200).json(diaries);
-    } catch (error) {
-      res.status(500).json({ message: 'Error retrieving diaries', error });
-    }
-  };

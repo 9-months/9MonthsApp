@@ -33,10 +33,10 @@ const getDiariesByUserId = async (userId) => {
   }
 };
 
-const getAllDiaries = async () => {
+const getDiaryById = async (userId, diaryId) => {
   try {
-    const diaries = await Diary.find().sort({ date: -1 });
-    return diaries;
+    const diary = await Diary.findOne({ _id: diaryId, userId });
+    return diary;
   } catch (err) {
     throw new Error(err.message);
   }
@@ -73,7 +73,7 @@ const deleteDiaryEntry = async (userId, diaryId) => {
 module.exports = {
   createDiaryEntry,
   getDiariesByUserId,
-  getAllDiaries,
+  getDiaryById,
   updateDiaryEntry,
   deleteDiaryEntry,
 };

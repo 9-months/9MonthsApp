@@ -72,7 +72,36 @@ router.post("/create/:userId", diaryController.createDiary);
 
 /**
  * @swagger
- * /get/{userId}:
+ * /get/{userId}/{diaryId}:
+ *   get:
+ *     tags:
+ *       - Diary
+ *     summary: Get a specific diary entry for a user
+ *     description: Retrieves a specific diary entry associated with the specified user.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         type: string
+ *         description: The ID of the user whose diary entry is to be fetched.
+ *       - in: path
+ *         name: diaryId
+ *         required: true
+ *         type: string
+ *         description: The ID of the diary entry to be fetched.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved diary entry.
+ *         schema:
+ *           $ref: '#/definitions/DiaryEntry'
+ *       404:
+ *         description: Diary entry or user not found.
+ */
+router.get("/get/:userId/:diaryId", diaryController.getDiaryById);
+
+/**
+ * @swagger
+ * /getAll/{userId}:
  *   get:
  *     tags:
  *       - Diary
@@ -86,7 +115,7 @@ router.post("/create/:userId", diaryController.createDiary);
  *         description: The ID of the user whose diary entries are to be fetched.
  *     responses:
  *       200:
- *         description: Successfully retrieved diary entries.
+ *         description: Successfully retrieved all diary entries.
  *         schema:
  *           type: array
  *           items:
@@ -94,25 +123,7 @@ router.post("/create/:userId", diaryController.createDiary);
  *       404:
  *         description: User not found.
  */
-router.get("/get/:userId", diaryController.getDiariesByUser);
-
-/**
- * @swagger
- * /getAll:
- *   get:
- *     tags:
- *       - Diary
- *     summary: Get all diary entries
- *     description: Retrieves all diary entries from the database.
- *     responses:
- *       200:
- *         description: Successfully retrieved all diary entries.
- *         schema:
- *           type: array
- *           items:
- *             $ref: '#/definitions/DiaryEntry'
- */
-router.get("/getAll", diaryController.getAllDiaries);
+router.get("/getAll/:userId", diaryController.getDiariesByUser);
 
 /**
  * @swagger
