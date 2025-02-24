@@ -1,24 +1,34 @@
 class DiaryEntry {
-  final String? diaryId; // Changed back to diaryId
+  final String? diaryId;
   final String userId;
   final String description;
   final DateTime date;
 
   DiaryEntry({
-    this.diaryId, // Changed back to diaryId
+    this.diaryId,
     required this.userId,
     required this.description,
     required this.date,
   });
 
-  factory DiaryEntry.fromJson(Map<String, dynamic> json) => DiaryEntry(
-        diaryId: json['diaryId'] as String?, // Changed back to diaryId
-        userId: json['userId'] as String,
-        description: json['description'] as String,
-        date: DateTime.parse(json['date'] as String),
-      );
+  factory DiaryEntry.fromJson(Map<String, dynamic> json) {
+    // Handle nested response from create/update operations
+    final diaryData = json.containsKey('newDiaryEntry') 
+        ? json['newDiaryEntry'] 
+        : (json.containsKey('updatedDiary') ? json['updatedDiary'] : json);
+
+    return DiaryEntry(
+      diaryId: diaryData['_id'] ?? diaryData['diaryId'],
+      userId: diaryData['userId'],
+      description: diaryData['description'],
+      date: DateTime.parse(diaryData['date']),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-        'description': description,
-      };
+    'diaryId': diaryId,
+    'userId': userId,
+    'description': description,
+    'date': date.toIso8601String(),
+  };
 }
