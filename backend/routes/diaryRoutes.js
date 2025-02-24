@@ -72,7 +72,7 @@ router.post("/create/:userId", diaryController.createDiary);
 
 /**
  * @swagger
- * /{userId}:
+ * /get/{userId}:
  *   get:
  *     tags:
  *       - Diary
@@ -94,7 +94,7 @@ router.post("/create/:userId", diaryController.createDiary);
  *       404:
  *         description: User not found.
  */
-router.get("/:userId", diaryController.getDiariesByUser);
+router.get("/get/:userId", diaryController.getDiariesByUser);
 
 /**
  * @swagger
