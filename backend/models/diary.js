@@ -9,7 +9,7 @@
 const mongoose = require("mongoose");
 
 const diarySchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  userId: { type: String, required: true }, // Store user ID as a string
   date: { type: Date, default: Date.now },
   description: { type: String, required: true }
 });

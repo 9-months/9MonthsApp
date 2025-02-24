@@ -7,10 +7,6 @@
  last modified: 2025-02-23 | Melissa | CCS-50 Create Service
 */
 
-// diaryService.js
-// Purpose: Handles all the logic for interacting with the Diary model
-// Created Date: 23-02-2025 CCS-50 Melissa Joanne
-// Author: Melissa Joanne
 
 const Diary = require("../models/diary");
 
