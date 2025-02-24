@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/journal/mood_tracking.dart';
+import '../screens/journal/journal_options_screen.dart'; // import the new screen
 
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -33,26 +33,30 @@ class CustomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(context, 0, Icons.home_outlined, Icons.home, 'Home'),
               _buildNavItem(
-                context, 
-                1, 
-                Icons.book_outlined, 
-                Icons.book, 
+                  context, 0, Icons.home_outlined, Icons.home, 'Home'),
+              _buildNavItem(
+                context,
+                1,
+                Icons.book_outlined,
+                Icons.book,
                 'Journal',
                 onPressed: () {
+                  // Navigate to the JournalOptionsScreen instead of MoodTrackingScreen
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const MoodTrackingScreen(),
+                      builder: (context) => JournalOptionsScreen(),
                     ),
                   );
                   onTap(1);
                 },
               ),
               _buildEmergencyButton(context),
-              _buildNavItem(context, 3, Icons.analytics_outlined, Icons.analytics, 'Stats'),
-              _buildNavItem(context, 4, Icons.person_outlined, Icons.person, 'Profile'),
+              _buildNavItem(context, 3, Icons.analytics_outlined,
+                  Icons.analytics, 'Stats'),
+              _buildNavItem(
+                  context, 4, Icons.person_outlined, Icons.person, 'Profile'),
             ],
           ),
         ),
@@ -60,14 +64,9 @@ class CustomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(
-    BuildContext context, 
-    int index, 
-    IconData outlinedIcon, 
-    IconData filledIcon, 
-    String label,
-    {VoidCallback? onPressed}
-  ) {
+  Widget _buildNavItem(BuildContext context, int index, IconData outlinedIcon,
+      IconData filledIcon, String label,
+      {VoidCallback? onPressed}) {
     final isSelected = currentIndex == index;
     final theme = Theme.of(context);
     return InkWell(
