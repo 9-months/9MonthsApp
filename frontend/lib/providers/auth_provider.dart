@@ -4,7 +4,7 @@
  Created Date: 11/02/2021 CCS-55 State Management
  Author: Dinith Perera
 
- last modified: 12/02/2021 | Dinith | CCS-55 provider functionality updated
+ last modified: 12/02/2021 | Melissa | CCS-55 provider functionality updated
 */
 
 import 'package:flutter/foundation.dart';
@@ -20,21 +20,22 @@ class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
   static const _userKey = 'user_data';
 
+  // Getters
   User? get user => _user;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null;
 
-  // Login and register methods
+  // Login method
   Future<void> login(String username, String password) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _user = await _authService.login(username, password);
-      if (_user != null) {
-        await _saveUser(_user!);
+      final loginUser = await _authService.login(username, password);
+      if (loginUser != null) {
+        _user = loginUser;
+        await _saveUser(loginUser); // Save user data in background
       }
-      notifyListeners();
     } catch (e) {
       _user = null;
       throw e;
@@ -44,6 +45,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Register method
   Future<void> register({
     required String email,
     required String password,
@@ -55,17 +57,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _user = await _authService.register(
+      // Get user from registration
+      final newUser = await _authService.register(
         email: email,
         password: password,
         username: username,
         location: location,
         phone: phone,
       );
-      if (_user != null) {
-        await _saveUser(_user!);
-      }
-      notifyListeners();
+
+      _user = newUser;
+      await _saveUser(newUser);
     } catch (e) {
       _user = null;
       throw e;
@@ -74,38 +76,42 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   // Logout method
   Future<void> logout() async {
-    await _clearUser();
+    await _clearUser(); // Clear user data
     _user = null;
     notifyListeners();
   }
 
   // Load user method
   Future<void> loadUser() async {
-    _user = await _getUser();
-    notifyListeners();
-  }
-
-  // googleSignIn method
-Future<void> googleSignIn() async {
-  _isLoading = true;
-  notifyListeners();
-
-  try {
-    _user = await _authService.googleSignIn();
-    if (_user != null) {
-      await _saveUser(_user!);
+    final storedUser = await _getUser();
+    if (storedUser != null) {
+      _user = storedUser;
+      notifyListeners();
     }
-  } catch (e) {
-    _user = null;
-    throw e;
-  } finally {
-    _isLoading = false;
-    notifyListeners();
   }
-}
+
+  // Google Sign-In method
+  Future<void> googleSignIn() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final googleUser = await _authService.googleSignIn();
+      if (googleUser != null) {
+        _user = googleUser;
+        await _saveUser(googleUser); // Save in background
+      }
+    } catch (e) {
+      _user = null;
+      throw e;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   // Storage methods
   Future<void> _saveUser(User user) async {
@@ -122,5 +128,13 @@ Future<void> googleSignIn() async {
       return User.fromJson(jsonDecode(userData));
     }
     return null;
+  }
+
+  // Add this method to load user data
+  Future<void> loadUserData() async {
+    if (_user == null) {
+      _user = await _getUser();
+      notifyListeners();
+    }
   }
 }
