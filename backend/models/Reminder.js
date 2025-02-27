@@ -1,16 +1,8 @@
-/*
- File: Reminder.js
- Purpose: Defines the schema for Reminders.
- Created Date: 13-02-2025 CCS-48 Ryan Fernando
- Author: Ryan Fernando
-
- last modified: 14-02-2025 | Ryan | CCS-56 Create Reminder Schema
-*/
 const mongoose = require('mongoose');
 
 const ReminderSchema = new mongoose.Schema({
   userId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: 'User'
   },
@@ -23,26 +15,22 @@ const ReminderSchema = new mongoose.Schema({
     maxLength: 500
   },
   location: {
-    type: String
+    type: String,
   },
-  date: {
+  dateTime: {
     type: Date,
     required: true
   },
-  time: {
+  timezone: {
     type: String,
-    required: true
+    required: true,
   },
   repeat: {
     type: String,
     enum: ['none', 'daily', 'weekly', 'monthly', 'yearly'],
     default: 'none'
   },
-  alert: {
-    type: String,
-    enum: ['none', 'at time of event', '5 minutes before', '15 minutes before', '30 minutes before', '1 hour before', '1 day before'],
-    default: 'none'
-  },
+  alertOffsets: [{type: Number}],
   type: {
     type: String,
     enum: ['medicine', 'appointment', 'other'],
@@ -51,7 +39,11 @@ const ReminderSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  isCompleted: {
+    type: Boolean,
+    default: false
+  },
 }, {
   collection: 'reminders'
 });

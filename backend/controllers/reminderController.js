@@ -4,19 +4,39 @@
  Created Date: 11-02-2025 CCS-51 Ryan Fernando
  Author: Ryan Fernando
 
- last modified: 16-02-2025 | Ryan | CCS-51 reminder backend Test
+ last modified: [Current Date] | [Your Name] | Updated for new schema and service
 */
 
 const reminderService = require('../services/reminderService');
 
 const createReminder = async (req, res) => {
   try {
-    const { title, description, date, time, type } = req.body;
+    const {
+      title,
+      description,
+      dateTime,
+      timezone,
+      repeat,
+      alertOffsets,
+      type,
+      location,
+    } = req.body;
     const userId = req.params.userId;
-    if (!userId || !title || !date || !time || !type) {
+
+    if (!userId || !title || !dateTime || !timezone || !type) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    const reminder = await reminderService.createReminder(userId, { title, description, date, time, type });
+
+    const reminder = await reminderService.createReminder(userId, {
+      title,
+      description,
+      dateTime,
+      timezone,
+      repeat,
+      alertOffsets,
+      type,
+      location,
+    });
     res.status(201).json(reminder);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -64,5 +84,5 @@ module.exports = {
   getRemindersByUser,
   getReminder,
   updateReminder,
-  deleteReminder
+  deleteReminder,
 };
