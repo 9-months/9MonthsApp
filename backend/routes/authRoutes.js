@@ -45,16 +45,19 @@ const router = express.Router();
  *                 example: "JohnDoe"
  *               email:
  *                 type: string
- *                 example: "user@example.com"
+ *                 format: email
+ *                 example: "john.doe@example.com"
  *               password:
  *                 type: string
- *                 example: "securepassword"
+ *                 format: password
+ *                 minLength: 6
+ *                 example: "securepassword123"
  *               location:
  *                 type: string
  *                 example: "New York, USA"
  *               phone:
  *                 type: string
- *                 example: "+1234567890"
+ *                 example: "+94712345678"
  *     responses:
  *       201:
  *         description: User registered successfully.
@@ -78,16 +81,21 @@ router.post("/signup", authController.createUser);
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - email
- *               - password
  *             properties:
  *               email:
  *                 type: string
- *                 example: "user@example.com"
+ *                 format: email
+ *                 example: "john.doe@example.com"
+ *               username:
+ *                 type: string
+ *                 example: "JohnDoe"
  *               password:
  *                 type: string
- *                 example: "securepassword"
+ *                 format: password
+ *                 example: "securepassword123"
+ *             oneOf:
+ *               - required: [email, password]
+ *               - required: [username, password]
  *     responses:
  *       200:
  *         description: Login successful, returns a token.

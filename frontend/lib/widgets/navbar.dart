@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/journal/journal_options_screen.dart'; // import the new screen
 
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -35,7 +36,22 @@ class CustomNavBar extends StatelessWidget {
               _buildNavItem(
                   context, 0, Icons.home_outlined, Icons.home, 'Home'),
               _buildNavItem(
-                  context, 1, Icons.book_outlined, Icons.book, 'Journal'),
+                context,
+                1,
+                Icons.book_outlined,
+                Icons.book,
+                'Journal',
+                onPressed: () {
+                  // Navigate to the JournalOptionsScreen instead of MoodTrackingScreen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => JournalOptionsScreen(),
+                    ),
+                  );
+                  onTap(1);
+                },
+              ),
               _buildEmergencyButton(context),
               _buildNavItem(context, 3, Icons.analytics_outlined,
                   Icons.analytics, 'Stats'),
@@ -49,11 +65,12 @@ class CustomNavBar extends StatelessWidget {
   }
 
   Widget _buildNavItem(BuildContext context, int index, IconData outlinedIcon,
-      IconData filledIcon, String label) {
+      IconData filledIcon, String label,
+      {VoidCallback? onPressed}) {
     final isSelected = currentIndex == index;
     final theme = Theme.of(context);
     return InkWell(
-      onTap: () => onTap(index),
+      onTap: onPressed ?? () => onTap(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

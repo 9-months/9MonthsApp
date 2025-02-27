@@ -4,7 +4,7 @@
  Created Date: 2025-01-29 CCS-1 Irosh Perera
  Author: Irosh Perera
 
- last modified: 11-02-2025 | Dinith | CCS-48 add mood routes
+ last modified: 11-02-2025 | Melissa | CCS-50 added diary routes
 */
 
 const express = require("express");
@@ -16,6 +16,7 @@ const authRoutes = require("./routes/authRoutes");
 const moodRoutes = require('./routes/moodRoutes');
 const emergencyRouter = require("./routes/emergencyRouter");
 const pregnancyRouter = require("./routes/pregnancyRoutes");
+const diaryRoutes = require("./routes/diaryRoutes");
 
 
 // Load environment variables
@@ -40,6 +41,7 @@ app.use("/emergency", emergencyRouter);
 app.use("/auth", authRoutes);
 app.use('/moods', moodRoutes);
 app.use("/pregnancy", pregnancyRouter);
+app.use("/diary", diaryRoutes);
 
 // Routes
 app.get("/", (req, res) => {
