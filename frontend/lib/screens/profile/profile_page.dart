@@ -23,18 +23,8 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AuthProvider>().loadUserData();
+      context.read<AuthProvider>().loadUser();
     });
-  }
-
-  void _loadUserData() {
-    final user = context.read<AuthProvider>().user;
-    if (user != null) {
-      setState(() {
-        _location = user.location ?? _location;
-        _phone = user.phone ?? _phone;
-      });
-    }
   }
 
   Future<void> _showImagePickerModal() async {
@@ -175,8 +165,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
-
-    _loadUserData();
 
     return Scaffold(
       appBar: AppBar(
@@ -351,13 +339,14 @@ class _ProfilePageState extends State<ProfilePage> {
                             const SizedBox(height: 16),
                             _buildInfoRow(Icons.email, 'Email', user.email),
                             const SizedBox(height: 12),
-                            _buildInfoRow(Icons.phone, 'Phone', _phone),
+                            _buildInfoRow(
+                                Icons.phone, 'Phone', user.phone ?? _phone),
                             const SizedBox(height: 12),
                             _buildInfoRow(Icons.calendar_month, 'Date of Birth',
                                 _dateOfBirth),
                             const SizedBox(height: 12),
-                            _buildInfoRow(
-                                Icons.location_on, 'Address', _location),
+                            _buildInfoRow(Icons.location_on, 'Address',
+                                user.location ?? _location),
                           ],
                         ),
                       ),
