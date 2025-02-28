@@ -21,7 +21,8 @@ class DiaryService {
         throw Exception('Failed to load diaries: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
@@ -42,19 +43,26 @@ class DiaryService {
         throw Exception('Failed to load diary: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
   }
 
   Future<DiaryEntry> createDiary(String userId, String description) async {
+    return createDiaryWithDate(userId, description, DateTime.now());
+  }
+
+  Future<DiaryEntry> createDiaryWithDate(
+      String userId, String description, DateTime date) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/create/$userId'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'description': description,
+          'date': date.toIso8601String(),
         }),
       );
 
@@ -68,19 +76,29 @@ class DiaryService {
         throw Exception('Failed to create diary: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
   }
 
-  Future<DiaryEntry> updateDiary(String userId, String diaryId, String description) async {
+  Future<DiaryEntry> updateDiary(
+      String userId, String diaryId, String description) async {
+    // Get the current diary to preserve its date if not provided
+    final currentDiary = await getDiaryById(userId, diaryId);
+    return updateDiaryWithDate(userId, diaryId, description, currentDiary.date);
+  }
+
+  Future<DiaryEntry> updateDiaryWithDate(
+      String userId, String diaryId, String description, DateTime date) async {
     try {
       final response = await http.put(
         Uri.parse('$_baseUrl/update/$userId/$diaryId'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'description': description,
+          'date': date.toIso8601String(),
         }),
       );
 
@@ -94,7 +112,8 @@ class DiaryService {
         throw Exception('Failed to update diary: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
@@ -115,7 +134,34 @@ class DiaryService {
         throw Exception('Failed to delete diary: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
+    } catch (e) {
+      throw Exception('Something went wrong: ${e.toString()}');
+    }
+  }
+
+  // New method for getting diaries by date range
+  Future<List<DiaryEntry>> getDiariesByDateRange(
+      String userId, DateTime startDate, DateTime endDate) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            '$_baseUrl/getByDateRange/$userId?start=${startDate.toIso8601String()}&end=${endDate.toIso8601String()}'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => DiaryEntry.fromJson(json)).toList();
+      } else if (response.statusCode == 404) {
+        throw Exception('User not found');
+      } else {
+        throw Exception('Failed to load diaries: ${response.statusCode}');
+      }
+    } on http.ClientException {
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }

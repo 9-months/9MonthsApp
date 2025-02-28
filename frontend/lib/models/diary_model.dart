@@ -13,8 +13,8 @@ class DiaryEntry {
 
   factory DiaryEntry.fromJson(Map<String, dynamic> json) {
     // Handle nested response from create/update operations
-    final diaryData = json.containsKey('newDiaryEntry') 
-        ? json['newDiaryEntry'] 
+    final diaryData = json.containsKey('newDiaryEntry')
+        ? json['newDiaryEntry']
         : (json.containsKey('updatedDiary') ? json['updatedDiary'] : json);
 
     return DiaryEntry(
@@ -26,9 +26,9 @@ class DiaryEntry {
   }
 
   Map<String, dynamic> toJson() => {
-    'diaryId': diaryId,
-    'userId': userId,
-    'description': description,
-    'date': date.toIso8601String(),
-  };
+        'diaryId': diaryId,
+        'userId': userId,
+        'description': description,
+        'date': date.toIso8601String(),
+      };
 }
