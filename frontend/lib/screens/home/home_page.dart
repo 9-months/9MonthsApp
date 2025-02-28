@@ -4,12 +4,13 @@
  Created Date: CCS-29
  Author: Irosh Perera
 
- last modified: 2025-02-09 | Melissa | CCS-43 Profile navigation
+ last modified: [Current Date] | [Your Name] | Added calendar button
 */
 
 import 'package:flutter/material.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
+import '../calendar/calendar_screen.dart'; // Import CalendarScreen
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+  String userId = "67b1f251a2a883e152d94a91"; // Replace with actual user ID
 
   Future<void> _handleEmergency() async {
     try {
@@ -181,6 +183,18 @@ class _HomePageState extends State<HomePage> {
                     _buildMenuCard(Icons.restaurant_menu, 'Food', Colors.teal),
                   ],
                 ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CalendarScreen(userId: userId),
+                      ),
+                    );
+                  },
+                  child: Text('View Calendar'),
+                )
               ],
             ),
           ),
