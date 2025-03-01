@@ -1,9 +1,13 @@
+import 'package:_9months/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
+import 'package:provider/provider.dart';
+// ignore: depend_on_referenced_packages
+import '../../providers/auth_provider.dart';
 
 class ReminderForm extends StatefulWidget {
   final String userId;
@@ -52,8 +56,10 @@ class _ReminderFormState extends State<ReminderForm> {
 
   Future<void> _createReminder() async {
     if (_formKey.currentState!.validate()) {
+      final userId =
+          Provider.of<AuthProvider>(context, listen: false).user!.uid;
       final response = await http.post(
-        Uri.parse('http://localhost:3000/reminder/67b1f251a2a883e152d94a91'),
+        Uri.parse('http://localhost:3000/reminder/$userId'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'title': _titleController.text,
@@ -77,7 +83,7 @@ class _ReminderFormState extends State<ReminderForm> {
       }
     }
     print(
-        'Request URL: ${Uri.parse('http://localhost:3000/reminder/67b1f251a2a883e152d94a91')}');
+        'Request URL: ${Uri.parse('http://localhost:3000/reminder/${Provider.of<AuthProvider>(context, listen: false).user!.uid}')}');
     print('Request Body: ${json.encode({
           'title': _titleController.text,
           'description': _descriptionController.text,

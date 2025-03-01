@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'reminder_form.dart'; // Import ReminderForm
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class CalendarScreen extends StatefulWidget {
   final String userId;
@@ -29,8 +31,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Future<void> _fetchReminders() async {
     try {
+      final userId =
+          Provider.of<AuthProvider>(context, listen: false).user!.uid;
       final response = await http.get(
-        Uri.parse('http://localhost:3000/reminder/${widget.userId}'),
+        Uri.parse('http://localhost:3000/reminder/$userId'),
       );
       if (response.statusCode == 200) {
         setState(() {
