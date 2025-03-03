@@ -1,3 +1,12 @@
+/*
+ File: emergency_service.dart
+ Purpose: Service to handle API calls for emergency service
+ Created Date: CCS-50 09-02-2025
+ Author: Dinith Perera
+
+ last modified: 03-03-2025 | Dinith | Base URL updated
+*/
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/config.dart';

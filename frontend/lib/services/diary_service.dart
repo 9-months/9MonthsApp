@@ -1,10 +1,19 @@
+/*
+ File: diary_service.dart
+ Purpose: Service to handle API calls for diary entries
+ Created Date: CCS-50 24-02-2025
+ Author: Melissa Joanne
+
+ last modified: 03-03-2025 | Melissa | Base URL updated
+*/
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/diary_model.dart';
 import '../config/config.dart';
 
 class DiaryService {
-  final String _baseUrl = Config.apiBaseUrl;
+  final String _baseUrl = '${Config.apiBaseUrl}/diary';
 
   Future<List<DiaryEntry>> getDiaries(String userId) async {
     try {
@@ -22,7 +31,8 @@ class DiaryService {
         throw Exception('Failed to load diaries: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
@@ -43,7 +53,8 @@ class DiaryService {
         throw Exception('Failed to load diary: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
@@ -69,13 +80,15 @@ class DiaryService {
         throw Exception('Failed to create diary: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
   }
 
-  Future<DiaryEntry> updateDiary(String userId, String diaryId, String description) async {
+  Future<DiaryEntry> updateDiary(
+      String userId, String diaryId, String description) async {
     try {
       final response = await http.put(
         Uri.parse('$_baseUrl/update/$userId/$diaryId'),
@@ -95,7 +108,8 @@ class DiaryService {
         throw Exception('Failed to update diary: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
@@ -116,7 +130,8 @@ class DiaryService {
         throw Exception('Failed to delete diary: ${response.statusCode}');
       }
     } on http.ClientException {
-      throw Exception('Connection failed. Please check your internet connection.');
+      throw Exception(
+          'Connection failed. Please check your internet connection.');
     } catch (e) {
       throw Exception('Something went wrong: ${e.toString()}');
     }
