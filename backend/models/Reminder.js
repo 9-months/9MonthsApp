@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const ReminderSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'User'
+    type: String, // Changed from ObjectId to String
+    required: true
+    
   },
   title: {
     type: String,

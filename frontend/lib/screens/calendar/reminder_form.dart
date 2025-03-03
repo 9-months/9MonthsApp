@@ -3,17 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:provider/provider.dart';
 // ignore: depend_on_referenced_packages
-import '../../providers/auth_provider.dart';
 
 class ReminderForm extends StatefulWidget {
   final String userId;
   final DateTime? selectedDate;
 
-  ReminderForm({required this.userId, this.selectedDate});
+  const ReminderForm({super.key, required this.userId, this.selectedDate});
 
   @override
   _ReminderFormState createState() => _ReminderFormState();

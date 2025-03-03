@@ -10,7 +10,7 @@ import '../../providers/auth_provider.dart';
 class CalendarScreen extends StatefulWidget {
   final String userId;
 
-  CalendarScreen({required this.userId});
+  const CalendarScreen({super.key, required this.userId});
 
   @override
   _CalendarScreenState createState() => _CalendarScreenState();

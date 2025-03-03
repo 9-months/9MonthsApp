@@ -4,47 +4,49 @@
  Created Date: CCS-51 14-02-2025
  Author: Dinith Perera
 
- last modified: 14-02-2025 | Ryan | CCS-51 Reminder tracking 
+ last modified: 02-03-2025 | Chamod Kamiss | Updated model to match screen implementation
 */
 
-class ReminderModel {
-  final String? id;
+class Reminder {
+  final String id;
   final String userId;
   final String title;
-  final String description;
-  final String location;
-  final DateTime date;
-  final String time;
+  final String? description;
+  final String? location;
+  final String dateTime; // Changed from separate date and time
+  final String timezone;
   final String repeat;
-  final String alert;
+  final List<int> alertOffsets; // Changed from single alert string
   final String type;
   final DateTime createdAt;
 
-  ReminderModel({
-    this.id,
+  Reminder({
+    required this.id,
     required this.userId,
     required this.title,
-    required this.description,
-    required this.location,
-    required this.date,
-    required this.time,
+    this.description,
+    this.location,
+    required this.dateTime,
+    required this.timezone,
     required this.repeat,
-    required this.alert,
+    required this.alertOffsets,
     required this.type,
     required this.createdAt,
   });
 
-  factory ReminderModel.fromJson(Map<String, dynamic> json) {
-    return ReminderModel(
+  factory Reminder.fromJson(Map<String, dynamic> json) {
+    return Reminder(
       id: json['_id'],
       userId: json['userId'],
       title: json['title'],
       description: json['description'],
       location: json['location'],
-      date: DateTime.parse(json['date']),
-      time: json['time'],
+      dateTime: json['dateTime'],
+      timezone: json['timezone'] ?? 'UTC',
       repeat: json['repeat'],
-      alert: json['alert'],
+      alertOffsets: json['alertOffsets'] != null 
+          ? List<int>.from(json['alertOffsets']) 
+          : [0], // Default to immediate alert if none specified
       type: json['type'],
       createdAt: DateTime.parse(json['createdAt']),
     );
@@ -56,10 +58,10 @@ class ReminderModel {
       'title': title,
       'description': description,
       'location': location,
-      'date': date.toIso8601String(),
-      'time': time,
+      'dateTime': dateTime,
+      'timezone': timezone,
       'repeat': repeat,
-      'alert': alert,
+      'alertOffsets': alertOffsets,
       'type': type,
       'createdAt': createdAt.toIso8601String(),
     };

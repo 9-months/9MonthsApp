@@ -4,13 +4,16 @@
  Created Date: CCS-29
  Author: Irosh Perera
 
- last modified: [Current Date] | [Your Name] | Added calendar button
+ last modified: 02-03-2025 | Chamod Kamiss | Added calendar integration and auth provider
 */
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
-import '../calendar/calendar_screen.dart'; // Import CalendarScreen
+import '../calendar/calendar_screen.dart';
+import '../reminders/reminder_screen.dart';
+import '../../providers/auth_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,7 +24,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  String userId = "67b1f251a2a883e152d94a91"; // Replace with actual user ID
+  late String userId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Get userId from the auth provider
+    userId = Provider.of<AuthProvider>(context, listen: false).user?.uid ?? '';
+  }
 
   Future<void> _handleEmergency() async {
     try {
@@ -42,6 +52,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Use the current user's name from the auth provider
+    final userName = Provider.of<AuthProvider>(context).user?.username ?? 'User';
+    
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -58,7 +71,7 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hello Isurukamiss',
+                          'Hello $userName',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 4),
@@ -172,29 +185,48 @@ class _HomePageState extends State<HomePage> {
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                   children: [
-                    _buildMenuCard(Icons.medication, 'Medicines',
-                        Theme.of(context).colorScheme.secondary),
                     _buildMenuCard(
-                        Icons.fitness_center, 'Exercises', Colors.green),
+                      Icons.medication, 
+                      'Medicines',
+                      Theme.of(context).colorScheme.secondary
+                    ),
                     _buildMenuCard(
-                        Icons.local_hospital, 'Hospitals', Colors.red),
-                    _buildMenuCard(Icons.article, 'Articles', Colors.purple),
-                    _buildMenuCard(Icons.video_library, 'Videos', Colors.blue),
-                    _buildMenuCard(Icons.restaurant_menu, 'Food', Colors.teal),
+                      Icons.fitness_center, 
+                      'Exercises', 
+                      Colors.green
+                    ),
+                    _buildMenuCard(
+                      Icons.local_hospital, 
+                      'Hospitals', 
+                      Colors.red
+                    ),
+                    _buildMenuCard(
+                      Icons.article, 
+                      'Articles', 
+                      Colors.purple
+                    ),
+                    _buildMenuCard(
+                      Icons.video_library, 
+                      'Videos', 
+                      Colors.blue
+                    ),
+                    _buildMenuCard(
+                      Icons.restaurant_menu, 
+                      'Food', 
+                      Colors.teal
+                    ),
+                    _buildMenuCard(
+                      Icons.calendar_today, 
+                      'Calendar', 
+                      Colors.orange
+                    ),
+                    _buildMenuCard(
+                      Icons.notification_important, 
+                      'Reminders', 
+                      Colors.amber
+                    ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CalendarScreen(userId: userId),
-                      ),
-                    );
-                  },
-                  child: Text('View Calendar'),
-                )
               ],
             ),
           ),
@@ -237,7 +269,24 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          if (title == 'Calendar') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CalendarScreen(userId: userId),
+              ),
+            );
+          } else if (title == 'Medicines' || title == 'Reminders') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ReminderScreen(userId: userId),
+              ),
+            );
+          }
+          // Add other navigation options as needed
+        },
         borderRadius: BorderRadius.circular(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

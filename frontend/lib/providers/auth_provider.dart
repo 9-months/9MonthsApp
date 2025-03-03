@@ -37,7 +37,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _user = null;
-      throw e;
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -68,7 +68,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _user = null;
-      throw e;
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -100,7 +100,7 @@ Future<void> googleSignIn() async {
     }
   } catch (e) {
     _user = null;
-    throw e;
+    rethrow;
   } finally {
     _isLoading = false;
     notifyListeners();
