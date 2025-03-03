@@ -1,8 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/config.dart';
 
 class EmergencyService {
-  static const String baseUrl = 'http://localhost:3000';
+  final String baseUrl = Config.apiBaseUrl;
 
   Future<void> sendEmergencyAlert() async {
     try {

@@ -1,9 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/diary_model.dart';
+import '../config/config.dart';
 
 class DiaryService {
-  final String _baseUrl = 'http://localhost:3000/diary';
+  final String _baseUrl = Config.apiBaseUrl;
 
   Future<List<DiaryEntry>> getDiaries(String userId) async {
     try {
