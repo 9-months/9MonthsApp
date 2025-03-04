@@ -1,3 +1,4 @@
+import 'package:_9months/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import '../screens/journal/journal_options_screen.dart'; // import the new screen
 
@@ -56,7 +57,21 @@ class CustomNavBar extends StatelessWidget {
               _buildNavItem(context, 3, Icons.analytics_outlined,
                   Icons.analytics, 'Stats'),
               _buildNavItem(
-                  context, 4, Icons.person_outlined, Icons.person, 'Profile'),
+                context,
+                4,
+                Icons.person_outlined,
+                Icons.person,
+                'Profile',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfilePage(),
+                    ),
+                  );
+                  onTap(1);
+                },
+              ),
             ],
           ),
         ),

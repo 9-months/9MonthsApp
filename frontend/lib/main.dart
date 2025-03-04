@@ -108,7 +108,7 @@ class MyApp extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
-      initialRoute: '/register',
+      initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
         '/step': (context) => const StepScreen(),
