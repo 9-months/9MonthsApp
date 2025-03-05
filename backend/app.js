@@ -22,7 +22,7 @@ const pregnancyRouter = require("./routes/pregnancyRoutes");
 dotenv.config();
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./ServicesAccountKey.json");
+const serviceAccount = require("./months-feebf-firebase-adminsdk-9g1yz-7440fd9cbb.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
