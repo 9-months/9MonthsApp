@@ -352,6 +352,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    _buildSignOutButton(),
                   ],
                 ),
               ),
@@ -418,6 +419,22 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildSignOutButton() {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () async {
+          await context.read<AuthProvider>().signOut();
+          Navigator.pushReplacementNamed(context, '/login');
+        },
+        child: const Text('Sign Out'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color.fromARGB(255, 225, 28, 28),
+          foregroundColor: const Color.fromARGB(255, 255, 255, 255),
+        ),
+      ),
     );
   }
 }

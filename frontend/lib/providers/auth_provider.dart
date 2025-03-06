@@ -88,6 +88,11 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Sign out method
+  Future<void> signOut() async {
+    await logout();
+  }
+
   // Load user method
   Future<void> loadUser() async {
     _user = await _getUser();
