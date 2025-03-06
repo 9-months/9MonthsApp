@@ -11,18 +11,26 @@ class CreatePregnancyForm extends StatefulWidget {
 
 class _CreatePregnancyFormState extends State<CreatePregnancyForm> {
   DateTime? _selectedDate;
+  DateTime? _dueDate;
+  bool? _hasUltrasound;
 
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context, bool isDueDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(DateTime.now().year - 1),
-      lastDate: DateTime.now(),
+      lastDate: isDueDate ? DateTime(DateTime.now().year + 2) : DateTime.now(),
     );
 
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null) {
       setState(() {
-        _selectedDate = picked;
+        if (isDueDate) {
+          _dueDate = picked;
+        } else {
+          _selectedDate = picked;
+          // Calculate due date if last period date is selected
+          _dueDate = picked.add(const Duration(days: 280)); // 40 weeks
+        }
       });
     }
   }
@@ -47,26 +55,75 @@ class _CreatePregnancyFormState extends State<CreatePregnancyForm> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               SizedBox(height: 16),
-              Text('Select the date of your last period:'),
-              SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () => _selectDate(context),
-                child: Text(_selectedDate == null
-                    ? 'Select Date'
-                    : 'Selected Date: ${_selectedDate.toString().split(' ')[0]}'),
+              Text('Have you had an ultrasound test?'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Yes'),
+                  Radio<bool>(
+                    value: true,
+                    groupValue: _hasUltrasound,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _hasUltrasound = value;
+                        // Reset dates when switching between options
+                        _selectedDate = null;
+                        _dueDate = null;
+                      });
+                    },
+                  ),
+                  Text('No'),
+                  Radio<bool>(
+                    value: false,
+                    groupValue: _hasUltrasound,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _hasUltrasound = value;
+                        // Reset dates when switching between options
+                        _selectedDate = null;
+                        _dueDate = null;
+                      });
+                    },
+                  ),
+                ],
               ),
               SizedBox(height: 16),
+              if (_hasUltrasound == true) ...[
+                Text('Select your due date:'),
+                SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () => _selectDate(context, true),
+                  child: Text(_dueDate == null
+                      ? 'Select Due Date'
+                      : 'Due Date: ${_dueDate.toString().split(' ')[0]}'),
+                ),
+              ] else if (_hasUltrasound == false) ...[
+                Text('Select the date of your last period:'),
+                SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () => _selectDate(context, false),
+                  child: Text(_selectedDate == null
+                      ? 'Select Last Period Date'
+                      : 'Last Period: ${_selectedDate.toString().split(' ')[0]}'),
+                ),
+              ],
+              SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _selectedDate == null
+                onPressed: (_hasUltrasound == null ||
+                        (_hasUltrasound! && _dueDate == null) ||
+                        (!_hasUltrasound! && _selectedDate == null))
                     ? null
                     : () async {
                         try {
                           await pregnancyProvider.createPregnancy(
                             authProvider.username,
-                            _selectedDate!,
+                            _hasUltrasound! ? _dueDate! : _selectedDate!,
+                            _hasUltrasound!,
                           );
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Pregnancy tracker created successfully!')),
+                            SnackBar(
+                                content: Text(
+                                    'Pregnancy tracker created successfully!')),
                           );
                           Navigator.pushReplacement(
                             context,
@@ -74,7 +131,9 @@ class _CreatePregnancyFormState extends State<CreatePregnancyForm> {
                           );
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to create pregnancy tracker')),
+                            SnackBar(
+                                content:
+                                    Text('Failed to create pregnancy tracker')),
                           );
                         }
                       },

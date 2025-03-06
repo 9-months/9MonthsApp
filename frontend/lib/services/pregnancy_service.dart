@@ -3,14 +3,15 @@ import 'package:http/http.dart' as http;
 import '../config/config.dart';
 
 class PregnancyService {
-  Future<Map<String,dynamic>> createPregnancy(String userId,DateTime lastPeriodDate) async {
+  Future<Map<String, dynamic>> createPregnancy(
+      String userId, DateTime dueDate) async {
     try {
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/pregnancy'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'userId': userId,
-          'lastPeriodDate': lastPeriodDate.toIso8601String(),
+          'dueDate': dueDate.toIso8601String(),
         }),
       );
 
@@ -23,7 +24,7 @@ class PregnancyService {
       throw 'Network error: $e';
     }
   }
-  
+
   Future<Map<String, dynamic>?> fetchPregnancyData(String userId) async {
     try {
       final response = await http.get(
@@ -41,7 +42,7 @@ class PregnancyService {
       throw 'Network error: $e';
     }
   }
-  
+
   Future<void> updatePregnancy() async {
     // Call the API to update a pregnancy
   }
@@ -49,6 +50,4 @@ class PregnancyService {
   Future<void> deletePregnancy() async {
     // Call the API to delete a pregnancy
   }
-
-  
 }

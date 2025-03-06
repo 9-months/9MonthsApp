@@ -10,11 +10,12 @@
 const Pregnancy = require("../models/Pregnancy");
 
 class PregnancyService {
-  calculateWeek(lastPeriodDate) {
+  calculateWeek(dueDate) {
     const today = new Date();
-    const diffTime = Math.abs(today - lastPeriodDate);
-    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-    return Math.min(diffWeeks, 40);
+    const totalDays = 280; // 40 weeks
+    const daysRemaining = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    const currentWeek = Math.min(Math.max(1, Math.ceil((totalDays - daysRemaining) / 7)), 40);
+    return currentWeek;
   }
 
   getBabySize(week) {
@@ -41,26 +42,17 @@ class PregnancyService {
   }
 
   async createPregnancy(userData) {
-    const dueDate = new Date(userData.lastPeriodDate);
-    dueDate.setDate(dueDate.getDate() + 280);
-
-    const currentWeek = this.calculateWeek(new Date(userData.lastPeriodDate));
-    const babySize = this.getBabySize(currentWeek);
-
     const pregnancy = new Pregnancy({
       userId: userData.userId,
-      lastPeriodDate: userData.lastPeriodDate,
-      dueDate,
-      currentWeek,
-      babySize,
-      weeklyTips: [
-        "Stay hydrated",
-        "Take your prenatal vitamins",
-        "Get enough rest",
-      ],
+      dueDate: userData.dueDate,
     });
 
-    return await pregnancy.save();
+    const savedPregnancy = await pregnancy.save();
+    return {
+      ...savedPregnancy.toObject(),
+      currentWeek: this.calculateWeek(savedPregnancy.dueDate),
+      babySize: this.getBabySize(this.calculateWeek(savedPregnancy.dueDate))
+    };
   }
 
   async getPregnancyByUserId(userId) {
@@ -69,26 +61,31 @@ class PregnancyService {
       throw new Error("Pregnancy data not found");
     }
 
-    pregnancy.currentWeek = this.calculateWeek(pregnancy.lastPeriodDate);
-    pregnancy.babySize = this.getBabySize(pregnancy.currentWeek);
-    pregnancy.updatedAt = new Date();
-
-    return await pregnancy.save();
+    const currentWeek = this.calculateWeek(pregnancy.dueDate);
+    return {
+      ...pregnancy.toObject(),
+      currentWeek,
+      babySize: this.getBabySize(currentWeek)
+    };
   }
 
-  // Update an existing pregnancy record
   async updatePregnancy(userId, updatedData) {
     const pregnancy = await Pregnancy.findOneAndUpdate(
       { userId },
-      { $set: updatedData },
-      { new: true } // Return the updated document
+      { $set: { dueDate: updatedData.dueDate } },
+      { new: true }
     );
 
     if (!pregnancy) {
       throw new Error("Pregnancy data not found");
     }
 
-    return pregnancy;
+    const currentWeek = this.calculateWeek(pregnancy.dueDate);
+    return {
+      ...pregnancy.toObject(),
+      currentWeek,
+      babySize: this.getBabySize(currentWeek)
+    };
   }
 
   // Delete a pregnancy record

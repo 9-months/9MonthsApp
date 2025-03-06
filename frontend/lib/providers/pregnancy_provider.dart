@@ -1,11 +1,17 @@
-import 'dart:convert';
-import 'package:_9months/services/pregnancy_service.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../config/config.dart';
+import '../services/pregnancy_service.dart';
 
 class PregnancyProvider with ChangeNotifier {
   final PregnancyService _pregnancyService = PregnancyService();
+
+  DateTime calculateDueDate(DateTime inputDate, bool isUltrasound) {
+    if (isUltrasound) {
+      return inputDate;
+    }
+    // If LMP date, add 280 days (40 weeks) to get due date
+    return inputDate.add(const Duration(days: 280));
+  }
+
   Future<Map<String, dynamic>?> fetchPregnancyData(String userId) async {
     try {
       return await _pregnancyService.fetchPregnancyData(userId);
@@ -15,10 +21,12 @@ class PregnancyProvider with ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> createPregnancy(
-      String userId, DateTime lastPeriodDate) async {
+      String userId, DateTime inputDate, bool isUltrasound) async {
     try {
-      final data =
-          await _pregnancyService.createPregnancy(userId, lastPeriodDate);
+      final dueDate =
+          isUltrasound ? inputDate : inputDate.add(const Duration(days: 280));
+
+      final data = await _pregnancyService.createPregnancy(userId, dueDate);
       notifyListeners();
       return data;
     } catch (e) {
