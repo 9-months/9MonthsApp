@@ -115,6 +115,12 @@ class _CreatePregnancyFormState extends State<CreatePregnancyForm> {
                     ? null
                     : () async {
                         try {
+                          print(
+                              'Form submission - Username: ${authProvider.username}');
+                          print('Has ultrasound: $_hasUltrasound');
+                          print(
+                              'Selected date: ${_hasUltrasound! ? _dueDate : _selectedDate}');
+
                           await pregnancyProvider.createPregnancy(
                             authProvider.username,
                             _hasUltrasound! ? _dueDate! : _selectedDate!,
@@ -130,10 +136,11 @@ class _CreatePregnancyFormState extends State<CreatePregnancyForm> {
                             MaterialPageRoute(builder: (context) => HomePage()),
                           );
                         } catch (e) {
+                          print('Form Error: $e');
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content:
-                                    Text('Failed to create pregnancy tracker')),
+                                content: Text(
+                                    'Failed to create pregnancy tracker: $e')),
                           );
                         }
                       },

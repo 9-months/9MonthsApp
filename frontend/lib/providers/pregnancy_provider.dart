@@ -23,13 +23,16 @@ class PregnancyProvider with ChangeNotifier {
   Future<Map<String, dynamic>> createPregnancy(
       String userId, DateTime inputDate, bool isUltrasound) async {
     try {
-      final dueDate =
-          isUltrasound ? inputDate : inputDate.add(const Duration(days: 280));
+      print(
+          'Provider creating pregnancy - userId: $userId, inputDate: $inputDate, isUltrasound: $isUltrasound');
+      final dueDate = calculateDueDate(inputDate, isUltrasound);
+      print('Calculated due date: $dueDate');
 
       final data = await _pregnancyService.createPregnancy(userId, dueDate);
       notifyListeners();
       return data;
     } catch (e) {
+      print('Provider Error: $e');
       throw e.toString();
     }
   }

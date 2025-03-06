@@ -42,17 +42,26 @@ class PregnancyService {
   }
 
   async createPregnancy(userData) {
-    const pregnancy = new Pregnancy({
-      userId: userData.userId,
-      dueDate: userData.dueDate,
-    });
+    try {
+      console.log('Creating pregnancy with data:', userData);
+      
+      const pregnancy = new Pregnancy({
+        userId: userData.userId,
+        dueDate: new Date(userData.dueDate)
+      });
 
-    const savedPregnancy = await pregnancy.save();
-    return {
-      ...savedPregnancy.toObject(),
-      currentWeek: this.calculateWeek(savedPregnancy.dueDate),
-      babySize: this.getBabySize(this.calculateWeek(savedPregnancy.dueDate))
-    };
+      const savedPregnancy = await pregnancy.save();
+      const currentWeek = this.calculateWeek(savedPregnancy.dueDate);
+      
+      return {
+        ...savedPregnancy.toObject(),
+        currentWeek,
+        babySize: this.getBabySize(currentWeek)
+      };
+    } catch (error) {
+      console.error('Error in createPregnancy:', error);
+      throw error;
+    }
   }
 
   async getPregnancyByUserId(userId) {

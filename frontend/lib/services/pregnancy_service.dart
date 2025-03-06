@@ -6,21 +6,30 @@ class PregnancyService {
   Future<Map<String, dynamic>> createPregnancy(
       String userId, DateTime dueDate) async {
     try {
+      print(
+          'Making API call to create pregnancy with userId: $userId, dueDate: $dueDate');
+
+      String formattedDate = dueDate.toIso8601String().split('T')[0];
+
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/pregnancy'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'userId': userId,
-          'dueDate': dueDate.toIso8601String(),
+          'dueDate': formattedDate,
         }),
       );
+
+      print('API Response Status: ${response.statusCode}');
+      print('API Response Body: ${response.body}');
 
       if (response.statusCode == 201) {
         return json.decode(response.body);
       } else {
-        throw 'Failed to create pregnancy data: ${response.statusCode}';
+        throw 'Failed to create pregnancy data: ${response.statusCode} - ${response.body}';
       }
     } catch (e) {
+      print('Pregnancy Service Error: $e');
       throw 'Network error: $e';
     }
   }
