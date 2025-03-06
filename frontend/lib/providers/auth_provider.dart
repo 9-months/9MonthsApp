@@ -4,7 +4,7 @@
  Created Date: 11/02/2021 CCS-55 State Management
  Author: Dinith Perera
 
- last modified: 12/02/2021 | Dinith | CCS-55 provider functionality updated
+ last modified: 15/02/2024 | Chamod | CCS-55 provider functionality updated
 */
 
 import 'package:flutter/foundation.dart';
@@ -14,6 +14,9 @@ import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
+  String? _username;
+  bool get isLoggedIn => _username != null;
+  String get username => _username ?? '';
   User? _user;
   bool _isLoading = false;
   final _storage = const FlutterSecureStorage();
@@ -26,6 +29,7 @@ class AuthProvider extends ChangeNotifier {
 
   // Login and register methods
   Future<void> login(String username, String password) async {
+    _username = username;
     _isLoading = true;
     notifyListeners();
 
@@ -37,7 +41,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _user = null;
-      throw e;
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -51,6 +55,7 @@ class AuthProvider extends ChangeNotifier {
     String? location,
     String? phone,
   }) async {
+    _username = username;
     _isLoading = true;
     notifyListeners();
 
@@ -68,7 +73,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _user = null;
-      throw e;
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -78,6 +83,7 @@ class AuthProvider extends ChangeNotifier {
   // Logout method
   Future<void> logout() async {
     await _clearUser();
+    _username = null;
     _user = null;
     notifyListeners();
   }

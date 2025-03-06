@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'providers/pregnancy_provider.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
 import 'screens/home/home_page.dart';
+import 'screens/pregnancyTracker/pregnancy_tracker_page.dart';
 import 'screens/profile/profile_page.dart';
 import 'screens/splash/splash.dart';
 import 'screens/onboarding/step_screen.dart';
@@ -15,6 +17,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_)=>PregnancyProvider()),
       ],
       child: const MyApp(),
     ),

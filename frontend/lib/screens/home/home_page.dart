@@ -1,20 +1,23 @@
 /*
  File: home_page.dart
- Purpose: Dashboard for the user
+ Purpose: Pregnancy tracker home page
  Created Date: CCS-29
  Author: Irosh Perera
 
- last modified: 2025-02-09 | Melissa | CCS-43 Profile navigation
+ last modified: 2025-02-15 | Chamod | CCS-8 Pregnancy Tracker
 */
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/pregnancy_provider.dart';
+import '../../widgets/homePregnancy.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+  final String username = 'Isurukamiss';
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -42,6 +45,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final pregnancyProvider = Provider.of<PregnancyProvider>(context);
+
     return Scaffold(
       body: SafeArea(
         child: Consumer<AuthProvider>(
