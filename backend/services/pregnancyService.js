@@ -8,6 +8,7 @@
  */
 
 const Pregnancy = require("../models/Pregnancy");
+const WeeklyData = require("../models/WeeklyData");
 
 class PregnancyService {
   calculateWeek(dueDate) {
@@ -18,28 +19,15 @@ class PregnancyService {
     return currentWeek;
   }
 
-  getBabySize(week) {
-    const sizes = {
-      4: "Poppy seed",
-      8: "Raspberry",
-      12: "Lime",
-      16: "Avocado",
-      20: "Banana",
-      24: "Corn",
-      28: "Eggplant",
-      32: "Pineapple",
-      36: "Honeydew melon",
-      40: "Small pumpkin",
-    };
-
-    const nearestWeek = Object.keys(sizes)
-      .map(Number)
-      .reduce((prev, curr) =>
-        Math.abs(curr - week) < Math.abs(prev - week) ? curr : prev
-      );
-
-    return sizes[nearestWeek];
+  async getWeeklyData(week) {
+    const weekData = await WeeklyData.findOne({ week });
+    if (!weekData) {
+      throw new Error(`Data for week ${week} not found`);
+    }
+    return weekData;
   }
+
+
 
   async createPregnancy(userData) {
     try {
@@ -52,11 +40,12 @@ class PregnancyService {
 
       const savedPregnancy = await pregnancy.save();
       const currentWeek = this.calculateWeek(savedPregnancy.dueDate);
+      const weeklyData = await this.getWeeklyData(currentWeek);
       
       return {
         ...savedPregnancy.toObject(),
         currentWeek,
-        babySize: this.getBabySize(currentWeek)
+        ...weeklyData.toObject()
       };
     } catch (error) {
       console.error('Error in createPregnancy:', error);
@@ -71,10 +60,12 @@ class PregnancyService {
     }
 
     const currentWeek = this.calculateWeek(pregnancy.dueDate);
+    const weeklyData = await this.getWeeklyData(currentWeek);
+
     return {
       ...pregnancy.toObject(),
       currentWeek,
-      babySize: this.getBabySize(currentWeek)
+      ...weeklyData.toObject()
     };
   }
 
