@@ -15,7 +15,6 @@ import '../../widgets/homePregnancy.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   final String username = 'Isurukamiss';
@@ -92,51 +91,8 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Week Selector
-                SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 7,
-                    itemBuilder: (context, index) {
-                      final day = 16 + index;
-                      final isSelected = index == 2;
-                      return Container(
-                        width: 45,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              day.toString(),
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Wed',
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 24),
-
                 HomePregnancyWidget(),
-            
+
                 // Menu Grid
                 GridView.count(
                   shrinkWrap: true,

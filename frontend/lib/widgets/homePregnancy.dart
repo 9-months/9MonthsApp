@@ -25,7 +25,8 @@ class HomePregnancyWidget extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.pregnant_woman, size: 48, color: Colors.blue),
+                  const Icon(Icons.pregnant_woman,
+                      size: 48, color: Colors.blue),
                   const SizedBox(height: 16),
                   Text(
                     'Track Your Pregnancy Journey',
@@ -44,7 +45,8 @@ class HomePregnancyWidget extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                     ),
                     onPressed: () {
                       Navigator.push(
@@ -92,7 +94,8 @@ class HomePregnancyWidget extends StatelessWidget {
                   LinearProgressIndicator(
                     value: (snapshot.data!['currentWeek'] as num) / 40,
                     backgroundColor: Colors.grey[200],
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Colors.blue),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -112,10 +115,10 @@ class HomePregnancyWidget extends StatelessWidget {
                       ),
                       _buildInfoColumn(
                         context,
-                        'Due Date',
-                        DateTime.parse(snapshot.data!['dueDate'])
-                            .toString()
-                            .split(' ')[0],
+                        'Days Left',
+                        _calculateDaysRemaining(
+                                DateTime.parse(snapshot.data!['dueDate']))
+                            .toString(),
                         Icons.event,
                       ),
                     ],
@@ -150,5 +153,10 @@ class HomePregnancyWidget extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  int _calculateDaysRemaining(DateTime dueDate) {
+    final now = DateTime.now();
+    return dueDate.difference(now).inDays;
   }
 }

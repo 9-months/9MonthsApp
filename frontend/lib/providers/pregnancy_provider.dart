@@ -14,9 +14,11 @@ class PregnancyProvider with ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> createPregnancy(String userId, DateTime lastPeriodDate) async {
+  Future<Map<String, dynamic>> createPregnancy(
+      String userId, DateTime lastPeriodDate) async {
     try {
-      final data = await _pregnancyService.createPregnancy(userId, lastPeriodDate);
+      final data =
+          await _pregnancyService.createPregnancy(userId, lastPeriodDate);
       notifyListeners();
       return data;
     } catch (e) {
