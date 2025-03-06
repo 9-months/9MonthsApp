@@ -91,86 +91,8 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Week Selector
-                  SizedBox(
-                    height: 60,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 7,
-                      itemBuilder: (context, index) {
-                        final day = 16 + index;
-                        final isSelected = index == 2;
-                        return Container(
-                          width: 45,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.primary
-                                : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                day.toString(),
-                                style: TextStyle(
-                                  color:
-                                      isSelected ? Colors.white : Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'Wed',
-                                style: TextStyle(
-                                  color:
-                                      isSelected ? Colors.white : Colors.grey,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Baby Info Card
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          const CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.blue,
-                            child: Icon(Icons.child_care,
-                                color: Colors.white, size: 36),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Your baby is the size of a pear',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildInfoColumn('Baby Height', '17 cm'),
-                              _buildInfoColumn('Baby Weight', '110 gr'),
-                              _buildInfoColumn('Days Left', '168 days'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+                  // Pregnancy Info
+                  HomePregnancyWidget(),
 
                   // Menu Grid
                   GridView.count(
