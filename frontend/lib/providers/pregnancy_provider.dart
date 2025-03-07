@@ -4,6 +4,10 @@ import '../services/pregnancy_service.dart';
 class PregnancyProvider with ChangeNotifier {
   final PregnancyService _pregnancyService = PregnancyService();
 
+  int? _currentWeek;
+
+  int? get currentWeek => _currentWeek;
+
   DateTime calculateDueDate(DateTime inputDate, bool isUltrasound) {
     if (isUltrasound) {
       return inputDate;
@@ -12,15 +16,23 @@ class PregnancyProvider with ChangeNotifier {
     return inputDate.add(const Duration(days: 280));
   }
 
+  int calculateCurrentWeek(DateTime dueDate) {
+    final today = DateTime.now();
+    final difference = dueDate.difference(today);
+    final remainingWeeks = (difference.inDays / 7).ceil();
+    _currentWeek = 40 - remainingWeeks;
+    return _currentWeek!;
+  }
+
   Future<Map<String, dynamic>?> fetchPregnancyData(String userId) async {
     try {
       final data = await _pregnancyService.fetchPregnancyData(userId);
-      
+
       // If babySize is null, set a default value
       if (data != null && data['babySize'] == null) {
         data['babySize'] = 'Not available';
       }
-      
+
       return data;
     } catch (e) {
       print('Error fetching pregnancy data: $e');
@@ -45,7 +57,8 @@ class PregnancyProvider with ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> updatePregnancy(String userId, DateTime newDueDate) async {
+  Future<Map<String, dynamic>> updatePregnancy(
+      String userId, DateTime newDueDate) async {
     try {
       final data = await _pregnancyService.updatePregnancy(userId, newDueDate);
       notifyListeners();

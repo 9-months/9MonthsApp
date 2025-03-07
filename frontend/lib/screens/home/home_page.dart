@@ -68,14 +68,36 @@ class _HomePageState extends State<HomePage> {
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            '16th Week of Pregnancy',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          FutureBuilder(
+                            future: pregnancyProvider
+                                .fetchPregnancyData(authProvider.username),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Text('Loading...');
+                              } else if (snapshot.hasError) {
+                                return const Text(
+                                    'Unable to load pregnancy data');
+                              } else if (!snapshot.hasData) {
+                                return const Text(
+                                    'No pregnancy data available');
+                              }
+
+                              final pregnancyData = snapshot.data!;
+                              final dueDate =
+                                  DateTime.parse(pregnancyData['dueDate']);
+                              final currentWeek = pregnancyProvider
+                                  .calculateCurrentWeek(dueDate);
+                              return Text(
+                                'Week $currentWeek of Pregnancy',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              );
+                            },
                           ),
                         ],
                       ),
