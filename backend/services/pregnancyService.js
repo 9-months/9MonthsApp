@@ -4,7 +4,7 @@
  Created Date: 2025-02-08 CCS-8 Chamod Kamiss
  Author: Chamod Kamiss
 
- last modified: 2025-02-08 | Irosh | CCS-8 Created Update and Delete methods
+ last modified: 2025-03-07 | Chamod | CCS-8 Add weekly tips and baby development data
  */
 
 const Pregnancy = require("../models/Pregnancy");
@@ -75,16 +75,18 @@ class PregnancyService {
       { $set: { dueDate: updatedData.dueDate } },
       { new: true }
     );
-
+  
     if (!pregnancy) {
       throw new Error("Pregnancy data not found");
     }
-
+  
     const currentWeek = this.calculateWeek(pregnancy.dueDate);
+    const weeklyData = await this.getWeeklyData(currentWeek);
+    
     return {
       ...pregnancy.toObject(),
       currentWeek,
-      babySize: this.getBabySize(currentWeek)
+      ...weeklyData.toObject()
     };
   }
 
@@ -95,6 +97,21 @@ class PregnancyService {
       throw new Error("Pregnancy data not found");
     }
     return { message: "Pregnancy data deleted successfully" };
+  }
+
+  async getWeeklyData(week) {
+    const weekData = await WeeklyData.findOne({ week });
+    if (!weekData) {
+      return {
+        week,
+        babySize: "Information not available",
+        tips: ["Stay hydrated", "Get regular checkups"],
+        babyDevelopment: "Information not available",
+        motherChanges: "Information not available",
+        toObject: function() { return this; }
+      };
+    }
+    return weekData;
   }
 }
 

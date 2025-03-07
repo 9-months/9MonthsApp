@@ -52,11 +52,39 @@ class PregnancyService {
     }
   }
 
-  Future<void> updatePregnancy() async {
-    // Call the API to update a pregnancy
-  }
+  Future<Map<String, dynamic>> updatePregnancy(String userId, DateTime newDueDate) async {
+  try {
+    String formattedDate = newDueDate.toIso8601String().split('T')[0];
+    
+    final response = await http.put(
+      Uri.parse('${Config.apiBaseUrl}/pregnancy/$userId'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'dueDate': formattedDate,
+      }),
+    );
 
-  Future<void> deletePregnancy() async {
-    // Call the API to delete a pregnancy
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw 'Failed to update pregnancy data: ${response.statusCode}';
+    }
+  } catch (e) {
+    throw 'Network error: $e';
   }
+}
+
+Future<void> deletePregnancy(String userId) async {
+  try {
+    final response = await http.delete(
+      Uri.parse('${Config.apiBaseUrl}/pregnancy/$userId'),
+    );
+
+    if (response.statusCode != 200) {
+      throw 'Failed to delete pregnancy data: ${response.statusCode}';
+    }
+  } catch (e) {
+    throw 'Network error: $e';
+  }
+}
 }

@@ -14,8 +14,16 @@ class PregnancyProvider with ChangeNotifier {
 
   Future<Map<String, dynamic>?> fetchPregnancyData(String userId) async {
     try {
-      return await _pregnancyService.fetchPregnancyData(userId);
+      final data = await _pregnancyService.fetchPregnancyData(userId);
+      
+      // If babySize is null, set a default value
+      if (data != null && data['babySize'] == null) {
+        data['babySize'] = 'Not available';
+      }
+      
+      return data;
     } catch (e) {
+      print('Error fetching pregnancy data: $e');
       throw e.toString();
     }
   }
@@ -33,6 +41,25 @@ class PregnancyProvider with ChangeNotifier {
       return data;
     } catch (e) {
       print('Provider Error: $e');
+      throw e.toString();
+    }
+  }
+
+  Future<Map<String, dynamic>> updatePregnancy(String userId, DateTime newDueDate) async {
+    try {
+      final data = await _pregnancyService.updatePregnancy(userId, newDueDate);
+      notifyListeners();
+      return data;
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<void> deletePregnancy(String userId) async {
+    try {
+      await _pregnancyService.deletePregnancy(userId);
+      notifyListeners();
+    } catch (e) {
       throw e.toString();
     }
   }
