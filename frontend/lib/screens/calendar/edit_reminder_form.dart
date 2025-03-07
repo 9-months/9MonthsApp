@@ -1,10 +1,3 @@
-/*
- File: add_reminder_screen.dart
- Purpose: UI for adding a new reminder
- Created Date: 02-03-2025
- Author: Chamod Kamiss
-*/
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -12,23 +5,23 @@ import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../../services/reminder_service.dart';
 import 'package:_9months/providers/auth_provider.dart';
 
-class ReminderForm extends StatefulWidget {
+class EditReminderForm extends StatefulWidget {
   final String userId;
-  final DateTime? selectedDate;
+  final Map<String, dynamic> reminder;
 
-  const ReminderForm({super.key, required this.userId, this.selectedDate});
+  const EditReminderForm(
+      {super.key, required this.userId, required this.reminder});
 
   @override
-  _ReminderFormState createState() => _ReminderFormState();
+  _EditReminderFormState createState() => _EditReminderFormState();
 }
 
-class _ReminderFormState extends State<ReminderForm> {
+class _EditReminderFormState extends State<EditReminderForm> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
   DateTime? _selectedTime;
   List<int> _alertOffsets = [0]; // Default alert offset at the time of reminder
   final List<Map<String, dynamic>> _alertOptions = [
@@ -49,6 +42,16 @@ class _ReminderFormState extends State<ReminderForm> {
     super.initState();
     tzdata.initializeTimeZones(); // Initialize time zone data
     _setCurrentTimezone(); // Set the current timezone
+
+    _titleController = TextEditingController(text: widget.reminder['title']);
+    _descriptionController =
+        TextEditingController(text: widget.reminder['description']);
+    _selectedTime = DateTime.parse(widget.reminder['dateTime']);
+    _alertOffsets = List<int>.from(widget.reminder['alertOffsets']);
+    _type = widget.reminder['type'];
+    _timezone = widget.reminder['timezone'];
+    _repeat = widget.reminder['repeat'];
+    _location = widget.reminder['location'];
   }
 
   Future<void> _setCurrentTimezone() async {
@@ -68,14 +71,14 @@ class _ReminderFormState extends State<ReminderForm> {
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: TimeOfDay.fromDateTime(_selectedTime!),
     );
     if (picked != null) {
       setState(() {
         _selectedTime = DateTime(
-          widget.selectedDate!.year,
-          widget.selectedDate!.month,
-          widget.selectedDate!.day,
+          _selectedTime!.year,
+          _selectedTime!.month,
+          _selectedTime!.day,
           picked.hour,
           picked.minute,
         );
@@ -83,12 +86,13 @@ class _ReminderFormState extends State<ReminderForm> {
     }
   }
 
-  Future<void> _createReminder() async {
+  Future<void> _updateReminder() async {
     if (_formKey.currentState!.validate()) {
       final userId =
           Provider.of<AuthProvider>(context, listen: false).user!.uid;
-      final response = await http.post(
-        Uri.parse('http://localhost:3000/reminder/$userId'),
+      final response = await http.put(
+        Uri.parse(
+            'http://localhost:3000/reminder/$userId/${widget.reminder['_id']}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'title': _titleController.text,
@@ -101,20 +105,20 @@ class _ReminderFormState extends State<ReminderForm> {
           'location': _location,
         }),
       );
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         Navigator.pop(context);
       } else {
-        print('Failed to create reminder. Status code: ${response.statusCode}');
+        print('Failed to update reminder. Status code: ${response.statusCode}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Failed to create reminder")));
+              SnackBar(content: Text("Failed to update reminder")));
         }
       }
     }
     print('Timezone: $_timezone');
-    print('Created Time: ${_selectedTime!.toIso8601String()}');
+    print('Updated Time: ${_selectedTime!.toIso8601String()}');
     print(
-        'Request URL: ${Uri.parse('http://localhost:3000/reminder/${Provider.of<AuthProvider>(context, listen: false).user!.uid}')}');
+        'Request URL: ${Uri.parse('http://localhost:3000/reminder/${Provider.of<AuthProvider>(context, listen: false).user!.uid}/${widget.reminder['_id']}')}');
     print('Request Body: ${json.encode({
           'title': _titleController.text,
           'description': _descriptionController.text,
@@ -130,7 +134,7 @@ class _ReminderFormState extends State<ReminderForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('New Reminder')),
+      appBar: AppBar(title: Text('Edit Reminder')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -255,8 +259,8 @@ class _ReminderFormState extends State<ReminderForm> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: ElevatedButton(
-                  onPressed: _createReminder,
-                  child: Text('Create Reminder'),
+                  onPressed: _updateReminder,
+                  child: Text('Update Reminder'),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
                     textStyle: TextStyle(fontSize: 16),
