@@ -77,7 +77,7 @@ class PregnancyInfo extends StatelessWidget {
         Card(
           child: ListTile(
             title: const Text('Baby Size'),
-            subtitle: Text(pregnancyData['babySize']?.toString() ?? 'Information not available'),
+            subtitle: Text(pregnancyData['baby_size']?.toString() ?? 'Not available'),
             leading: const Icon(Icons.child_care, color: Colors.blue),
           ),
         ),
@@ -101,7 +101,7 @@ class PregnancyInfo extends StatelessWidget {
         ),
 
         // Baby development card
-        if (pregnancyData['babyDevelopment'] != null)
+        if (pregnancyData['baby_development'] != null)
           Card(
             margin: const EdgeInsets.only(top: 16),
             child: Padding(
@@ -118,14 +118,14 @@ class PregnancyInfo extends StatelessWidget {
                     ],
                   ),
                   const Divider(),
-                  Text(pregnancyData['babyDevelopment'].toString()),
+                  Text(pregnancyData['baby_development'].toString()),
                 ],
               ),
             ),
           ),
 
         // Mother changes card
-        if (pregnancyData['motherChanges'] != null)
+        if (pregnancyData['mother_changes'] != null)
           Card(
             margin: const EdgeInsets.only(top: 16),
             child: Padding(
@@ -142,7 +142,7 @@ class PregnancyInfo extends StatelessWidget {
                     ],
                   ),
                   const Divider(),
-                  Text(pregnancyData['motherChanges'].toString()),
+                  Text(pregnancyData['mother_changes'].toString()),
                 ],
               ),
             ),

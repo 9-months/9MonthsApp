@@ -17,6 +17,32 @@ class HomePregnancyWidget extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
+        if (snapshot.hasError) {
+          return Card(
+            margin: const EdgeInsets.all(16),
+            color: Colors.red[50],
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  Text('Error loading pregnancy data: ${snapshot.error}'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Force rebuild the widget
+                      (context as Element).markNeedsBuild();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         if (!snapshot.hasData) {
           return Card(
             margin: const EdgeInsets.all(16),
@@ -110,7 +136,7 @@ class HomePregnancyWidget extends StatelessWidget {
                       _buildInfoColumn(
                         context,
                         'Baby Size',
-                        snapshot.data!['babySize'] ?? 'Not available',  // Add null check with fallback
+                        snapshot.data!['baby_size'] ?? 'Not available',  // Add null check with fallback
                         Icons.child_care,
                       ),
                       _buildInfoColumn(
