@@ -5,6 +5,8 @@ import '../../providers/pregnancy_provider.dart';
 import '../home/home_page.dart';
 
 class CreatePregnancyForm extends StatefulWidget {
+  const CreatePregnancyForm({super.key});
+
   @override
   _CreatePregnancyFormState createState() => _CreatePregnancyFormState();
 }

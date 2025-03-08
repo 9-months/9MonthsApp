@@ -179,7 +179,7 @@ class PregnancyInfo extends StatelessWidget {
                                 ],
                               ),
                             ))
-                        .toList()
+                        
                   else
                     const Text('No tips available for this week'),
                 ],

@@ -5,6 +5,8 @@ import '../providers/auth_provider.dart';
 import '../screens/pregnancyTracker/pregnancy_tracker_page.dart';
 
 class HomePregnancyWidget extends StatelessWidget {
+  const HomePregnancyWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
