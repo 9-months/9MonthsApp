@@ -1,6 +1,7 @@
 import 'package:_9months/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
-import '../screens/journal/journal_options_screen.dart'; // import the new screen
+import '../screens/journal/journal_options_screen.dart';
+import 'emergency_btn.dart'; 
 
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -113,29 +114,11 @@ class CustomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildEmergencyButton(BuildContext context) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onEmergencyPress,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.error,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: theme.colorScheme.error.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(
-          Icons.emergency,
-          color: theme.colorScheme.onError,
-          size: 32,
-        ),
-      ),
-    );
-  }
+ Widget _buildEmergencyButton(BuildContext context) {
+  return EmergencyButton(
+    icon: Icons.emergency,
+    size: 32,
+    color: Theme.of(context).colorScheme.onError,
+  );
+}
 }
