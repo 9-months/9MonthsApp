@@ -115,10 +115,16 @@ class CustomNavBar extends StatelessWidget {
   }
 
  Widget _buildEmergencyButton(BuildContext context) {
-  return EmergencyButton(
-    icon: Icons.emergency,
-    size: 32,
-    color: Theme.of(context).colorScheme.onError,
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.red,
+      shape: BoxShape.circle,
+    ),
+    child: EmergencyButton(
+      icon: Icons.call,
+      size: 32,
+      color: Colors.white,
+    ),
   );
 }
 }
