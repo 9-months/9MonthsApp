@@ -1,3 +1,4 @@
+import 'package:_9months/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import '../screens/journal/journal_options_screen.dart'; // import the new screen
 
@@ -21,7 +22,7 @@ class CustomNavBar extends StatelessWidget {
         color: theme.cardColor,
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.3),
+            color: theme.shadowColor.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -56,7 +57,21 @@ class CustomNavBar extends StatelessWidget {
               _buildNavItem(context, 3, Icons.analytics_outlined,
                   Icons.analytics, 'Stats'),
               _buildNavItem(
-                  context, 4, Icons.person_outlined, Icons.person, 'Profile'),
+                context,
+                4,
+                Icons.person_outlined,
+                Icons.person,
+                'Profile',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfilePage(),
+                    ),
+                  );
+                  onTap(1);
+                },
+              ),
             ],
           ),
         ),
@@ -78,7 +93,9 @@ class CustomNavBar extends StatelessWidget {
             isSelected ? filledIcon : outlinedIcon,
             color: isSelected
                 ? theme.colorScheme.primary
-                : theme.colorScheme.onSurface.withOpacity(0.64),
+                : theme.colorScheme.onSurface.withValues(
+                    alpha: 0.64,
+                  ),
             size: 24,
           ),
           const SizedBox(height: 4),

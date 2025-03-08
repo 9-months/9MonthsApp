@@ -51,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Timer(const Duration(milliseconds: 500), () {
-          Navigator.of(context).pushReplacementNamed('/step');
+          Navigator.of(context).pushReplacementNamed('/register');
         });
       }
     });

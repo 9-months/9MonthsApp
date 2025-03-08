@@ -23,10 +23,10 @@ const diaryRoutes = require("./routes/diaryRoutes");
 dotenv.config();
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./ServicesAccountKey.json");
+const credentials = JSON.parse(Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString());
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(credentials),
 });
 
 // Initialize Express app

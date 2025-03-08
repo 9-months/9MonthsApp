@@ -6,6 +6,8 @@ import '../../services/diary_service.dart';
 import '../../widgets/diary_card.dart';
 
 class DiaryScreen extends StatefulWidget {
+  const DiaryScreen({super.key});
+
   @override
   _DiaryScreenState createState() => _DiaryScreenState();
 }
@@ -36,7 +38,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
         _isLoading = true;
         _errorMessage = null;
       });
-      
+
       final diaries = await _diaryService.getDiaries(_userId);
       setState(() {
         _diaries = diaries;
@@ -115,7 +117,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
 
   Future<void> _showDiaryDialog({DiaryEntry? diary}) async {
     final textController = TextEditingController(text: diary?.description);
-    
+
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
