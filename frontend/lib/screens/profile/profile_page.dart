@@ -1,3 +1,12 @@
+/*
+ File: Profile_page.dart
+ Purpose: Profile page
+ Created Date: CCS-42 Profile page
+ Author: Melissa Joanne
+
+ last modified: 2025-03-08 | Melissa | CCS-42 Signout button added
+*/
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -404,6 +413,41 @@ class _ProfilePageState extends State<ProfilePage> {
                               primaryColor,
                             ),
                           ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Sign Out Button (from first file)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 10.0),
+                    child: Container(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await context.read<AuthProvider>().signOut();
+                          Navigator.pushReplacementNamed(context, '/login');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                          foregroundColor:
+                              const Color.fromARGB(255, 225, 28, 28),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: const Text(
+                          'Sign Out',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
