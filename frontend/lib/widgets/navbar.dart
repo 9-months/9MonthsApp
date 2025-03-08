@@ -22,7 +22,7 @@ class CustomNavBar extends StatelessWidget {
         color: theme.cardColor,
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.3),
+            color: theme.shadowColor.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -93,7 +93,9 @@ class CustomNavBar extends StatelessWidget {
             isSelected ? filledIcon : outlinedIcon,
             color: isSelected
                 ? theme.colorScheme.primary
-                : theme.colorScheme.onSurface.withOpacity(0.64),
+                : theme.colorScheme.onSurface.withValues(
+                    alpha: 0.64,
+                  ),
             size: 24,
           ),
           const SizedBox(height: 4),

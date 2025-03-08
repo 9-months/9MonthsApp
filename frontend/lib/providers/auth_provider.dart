@@ -111,7 +111,7 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _user = null;
-      throw e;
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
