@@ -7,6 +7,7 @@
  last modified: 2025-02-15 | Chamod | CCS-8 Pregnancy Tracker
 */
 
+import 'package:_9months/widgets/homeTIps.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -123,27 +124,8 @@ class _HomePageState extends State<HomePage> {
                   // Pregnancy Info
                   HomePregnancyWidget(),
 
-                  // Menu Grid
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    children: [
-                      _buildMenuCard(Icons.medication, 'Medicines',
-                          Theme.of(context).colorScheme.secondary),
-                      _buildMenuCard(
-                          Icons.fitness_center, 'Exercises', Colors.green),
-                      _buildMenuCard(
-                          Icons.local_hospital, 'Hospitals', Colors.red),
-                      _buildMenuCard(Icons.article, 'Articles', Colors.purple),
-                      _buildMenuCard(
-                          Icons.video_library, 'Videos', Colors.blue),
-                      _buildMenuCard(
-                          Icons.restaurant_menu, 'Food', Colors.teal),
-                    ],
-                  ),
+                  //Tips Widget
+                  HomeTipsWidget(),
                 ],
               ),
             ),
@@ -154,59 +136,6 @@ class _HomePageState extends State<HomePage> {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         onEmergencyPress: _handleEmergency,
-      ),
-    );
-  }
-
-  Widget _buildInfoColumn(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMenuCard(IconData icon, String title, Color color) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 32,
-              color: color,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
