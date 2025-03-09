@@ -98,14 +98,17 @@ class PregnancyService {
 
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
-        return data.map((item) => item as Map<String, dynamic>).toList();
+        List<Map<String, dynamic>> tips =
+            data.map((item) => item as Map<String, dynamic>).toList();
+        print('Fetched tips for week $week: $tips');
+        return tips;
       } else {
-        // Return an empty list of the right type if there's an error
+        print(
+            'Failed to load tips data for week $week: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('Error fetching tips: $e');
-      // Return an empty list of the right type in case of error
+      print('Error fetching tips for week $week: $e');
       return [];
     }
   }

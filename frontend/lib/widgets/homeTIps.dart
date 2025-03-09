@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/pregnancy_provider.dart';
 import '../providers/auth_provider.dart';
+import 'dart:async';
 
 class HomeTipsWidget extends StatefulWidget {
   const HomeTipsWidget({Key? key}) : super(key: key);
@@ -11,7 +12,6 @@ class HomeTipsWidget extends StatefulWidget {
 }
 
 class _HomeTipsWidgetState extends State<HomeTipsWidget> {
-  // Sample appointment data - you'll replace this with actual data later
   final List<Appointment> _appointments = [
     Appointment(
       id: '1',
@@ -29,15 +29,23 @@ class _HomeTipsWidgetState extends State<HomeTipsWidget> {
     ),
   ];
 
-  // Initialize with empty list of the correct type
   List<Map<String, dynamic>> _pregnancyTips = [];
   bool _isLoading = true;
   String _errorMessage = '';
+  int _currentTipIndex = 0;
+  Timer? _tipTimer;
 
   @override
   void initState() {
     super.initState();
     _loadTips();
+    _startTipRotation();
+  }
+
+  @override
+  void dispose() {
+    _tipTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadTips() async {
@@ -54,20 +62,19 @@ class _HomeTipsWidgetState extends State<HomeTipsWidget> {
         final pregnancyProvider =
             Provider.of<PregnancyProvider>(context, listen: false);
 
-        // Use a try-catch block here to handle any errors from the provider
         try {
           final tips = await pregnancyProvider.fetchCurrentWeekTips(userId);
 
           setState(() {
             _pregnancyTips = tips;
             _isLoading = false;
+            print('Loaded tips: $_pregnancyTips');
           });
         } catch (e) {
           print('Error fetching tips: $e');
           setState(() {
             _errorMessage = e.toString();
             _isLoading = false;
-            // Make sure we have an empty list of the correct type
             _pregnancyTips = [];
           });
         }
@@ -85,14 +92,23 @@ class _HomeTipsWidgetState extends State<HomeTipsWidget> {
     }
   }
 
-  String _getRandomTip() {
+  void _startTipRotation() {
+    _tipTimer = Timer.periodic(Duration(seconds: 10), (timer) {
+      if (_pregnancyTips.isNotEmpty) {
+        setState(() {
+          _currentTipIndex = (_currentTipIndex + 1) % _pregnancyTips.length;
+          print('Displaying tip: ${_pregnancyTips[_currentTipIndex]}');
+        });
+      }
+    });
+  }
+
+  String _getCurrentTip() {
     if (_pregnancyTips.isEmpty) {
       return 'Stay hydrated by drinking at least 8-10 glasses of water daily';
     }
-
-    // Shuffle the tips and return the first one
-    _pregnancyTips.shuffle();
-    return _pregnancyTips.first['tip'] ?? 'No tip available for this week';
+    return _pregnancyTips[_currentTipIndex]['tip'] ??
+        'No tip available for this week';
   }
 
   void _toggleAppointmentCompletion(String id) {
@@ -145,19 +161,9 @@ class _HomeTipsWidgetState extends State<HomeTipsWidget> {
                             style: const TextStyle(color: Colors.red),
                           )
                         : Text(
-                            _getRandomTip(),
+                            _getCurrentTip(),
                             style: const TextStyle(fontSize: 16),
                           ),
-                if (_pregnancyTips.isNotEmpty)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        setState(() {}); // Refresh to get a new random tip
-                      },
-                      child: const Text('Next Tip'),
-                    ),
-                  ),
               ],
             ),
           ),
