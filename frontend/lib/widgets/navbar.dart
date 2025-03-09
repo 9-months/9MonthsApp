@@ -2,7 +2,7 @@ import 'package:_9months/screens/news/newsFeed.dart';
 import 'package:_9months/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import '../screens/journal/journal_options_screen.dart';
-import 'emergency_btn.dart'; 
+import 'emergency_btn.dart';
 
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -59,9 +59,9 @@ class CustomNavBar extends StatelessWidget {
               _buildNavItem(
                 context,
                 3,
-                Icons.analytics_outlined,
-                Icons.analytics,
-                'Stats',
+                Icons.article_outlined,
+                Icons.article,
+                'News',
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -129,17 +129,17 @@ class CustomNavBar extends StatelessWidget {
     );
   }
 
- Widget _buildEmergencyButton(BuildContext context) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.red,
-      shape: BoxShape.circle,
-    ),
-    child: EmergencyButton(
-      icon: Icons.call,
-      size: 32,
-      color: Colors.white,
-    ),
-  );
-}
+  Widget _buildEmergencyButton(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.red,
+        shape: BoxShape.circle,
+      ),
+      child: EmergencyButton(
+        icon: Icons.call,
+        size: 32,
+        color: Colors.white,
+      ),
+    );
+  }
 }
