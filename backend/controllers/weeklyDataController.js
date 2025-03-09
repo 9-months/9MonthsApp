@@ -5,7 +5,6 @@ class WeeklyDataController {
   async getWeeklyData(req, res) {
     try {
       const { week } = req.params;
-      console.log(`Fetching weekly data for week: ${week}`);
       const weeklyData = await WeeklyData.findOne({ week: parseInt(week) });
       
       if (!weeklyData) {
@@ -25,7 +24,6 @@ class WeeklyDataController {
   async getTipsForWeek(req, res) {
     try {
       const { week } = req.params;
-      console.log(`Fetching tips for week: ${week}`);
       const weeklyData = await WeeklyData.findOne({ week: parseInt(week) });
       
       if (!weeklyData) {

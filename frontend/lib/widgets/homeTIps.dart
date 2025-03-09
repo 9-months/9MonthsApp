@@ -68,7 +68,6 @@ class _HomeTipsWidgetState extends State<HomeTipsWidget> {
           setState(() {
             _pregnancyTips = tips;
             _isLoading = false;
-            print('Loaded tips: $_pregnancyTips');
           });
         } catch (e) {
           print('Error fetching tips: $e');
@@ -97,7 +96,6 @@ class _HomeTipsWidgetState extends State<HomeTipsWidget> {
       if (_pregnancyTips.isNotEmpty) {
         setState(() {
           _currentTipIndex = (_currentTipIndex + 1) % _pregnancyTips.length;
-          print('Displaying tip: ${_pregnancyTips[_currentTipIndex]}');
         });
       }
     });

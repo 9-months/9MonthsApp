@@ -100,7 +100,6 @@ class PregnancyService {
         List<dynamic> data = json.decode(response.body);
         List<Map<String, dynamic>> tips =
             data.map((item) => item as Map<String, dynamic>).toList();
-        print('Fetched tips for week $week: $tips');
         return tips;
       } else {
         print(
