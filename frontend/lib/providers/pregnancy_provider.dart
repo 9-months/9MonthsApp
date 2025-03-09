@@ -28,9 +28,19 @@ class PregnancyProvider with ChangeNotifier {
     try {
       final data = await _pregnancyService.fetchPregnancyData(userId);
 
-      // If babySize is null, set a default value
-      if (data != null && data['babySize'] == null) {
-        data['babySize'] = 'Not available';
+      if (data != null) {
+        // If babySize is null, set a default value
+        if (data['babySize'] == null) {
+          data['babySize'] = 'Not available';
+        }
+
+        // If currentWeek is not already set in the data, calculate it
+        if (!data.containsKey('currentWeek') || data['currentWeek'] == null) {
+          if (data.containsKey('dueDate') && data['dueDate'] != null) {
+            final dueDate = DateTime.parse(data['dueDate']);
+            data['currentWeek'] = calculateCurrentWeek(dueDate);
+          }
+        }
       }
 
       return data;

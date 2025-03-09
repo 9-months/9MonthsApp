@@ -17,7 +17,6 @@ import '../../services/emergency_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-  final String username = 'Isurukamiss';
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -84,10 +83,18 @@ class _HomePageState extends State<HomePage> {
                               }
 
                               final pregnancyData = snapshot.data!;
-                              final dueDate =
-                                  DateTime.parse(pregnancyData['dueDate']);
-                              final currentWeek = pregnancyProvider
-                                  .calculateCurrentWeek(dueDate);
+                              // Use the currentWeek from the data if available, otherwise calculate it
+                              int currentWeek;
+                              if (pregnancyData.containsKey('currentWeek') &&
+                                  pregnancyData['currentWeek'] != null) {
+                                currentWeek = pregnancyData['currentWeek'];
+                              } else {
+                                final dueDate =
+                                    DateTime.parse(pregnancyData['dueDate']);
+                                currentWeek = pregnancyProvider
+                                    .calculateCurrentWeek(dueDate);
+                              }
+
                               return Text(
                                 'Week $currentWeek of Pregnancy',
                                 style: Theme.of(context)

@@ -138,7 +138,8 @@ class HomePregnancyWidget extends StatelessWidget {
                       _buildInfoColumn(
                         context,
                         'Baby Size',
-                        snapshot.data!['baby_size'] ?? 'Not available',  // Add null check with fallback
+                        snapshot.data!['baby_size'] ??
+                            'Not available', // Add null check with fallback
                         Icons.child_care,
                       ),
                       _buildInfoColumn(
