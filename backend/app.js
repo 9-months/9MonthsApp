@@ -42,6 +42,8 @@ app.use("/auth", authRoutes);
 app.use('/moods', moodRoutes);
 app.use("/pregnancy", pregnancyRouter);
 app.use("/diary", diaryRoutes);
+app.use('/api/weekly-data', require('./routes/weeklyDataRoutes'));
+app.use('/api/tips', require('./routes/weeklyDataRoutes'));
 
 // Routes
 app.get("/", (req, res) => {
