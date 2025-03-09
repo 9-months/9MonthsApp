@@ -1,3 +1,12 @@
+/*
+ File: Profile_page.dart
+ Purpose: Profile page
+ Created Date: CCS-42 Profile page
+ Author: Melissa Joanne
+
+ last modified: 2025-03-08 | Melissa | CCS-42 Signout button added
+*/
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -33,9 +42,9 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -50,12 +59,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Change Profile Picture',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 20),
               _buildImagePickerOption(
@@ -89,6 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
     required VoidCallback onTap,
     Color? color,
   }) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: () {
         Navigator.pop(context);
@@ -98,13 +107,13 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
         child: Row(
           children: [
-            Icon(icon, color: color ?? Colors.deepPurple, size: 28),
+            Icon(icon, color: color ?? theme.primaryColor, size: 28),
             const SizedBox(width: 16),
             Text(
               title,
               style: TextStyle(
                 fontSize: 16,
-                color: color ?? Colors.black87,
+                color: color ?? theme.textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -128,22 +137,12 @@ class _ProfilePageState extends State<ProfilePage> {
           _imageFile = File(pickedFile.path);
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Profile picture updated successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          _showSnackBar('Profile picture updated', Colors.green);
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to update profile picture'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showSnackBar('Failed to update profile picture', Colors.red);
       }
     } finally {
       setState(() => _isLoading = false);
@@ -154,10 +153,23 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       _imageFile = null;
     });
+    _showSnackBar('Profile picture removed', Colors.blue);
+  }
+
+  void _showSnackBar(String message, Color backgroundColor) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile picture removed'),
-        backgroundColor: Colors.blue,
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height - 150,
+          left: 20,
+          right: 20,
+        ),
       ),
     );
   }
@@ -165,276 +177,340 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor = theme.primaryColor;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Profile'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
               // Add edit profile logic here
             },
+            tooltip: 'Edit Profile',
           ),
         ],
       ),
       body: user == null
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Stack(
-                        children: [
-                          GestureDetector(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Profile header section with gradient background
+                  Container(
+                    height: 180,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          primaryColor,
+                          primaryColor.withOpacity(0.8),
+                        ],
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryColor.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        // User name and email
+                        Positioned(
+                          top: 20,
+                          child: Column(
+                            children: [
+                              Text(
+                                user.username,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              if (user.email != null)
+                                Text(
+                                  user.email,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        // Profile image (positioned to overlap the container bottom)
+                        Positioned(
+                          bottom: -50,
+                          child: GestureDetector(
                             onTap: _showImagePickerModal,
-                            child: Card(
-                              elevation: 4,
-                              shape: const CircleBorder(),
-                              child: Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 60,
-                                      backgroundColor:
-                                          Colors.deepPurple.shade50,
-                                      backgroundImage: _imageFile != null
-                                          ? FileImage(_imageFile!)
-                                          : const AssetImage(
-                                              'assets/images/profile_picture.png',
-                                            ) as ImageProvider,
-                                    ),
-                                    if (_isLoading)
-                                      Container(
-                                        width: 120,
-                                        height: 120,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.5),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const CircularProgressIndicator(
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: theme.scaffoldBackgroundColor,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 55,
+                                    backgroundColor:
+                                        primaryColor.withOpacity(0.2),
+                                    backgroundImage: _imageFile != null
+                                        ? FileImage(_imageFile!)
+                                        : const AssetImage(
+                                            'assets/images/profile_picture.png',
+                                          ) as ImageProvider,
+                                  ),
+                                  if (_isLoading)
+                                    Container(
+                                      width: 110,
+                                      height: 110,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.5),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(
                                           color: Colors.white,
                                         ),
                                       ),
-                                  ],
-                                ),
+                                    ),
+                                  // Camera icon button
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: primaryColor,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: theme.scaffoldBackgroundColor,
+                                          width: 2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.2),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.camera_alt,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.deepPurple,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
-                                ),
-                                onPressed: _showImagePickerModal,
-                              ),
-                            ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Spacing to accommodate the overlapping profile image
+                  const SizedBox(height: 65),
+
+                  // Personal Information Section with clean design
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Name and Role Section
-                    Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            user.username,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Quick Actions Section
-                    Card(
-                      elevation: 4,
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(20.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Quick Actions',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 16),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                _buildQuickActionButton(
-                                  context,
-                                  Icons.calendar_today,
-                                  'Appointments',
-                                  Colors.blue,
+                                Icon(
+                                  Icons.person_outline,
+                                  color: primaryColor,
+                                  size: 22,
                                 ),
-                                _buildQuickActionButton(
-                                  context,
-                                  Icons.medical_information,
-                                  'Records',
-                                  Colors.green,
-                                ),
-                                _buildQuickActionButton(
-                                  context,
-                                  Icons.notifications,
-                                  'Reminders',
-                                  Colors.orange,
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Personal Information',
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        isDark ? Colors.white : Colors.black87,
+                                  ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                            const SizedBox(height: 20),
 
-                    // Personal Information Section
-                    Card(
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Personal Information',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            // Info items with smooth dividers
+                            _buildInfoItem(
+                              context,
+                              Icons.email_outlined,
+                              'Email',
+                              user.email,
+                              primaryColor,
                             ),
-                            const SizedBox(height: 16),
-                            _buildInfoRow(Icons.email, 'Email', user.email),
-                            const SizedBox(height: 12),
-                            _buildInfoRow(
-                                Icons.phone, 'Phone', user.phone ?? _phone),
-                            const SizedBox(height: 12),
-                            _buildInfoRow(Icons.calendar_month, 'Date of Birth',
-                                _dateOfBirth),
-                            const SizedBox(height: 12),
-                            _buildInfoRow(Icons.location_on, 'Address',
-                                user.location ?? _location),
+                            const Divider(height: 30),
+                            _buildInfoItem(
+                              context,
+                              Icons.phone_outlined,
+                              'Phone',
+                              user.phone ?? _phone,
+                              primaryColor,
+                            ),
+                            const Divider(height: 30),
+                            _buildInfoItem(
+                              context,
+                              Icons.calendar_today_outlined,
+                              'Date of Birth',
+                              _dateOfBirth,
+                              primaryColor,
+                            ),
+                            const Divider(height: 30),
+                            _buildInfoItem(
+                              context,
+                              Icons.location_on_outlined,
+                              'Address',
+                              user.location ?? _location,
+                              primaryColor,
+                            ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    _buildSignOutButton(),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Sign Out Button (from first file)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0, vertical: 10.0),
+                    child: Container(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await context.read<AuthProvider>().signOut();
+                          Navigator.pushReplacementNamed(context, '/login');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                          foregroundColor:
+                              const Color.fromARGB(255, 225, 28, 28),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: const Text(
+                          'Sign Out',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
               ),
             ),
     );
   }
 
-  Widget _buildQuickActionButton(
+  Widget _buildInfoItem(
     BuildContext context,
     IconData icon,
     String label,
-    Color color,
+    String value,
+    Color primaryColor,
   ) {
-    return Column(
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+            color: primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
           ),
-          padding: const EdgeInsets.all(12),
           child: Icon(
             icon,
-            color: color,
-            size: 28,
+            color: primaryColor,
+            size: 20,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
               ),
+              const SizedBox(height: 4),
+              Text(
+                value.isEmpty ? 'Not provided' : value,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value,
-      {Color? color}) {
-    return Row(
-      children: [
-        Icon(icon, color: color ?? Colors.deepPurple, size: 20),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: color ?? Colors.black87,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSignOutButton() {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () async {
-          await context.read<AuthProvider>().signOut();
-          Navigator.pushReplacementNamed(context, '/login');
-        },
-        child: const Text('Sign Out'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 225, 28, 28),
-          foregroundColor: const Color.fromARGB(255, 255, 255, 255),
-        ),
-      ),
     );
   }
 }
