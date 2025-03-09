@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/pregnancy_provider.dart';
+import '../providers/auth_provider.dart';
 
 class HomeTipsWidget extends StatefulWidget {
   const HomeTipsWidget({Key? key}) : super(key: key);
@@ -26,19 +29,70 @@ class _HomeTipsWidgetState extends State<HomeTipsWidget> {
     ),
   ];
 
-  // Sample pregnancy tips
-  final List<String> _pregnancyTips = [
-    'Stay hydrated by drinking at least 8-10 glasses of water daily',
-    'Take your prenatal vitamins regularly as prescribed',
-    'Eat small, frequent meals to manage morning sickness',
-    'Engage in light exercise like walking or prenatal yoga',
-    'Avoid caffeine and alcohol during pregnancy'
-  ];
+  // Initialize with empty list of the correct type
+  List<Map<String, dynamic>> _pregnancyTips = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTips();
+  }
+
+  Future<void> _loadTips() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.user?.username;
+
+      if (userId != null) {
+        final pregnancyProvider =
+            Provider.of<PregnancyProvider>(context, listen: false);
+
+        // Use a try-catch block here to handle any errors from the provider
+        try {
+          final tips = await pregnancyProvider.fetchCurrentWeekTips(userId);
+
+          setState(() {
+            _pregnancyTips = tips;
+            _isLoading = false;
+          });
+        } catch (e) {
+          print('Error fetching tips: $e');
+          setState(() {
+            _errorMessage = e.toString();
+            _isLoading = false;
+            // Make sure we have an empty list of the correct type
+            _pregnancyTips = [];
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'User not logged in';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   String _getRandomTip() {
-    // Return a random tip
+    if (_pregnancyTips.isEmpty) {
+      return 'Stay hydrated by drinking at least 8-10 glasses of water daily';
+    }
+
+    // Shuffle the tips and return the first one
     _pregnancyTips.shuffle();
-    return _pregnancyTips.first;
+    return _pregnancyTips.first['tip'] ?? 'No tip available for this week';
   }
 
   void _toggleAppointmentCompletion(String id) {
@@ -83,10 +137,27 @@ class _HomeTipsWidgetState extends State<HomeTipsWidget> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  _getRandomTip(),
-                  style: const TextStyle(fontSize: 16),
-                ),
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _errorMessage.isNotEmpty
+                        ? Text(
+                            'Error loading tips: $_errorMessage',
+                            style: const TextStyle(color: Colors.red),
+                          )
+                        : Text(
+                            _getRandomTip(),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                if (_pregnancyTips.isNotEmpty)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {}); // Refresh to get a new random tip
+                      },
+                      child: const Text('Next Tip'),
+                    ),
+                  ),
               ],
             ),
           ),

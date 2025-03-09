@@ -27,9 +27,9 @@ class WeeklyDataController {
         return res.status(404).json({ message: `No tips found for week ${week}` });
       }
       
-      // Format the tips as an array of objects with title and content
+      // Format the tips as an array of objects with tip property
       const formattedTips = weeklyData.tips.map(tip => {
-        return { tip: tip };
+        return { tip };
       });
       
       res.json(formattedTips);

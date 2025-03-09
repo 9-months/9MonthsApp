@@ -100,10 +100,13 @@ class PregnancyService {
         List<dynamic> data = json.decode(response.body);
         return data.map((item) => item as Map<String, dynamic>).toList();
       } else {
-        throw 'Failed to load tips data: ${response.statusCode}';
+        // Return an empty list of the right type if there's an error
+        return [];
       }
     } catch (e) {
-      throw 'Network error while fetching tips: $e';
+      print('Error fetching tips: $e');
+      // Return an empty list of the right type in case of error
+      return [];
     }
   }
 }
