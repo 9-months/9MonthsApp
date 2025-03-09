@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -41,7 +40,6 @@ class _EditReminderFormState extends State<EditReminderForm> {
   void initState() {
     super.initState();
     tzdata.initializeTimeZones(); // Initialize time zone data
-    _setCurrentTimezone(); // Set the current timezone
 
     _titleController = TextEditingController(text: widget.reminder['title']);
     _descriptionController =
@@ -52,20 +50,6 @@ class _EditReminderFormState extends State<EditReminderForm> {
     _timezone = widget.reminder['timezone'];
     _repeat = widget.reminder['repeat'];
     _location = widget.reminder['location'];
-  }
-
-  Future<void> _setCurrentTimezone() async {
-    String currentTimeZone;
-    try {
-      currentTimeZone = await FlutterNativeTimezone.getLocalTimezone();
-    } catch (e) {
-      currentTimeZone = 'Asia/Colombo'; // Fallback timezone
-    }
-    if (mounted) {
-      setState(() {
-        _timezone = currentTimeZone;
-      });
-    }
   }
 
   Future<void> _selectTime(BuildContext context) async {
