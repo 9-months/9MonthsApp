@@ -50,6 +50,33 @@ class PregnancyProvider with ChangeNotifier {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchPregnancyTips(int week) async {
+    try {
+      final tips = await _pregnancyService.fetchTipsForWeek(week);
+      return tips;
+    } catch (e) {
+      print('Error fetching pregnancy tips: $e');
+      throw e.toString();
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCurrentWeekTips(String userId) async {
+    try {
+      // First get the pregnancy data to know the current week
+      final pregnancyData = await fetchPregnancyData(userId);
+
+      if (pregnancyData == null || pregnancyData['currentWeek'] == null) {
+        throw 'No pregnancy data or current week information available';
+      }
+
+      int week = pregnancyData['currentWeek'];
+      return await fetchPregnancyTips(week);
+    } catch (e) {
+      print('Error fetching current week tips: $e');
+      throw e.toString();
+    }
+  }
+
   Future<Map<String, dynamic>> createPregnancy(
       String userId, DateTime inputDate, bool isUltrasound) async {
     try {

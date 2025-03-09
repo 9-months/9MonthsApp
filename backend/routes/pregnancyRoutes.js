@@ -17,4 +17,5 @@ router.get("/:userId", PregnancyController.getPregnancy);
 router.put("/:userId", PregnancyController.updatePregnancy);
 router.delete("/:userId", PregnancyController.deletePregnancy);
 
+
 module.exports = router;

@@ -52,39 +52,58 @@ class PregnancyService {
     }
   }
 
-  Future<Map<String, dynamic>> updatePregnancy(String userId, DateTime newDueDate) async {
-  try {
-    String formattedDate = newDueDate.toIso8601String().split('T')[0];
-    
-    final response = await http.put(
-      Uri.parse('${Config.apiBaseUrl}/pregnancy/$userId'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'dueDate': formattedDate,
-      }),
-    );
+  Future<Map<String, dynamic>> updatePregnancy(
+      String userId, DateTime newDueDate) async {
+    try {
+      String formattedDate = newDueDate.toIso8601String().split('T')[0];
 
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw 'Failed to update pregnancy data: ${response.statusCode}';
+      final response = await http.put(
+        Uri.parse('${Config.apiBaseUrl}/pregnancy/$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'dueDate': formattedDate,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw 'Failed to update pregnancy data: ${response.statusCode}';
+      }
+    } catch (e) {
+      throw 'Network error: $e';
     }
-  } catch (e) {
-    throw 'Network error: $e';
   }
-}
 
-Future<void> deletePregnancy(String userId) async {
-  try {
-    final response = await http.delete(
-      Uri.parse('${Config.apiBaseUrl}/pregnancy/$userId'),
-    );
+  Future<void> deletePregnancy(String userId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${Config.apiBaseUrl}/pregnancy/$userId'),
+      );
 
-    if (response.statusCode != 200) {
-      throw 'Failed to delete pregnancy data: ${response.statusCode}';
+      if (response.statusCode != 200) {
+        throw 'Failed to delete pregnancy data: ${response.statusCode}';
+      }
+    } catch (e) {
+      throw 'Network error: $e';
     }
-  } catch (e) {
-    throw 'Network error: $e';
   }
-}
+
+  Future<List<Map<String, dynamic>>> fetchTipsForWeek(int week) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${Config.apiBaseUrl}/tips/week/$week/tips'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = json.decode(response.body);
+        return data.map((item) => item as Map<String, dynamic>).toList();
+      } else {
+        throw 'Failed to load tips data: ${response.statusCode}';
+      }
+    } catch (e) {
+      throw 'Network error while fetching tips: $e';
+    }
+  }
 }
