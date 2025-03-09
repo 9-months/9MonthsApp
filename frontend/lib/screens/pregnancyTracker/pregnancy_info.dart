@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/pregnancy_provider.dart';
+import 'pregnancy_tracker_page.dart';
 
 class PregnancyInfo extends StatelessWidget {
   final Map<String, dynamic> pregnancyData;
@@ -8,6 +12,8 @@ class PregnancyInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final pregnancyProvider = Provider.of<PregnancyProvider>(context, listen: false);
     // Parse due date with null safety
     DateTime? dueDate;
     try {
@@ -198,7 +204,7 @@ class PregnancyInfo extends StatelessWidget {
                 label: const Text('Edit Due Date'),
                 onPressed: () {
                   // This would be implemented to show a date picker dialog
-                  _showEditDueDateDialog(context);
+                  _showEditDueDateDialog(context, authProvider, pregnancyProvider);
                 },
               ),
               ElevatedButton.icon(
@@ -210,7 +216,7 @@ class PregnancyInfo extends StatelessWidget {
                 ),
                 onPressed: () {
                   // This would be implemented to show a confirmation dialog
-                  _showDeleteConfirmation(context);
+                  _showDeleteConfirmation(context, authProvider, pregnancyProvider);
                 },
               ),
             ],
@@ -221,43 +227,119 @@ class PregnancyInfo extends StatelessWidget {
   }
 
   // Method to show edit due date dialog
-  void _showEditDueDateDialog(BuildContext context) {
-    // This is a placeholder - you'd need to implement the actual functionality
+  void _showEditDueDateDialog(BuildContext context, AuthProvider authProvider, PregnancyProvider pregnancyProvider) {
+    DateTime selectedDate = DateTime.now().add(const Duration(days: 280));
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Edit Due Date'),
-        content: Text('This feature is not yet implemented.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('Close'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Edit Due Date'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Current due date: ${DateFormat('MMM dd, yyyy').format(
+                DateTime.parse(pregnancyData['dueDate'].toString())
+              )}'),
+              const SizedBox(height: 16),
+              Text('New due date: ${DateFormat('MMM dd, yyyy').format(selectedDate)}'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                child: const Text('Select New Date'),
+                onPressed: () async {
+                  final DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: selectedDate,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 280)),
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      selectedDate = picked;
+                    });
+                  }
+                },
+              ),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  await pregnancyProvider.updatePregnancy(
+                    authProvider.username,
+                    selectedDate,
+                  );
+                  
+                  // Close the dialog and refresh the page
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Due date updated successfully')),
+                  );
+                  
+                  // Force rebuild the page
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PregnancyTrackerPage(),
+                    ),
+                  );
+                } catch (e) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error updating due date: $e')),
+                  );
+                }
+              },
+              child: const Text('Update'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   // Method to show delete confirmation
-  void _showDeleteConfirmation(BuildContext context) {
-    // This is a placeholder - you'd need to implement the actual functionality
+  void _showDeleteConfirmation(BuildContext context, AuthProvider authProvider, PregnancyProvider pregnancyProvider) {
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Pregnancy Tracker'),
-        content: Text('Are you sure you want to delete your pregnancy tracker? This action cannot be undone.'),
+        title: const Text('Delete Pregnancy Tracker'),
+        content: const Text('Are you sure you want to delete your pregnancy tracker? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            onPressed: () {
-              Navigator.of(context).pop();
-              // Here you would call the delete method
+            onPressed: () async {
+              try {
+                await pregnancyProvider.deletePregnancy(authProvider.username);
+                
+                // Close the dialog
+                Navigator.of(context).pop();
+                
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Pregnancy tracker deleted successfully')),
+                );
+                
+                // Navigate back to the home page
+                Navigator.pushReplacementNamed(context, '/home');
+              } catch (e) {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error deleting pregnancy tracker: $e')),
+                );
+              }
             },
-            child: Text('Delete'),
+            child: const Text('Delete'),
           ),
         ],
       ),
