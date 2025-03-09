@@ -31,7 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
             phone: _phoneController.text,
           );
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/step');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
