@@ -46,7 +46,7 @@ class _StepScreenState extends State<StepScreen> {
                   // Skip button
                   GestureDetector(
                     onTap: () =>
-                        Navigator.pushReplacementNamed(context, '/register'),
+                        Navigator.pushReplacementNamed(context, '/home'),
                     child: Text(
                       'skip',
                       style: TextStyle(
@@ -92,7 +92,7 @@ class _StepScreenState extends State<StepScreen> {
                           curve: Curves.easeInOut,
                         );
                       } else {
-                        Navigator.pushReplacementNamed(context, '/register');
+                        Navigator.pushReplacementNamed(context, '/home');
                       }
                     },
                     child: Row(

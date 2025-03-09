@@ -1,9 +1,19 @@
+/*
+ File: diary_service.dart
+ Purpose: Service to handle API calls for diary entries
+ Created Date: CCS-50 24-02-2025
+ Author: Melissa Joanne
+
+ last modified: 03-03-2025 | Melissa | Base URL updated
+*/
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/diary_model.dart';
+import '../config/config.dart';
 
 class DiaryService {
-  final String _baseUrl = 'http://localhost:3000/diary';
+  final String _baseUrl = '${Config.apiBaseUrl}/diary';
 
   Future<List<DiaryEntry>> getDiaries(String userId) async {
     try {

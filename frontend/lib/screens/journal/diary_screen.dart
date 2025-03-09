@@ -7,6 +7,8 @@ import '../../services/diary_service.dart';
 import '../../widgets/diary_card.dart';
 
 class DiaryScreen extends StatefulWidget {
+  const DiaryScreen({super.key});
+
   @override
   _DiaryScreenState createState() => _DiaryScreenState();
 }

@@ -1,3 +1,11 @@
+/*
+ File: MongoDB.test.js
+ Purpose: Testing MongoDB Connections.
+ Created Date: 2025-02-03 CCS-40 Melissa Joanne
+ Author: Melissa Joanne
+
+*/
+
 require("dotenv").config(); // Load environment variables
 const { MongoClient } = require("mongodb");
 

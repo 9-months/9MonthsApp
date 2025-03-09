@@ -23,10 +23,10 @@ const diaryRoutes = require("./routes/diaryRoutes");
 dotenv.config();
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./ServicesAccountKey.json");
+const credentials = JSON.parse(Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString());
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(credentials),
 });
 
 // Initialize Express app
@@ -37,12 +37,13 @@ app.use(cors());
 app.use(express.json());
 
 //Routes
-app.use("/api/auth", authRoutes);
 app.use("/emergency", emergencyRouter);
 app.use("/auth", authRoutes);
 app.use('/moods', moodRoutes);
 app.use("/pregnancy", pregnancyRouter);
 app.use("/diary", diaryRoutes);
+app.use('/weekly-data', require('./routes/weeklyDataRoutes'));
+app.use('/tips', require('./routes/weeklyDataRoutes'));
 
 // Routes
 app.get("/", (req, res) => {

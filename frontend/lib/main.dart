@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'providers/pregnancy_provider.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
 import 'screens/home/home_page.dart';
@@ -15,6 +16,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => PregnancyProvider()),
       ],
       child: const MyApp(),
     ),
@@ -36,7 +38,7 @@ class MyApp extends StatelessWidget {
           primary: const Color(0xFF2196F3),
           secondary: const Color(0xFF03A9F4),
           tertiary: const Color(0xFFE91E63), // Pink for accents
-          background: const Color(0xFFF5F5F5),
+          surface: const Color(0xFFF5F5F5),
         ),
         scaffoldBackgroundColor: const Color(0xFFF5F5F5),
         cardTheme: CardTheme(
@@ -108,7 +110,7 @@ class MyApp extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
-      initialRoute: '/register',
+      initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
         '/step': (context) => const StepScreen(),
