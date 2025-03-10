@@ -1,4 +1,4 @@
-import 'package:_9months/screens/news/newsFeed.dart';
+import 'package:_9months/screens/news/news_Feed.dart';
 import 'package:_9months/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import '../screens/journal/journal_options_screen.dart';
