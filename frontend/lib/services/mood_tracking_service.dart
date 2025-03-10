@@ -4,15 +4,16 @@
  Created Date: CCS-48 11-02-2025
  Author: Dinith Perera
 
- last modified: 12-02-2025 | Dinith | CCS-49 update and delete mood entries
+ last modified: 03-03-2025 | Dinith | Base URL updated
 */
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/mood_model.dart';
+import '../config/config.dart';
 
 class MoodTrackingService {
-  final String baseUrl = 'http://localhost:3000';
+  final String baseUrl = Config.apiBaseUrl;
 
   // Create a new mood entry
   Future<MoodModel> createMood(MoodModel mood) async {

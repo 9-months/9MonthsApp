@@ -1,14 +1,25 @@
 /*
  File: home_page.dart
- Purpose: Dashboard for the user
+ Purpose: Pregnancy tracker home page
  Created Date: CCS-29
  Author: Irosh Perera
 
+<<<<<<< HEAD
  last modified: 02-03-2025 | Chamod Kamiss | Added calendar integration and auth provider
+=======
+ last modified: 2025-02-15 | Chamod | CCS-8 Pregnancy Tracker
+>>>>>>> main
 */
 
+import 'package:_9months/widgets/homeTIps.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+<<<<<<< HEAD
+=======
+import '../../providers/auth_provider.dart';
+import '../../providers/pregnancy_provider.dart';
+import '../../widgets/homePregnancy.dart';
+>>>>>>> main
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
 import '../calendar/calendar_screen.dart';
@@ -52,6 +63,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     // Use the current user's name from the auth provider
     final userName = Provider.of<AuthProvider>(context).user?.username ?? 'User';
     
@@ -92,91 +104,88 @@ class _HomePageState extends State<HomePage> {
                         radius: 24,
                         backgroundImage:
                             AssetImage('assets/images/profile_picture.png'),
+=======
+    final authProvider = Provider.of<AuthProvider>(context);
+    final pregnancyProvider = Provider.of<PregnancyProvider>(context);
+
+    return Scaffold(
+      body: SafeArea(
+        child: Consumer<AuthProvider>(
+          builder: (context, authProvider, _) => SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hello ${authProvider.user?.username ?? "User"}',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          FutureBuilder(
+                            future: pregnancyProvider
+                                .fetchPregnancyData(authProvider.username),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Text('Loading...');
+                              } else if (snapshot.hasError) {
+                                return const Text(
+                                    'Unable to load pregnancy data');
+                              } else if (!snapshot.hasData) {
+                                return const Text(
+                                    'No pregnancy data available');
+                              }
+
+                              final pregnancyData = snapshot.data!;
+                              // Use the currentWeek from the data if available, otherwise calculate it
+                              int currentWeek;
+                              if (pregnancyData.containsKey('currentWeek') &&
+                                  pregnancyData['currentWeek'] != null) {
+                                currentWeek = pregnancyData['currentWeek'];
+                              } else {
+                                final dueDate =
+                                    DateTime.parse(pregnancyData['dueDate']);
+                                currentWeek = pregnancyProvider
+                                    .calculateCurrentWeek(dueDate);
+                              }
+
+                              return Text(
+                                'Week $currentWeek of Pregnancy',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              );
+                            },
+                          ),
+                        ],
+>>>>>>> main
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Week Selector
-                SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 7,
-                    itemBuilder: (context, index) {
-                      final day = 16 + index;
-                      final isSelected = index == 2;
-                      return Container(
-                        width: 45,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, '/profile'),
+                        child: const CircleAvatar(
+                          radius: 24,
+                          backgroundImage:
+                              AssetImage('assets/images/profile_picture.png'),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              day.toString(),
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Wed',
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Baby Info Card
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        const CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.blue,
-                          child: Icon(Icons.child_care,
-                              color: Colors.white, size: 36),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Your baby is the size of a pear',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildInfoColumn('Baby Height', '17 cm'),
-                            _buildInfoColumn('Baby Weight', '110 gr'),
-                            _buildInfoColumn('Days Left', '168 days'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
+                  // Pregnancy Info
+                  HomePregnancyWidget(),
 
+<<<<<<< HEAD
                 // Menu Grid
                 GridView.count(
                   shrinkWrap: true,
@@ -228,6 +237,12 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ],
+=======
+                  //Tips Widget
+                  HomeTipsWidget(),
+                ],
+              ),
+>>>>>>> main
             ),
           ),
         ),
@@ -239,6 +254,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+<<<<<<< HEAD
 
   Widget _buildInfoColumn(String label, String value) {
     return Column(
@@ -310,3 +326,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+=======
+}
+>>>>>>> main

@@ -4,7 +4,7 @@
  Created Date: 2025-01-29 CCS-1 Irosh Perera
  Author: Irosh Perera
 
- last modified: 11-02-2025 | Dinith | CCS-48 add mood routes
+ last modified: 11-02-2025 | Melissa | CCS-50 added diary routes
 */
 
 const express = require("express");
@@ -16,17 +16,21 @@ const authRoutes = require("./routes/authRoutes");
 const moodRoutes = require('./routes/moodRoutes');
 const emergencyRouter = require("./routes/emergencyRouter");
 const pregnancyRouter = require("./routes/pregnancyRoutes");
+<<<<<<< HEAD
 const reminderRoutes = require('./routes/reminderRoutes');
+=======
+const diaryRoutes = require("./routes/diaryRoutes");
+>>>>>>> main
 
 
 // Load environment variables
 dotenv.config();
 
 const admin = require("firebase-admin");
-const serviceAccount = require("./ServicesAccountKey.json");
+const credentials = JSON.parse(Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString());
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(credentials),
 });
 
 // Initialize Express app
@@ -37,12 +41,15 @@ app.use(cors());
 app.use(express.json());
 
 //Routes
-app.use("/api/auth", authRoutes);
 app.use("/emergency", emergencyRouter);
 app.use("/auth", authRoutes);
 app.use('/moods', moodRoutes);
 app.use("/pregnancy", pregnancyRouter);
+<<<<<<< HEAD
 app.use('/reminder', reminderRoutes);
+=======
+app.use("/diary", diaryRoutes);
+>>>>>>> main
 
 // Routes
 app.get("/", (req, res) => {

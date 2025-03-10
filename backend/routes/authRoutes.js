@@ -5,8 +5,15 @@
  Author: Ryan Fernando
  swagger doc: Melissa Joanne 
 
- last modified: 2025-02-08 | Melissa | CCS-7 API documentation update for authentication
+ last modified: 2025-02-11 | Melissa | CCS-7 Routes for crud added
 */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: API endpoints for user authentication and management
+ */
 
 const express = require("express");
 const authController = require("../controllers/authController");
@@ -17,10 +24,9 @@ const router = express.Router();
  * @swagger
  * /signup:
  *   post:
- *     summary: User signup
- *     description: Registers a new user and returns a success message.
- *     tags:
- *       - Authentication
+ *     summary: Register a new user
+ *     description: Creates a new user account.
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -54,15 +60,11 @@ const router = express.Router();
  *                 example: "+94712345678"
  *     responses:
  *       201:
- *         description: User created successfully.
- *         content:
- *           application/json:
- *             example:
- *               message: "User created successfully."
+ *         description: User registered successfully.
  *       400:
  *         description: Bad request (missing or invalid parameters).
  *       409:
- *         description: Conflict (email or username already in use).
+ *         description: Email already in use.
  */
 router.post("/signup", authController.createUser);
 
@@ -71,9 +73,8 @@ router.post("/signup", authController.createUser);
  * /login:
  *   post:
  *     summary: User login
- *     description: Authenticates a user using either email or username and returns a token.
- *     tags:
- *       - Authentication
+ *     description: Authenticates a user and returns a JWT token.
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -97,20 +98,11 @@ router.post("/signup", authController.createUser);
  *               - required: [username, password]
  *     responses:
  *       200:
- *         description: Login successful.
- *         content:
- *           application/json:
- *             example:
- *               message: "Logged in successfully."
- *               token: "your_jwt_token_here"
- *               user:
- *                 uid: "user_id"
- *                 email: "user@example.com"
- *                 username: "username"
+ *         description: Login successful, returns a token.
  *       400:
- *         description: Bad request (missing or invalid parameters).
+ *         description: Missing or invalid credentials.
  *       401:
- *         description: Unauthorized (invalid credentials).
+ *         description: Unauthorized.
  */
 router.post("/login", authController.logIn);
 
@@ -118,10 +110,9 @@ router.post("/login", authController.logIn);
  * @swagger
  * /google-signin:
  *   post:
- *     summary: Google Sign-in
- *     description: Authenticates a user using Google OAuth and returns a token.
- *     tags:
- *       - Authentication
+ *     summary: Google authentication
+ *     description: Allows users to log in using their Google account.
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -136,17 +127,111 @@ router.post("/login", authController.logIn);
  *                 example: "google-oauth-token"
  *     responses:
  *       200:
- *         description: Google sign-in successful.
- *         content:
- *           application/json:
- *             example:
- *               message: "Google sign-in successful."
+ *         description: Google sign-in successful, returns a token.
  *       400:
- *         description: Bad request (invalid token).
+ *         description: Invalid token.
  *       401:
- *         description: Unauthorized (invalid credentials).
+ *         description: Unauthorized.
  */
 router.post("/google-signin", authController.googleSignIn);
 
+/**
+ * @swagger
+ * /user/{uid}:
+ *   get:
+ *     summary: Retrieve a single user
+ *     description: Fetches a user by their unique ID.
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User's unique ID.
+ *     responses:
+ *       200:
+ *         description: User details retrieved successfully.
+ *       404:
+ *         description: User not found.
+ */
+router.get("/user/:uid", authController.getUser);
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieves a list of all registered users.
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user list.
+ *       500:
+ *         description: Server error.
+ */
+router.get("/users", authController.getAllUsers);
+
+/**
+ * @swagger
+ * /user/{uid}:
+ *   put:
+ *     summary: Update user details (Only email, phone, and location)
+ *     description: Updates the user's email, phone, and location.
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User's unique ID.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "newemail@example.com"
+ *               phone:
+ *                 type: string
+ *                 example: "+9876543210"
+ *               location:
+ *                 type: string
+ *                 example: "Los Angeles, USA"
+ *     responses:
+ *       200:
+ *         description: User updated successfully.
+ *       400:
+ *         description: Invalid request parameters.
+ *       404:
+ *         description: User not found.
+ */
+router.put("/user/:uid", authController.updateUser);
+
+/**
+ * @swagger
+ * /user/{uid}:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Deletes a user by their unique ID.
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User's unique ID.
+ *     responses:
+ *       200:
+ *         description: User deleted successfully.
+ *       404:
+ *         description: User not found.
+ */
+router.delete("/user/:uid", authController.deleteUser);
 
 module.exports = router;

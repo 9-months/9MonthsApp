@@ -1,15 +1,8 @@
-/*
- File: profile_page.dart
- Purpose: 
- Created Date: 2025-02-08 CCS-42 Melissa Joanne
- Author: Melissa Joanne
-
- last modified: 2025-02-09 | Melissa | CCS-42 Editable UI elements update
-*/
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -21,110 +14,158 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String _dateOfBirth = '01/01/1990';
   String _location = 'Colombo';
+  String _phone = '';
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false;
 
-  Future<void> _selectImage() async {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthProvider>().loadUser();
+    });
+  }
+
+  Future<void> _showImagePickerModal() async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                height: 4,
+                width: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Change Profile Picture',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildImagePickerOption(
+                icon: Icons.photo_camera,
+                title: 'Take Photo',
+                onTap: () => _pickImage(ImageSource.camera),
+              ),
+              _buildImagePickerOption(
+                icon: Icons.photo_library,
+                title: 'Choose from Gallery',
+                onTap: () => _pickImage(ImageSource.gallery),
+              ),
+              if (_imageFile != null)
+                _buildImagePickerOption(
+                  icon: Icons.delete,
+                  title: 'Remove Photo',
+                  color: Colors.red,
+                  onTap: _removeImage,
+                ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImagePickerOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+        child: Row(
+          children: [
+            Icon(icon, color: color ?? Colors.deepPurple, size: 28),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                color: color ?? Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
     try {
-      showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                  leading: const Icon(Icons.photo_library),
-                  title: const Text('Choose from Gallery'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final XFile? image = await _picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (image != null) {
-                      setState(() {
-                        _imageFile = File(image.path);
-                      });
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.photo_camera),
-                  title: const Text('Take a Photo'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final XFile? image = await _picker.pickImage(
-                      source: ImageSource.camera,
-                    );
-                    if (image != null) {
-                      setState(() {
-                        _imageFile = File(image.path);
-                      });
-                    }
-                  },
-                ),
-              ],
+      setState(() => _isLoading = true);
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 1000,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile picture updated successfully'),
+              backgroundColor: Colors.green,
             ),
           );
-        },
-      );
+        }
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking image: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update profile picture'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(1990),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _dateOfBirth =
-            "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
-      });
-    }
-  }
-
-  Future<void> _updateLocation() async {
-    final TextEditingController locationController =
-        TextEditingController(text: _location);
-
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Update Location'),
-        content: TextField(
-          controller: locationController,
-          decoration: const InputDecoration(
-            labelText: 'Location',
-            hintText: 'Enter your location',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _location = locationController.text;
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
-          ),
-        ],
+  void _removeImage() {
+    setState(() {
+      _imageFile = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profile picture removed'),
+        backgroundColor: Colors.blue,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -138,157 +179,184 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile Image Section
-              Center(
-                child: Stack(
-                  children: [
-                    Card(
-                      elevation: 4,
-                      shape: const CircleBorder(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundColor: Colors.deepPurple.shade50,
-                          backgroundImage: _imageFile != null
-                              ? FileImage(_imageFile!)
-                              : const AssetImage(
-                                      'assets/images/profile_picture.png')
-                                  as ImageProvider,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.deepPurple,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: IconButton(
-                          icon:
-                              const Icon(Icons.camera_alt, color: Colors.white),
-                          onPressed: _selectImage,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Name and Role Section
-              Center(
+      body: user == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'isurukamiss',
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.deepPurple,
-                              ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Quick Actions Section
-              Card(
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Quick Actions',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    Center(
+                      child: Stack(
                         children: [
-                          _buildQuickActionButton(
-                            context,
-                            Icons.calendar_today,
-                            'Appointments',
-                            Colors.blue,
+                          GestureDetector(
+                            onTap: _showImagePickerModal,
+                            child: Card(
+                              elevation: 4,
+                              shape: const CircleBorder(),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 60,
+                                      backgroundColor:
+                                          Colors.deepPurple.shade50,
+                                      backgroundImage: _imageFile != null
+                                          ? FileImage(_imageFile!)
+                                          : const AssetImage(
+                                              'assets/images/profile_picture.png',
+                                            ) as ImageProvider,
+                                    ),
+                                    if (_isLoading)
+                                      Container(
+                                        width: 120,
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.5),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const CircularProgressIndicator(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
-                          _buildQuickActionButton(
-                            context,
-                            Icons.medical_information,
-                            'Records',
-                            Colors.green,
-                          ),
-                          _buildQuickActionButton(
-                            context,
-                            Icons.notifications,
-                            'Reminders',
-                            Colors.orange,
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.deepPurple,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                ),
+                                onPressed: _showImagePickerModal,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
+                    ),
+                    const SizedBox(height: 20),
 
-              // Personal Information Section
-              Card(
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Personal Information',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
+                    // Name and Role Section
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            user.username,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Quick Actions Section
+                    Card(
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Quick Actions',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildQuickActionButton(
+                                  context,
+                                  Icons.calendar_today,
+                                  'Appointments',
+                                  Colors.blue,
+                                ),
+                                _buildQuickActionButton(
+                                  context,
+                                  Icons.medical_information,
+                                  'Records',
+                                  Colors.green,
+                                ),
+                                _buildQuickActionButton(
+                                  context,
+                                  Icons.notifications,
+                                  'Reminders',
+                                  Colors.orange,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      _buildInfoRow(
-                          Icons.email, 'Email', 'isurukamiss@gmail.com'),
-                      const SizedBox(height: 12),
-                      _buildInfoRow(Icons.phone, 'Phone', '+94123456789'),
-                      const SizedBox(height: 12),
-                      _buildEditableInfoRow(
-                        context,
-                        Icons.calendar_month,
-                        'Date of Birth',
-                        _dateOfBirth,
-                        onEdit: () => _selectDate(context),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Personal Information Section
+                    Card(
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Personal Information',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildInfoRow(Icons.email, 'Email', user.email),
+                            const SizedBox(height: 12),
+                            _buildInfoRow(
+                                Icons.phone, 'Phone', user.phone ?? _phone),
+                            const SizedBox(height: 12),
+                            _buildInfoRow(Icons.calendar_month, 'Date of Birth',
+                                _dateOfBirth),
+                            const SizedBox(height: 12),
+                            _buildInfoRow(Icons.location_on, 'Address',
+                                user.location ?? _location),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      _buildEditableInfoRow(
-                        context,
-                        Icons.location_on,
-                        'Address',
-                        _location,
-                        onEdit: _updateLocation,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildSignOutButton(),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -354,46 +422,19 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildEditableInfoRow(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value, {
-    required VoidCallback onEdit,
-    Color? color,
-  }) {
-    return Row(
-      children: [
-        Icon(icon, color: color ?? Colors.deepPurple, size: 20),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: color ?? Colors.black87,
-                ),
-              ),
-            ],
-          ),
+  Widget _buildSignOutButton() {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () async {
+          await context.read<AuthProvider>().signOut();
+          Navigator.pushReplacementNamed(context, '/login');
+        },
+        child: const Text('Sign Out'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color.fromARGB(255, 225, 28, 28),
+          foregroundColor: const Color.fromARGB(255, 255, 255, 255),
         ),
-        IconButton(
-          icon: const Icon(Icons.edit, size: 20),
-          color: Colors.deepPurple,
-          onPressed: onEdit,
-        ),
-      ],
+      ),
     );
   }
 }
