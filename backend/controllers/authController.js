@@ -159,4 +159,53 @@ module.exports = {
         .json({ message: "An error occurred while deleting user" });
     }
   },
+
+  // Link partners
+  linkPartners: async (req, res) => {
+    try {
+      const { userId1, userId2 } = req.body;
+      
+      if (!userId1 || !userId2) {
+        return res.status(400).json({
+          message: "Both user IDs are required",
+        });
+      }
+      
+      const result = await authService.linkPartners(userId1, userId2);
+      
+      if (!result.status) {
+        return res.status(400).json({ message: result.message });
+      }
+      
+      return res.status(200).json({
+        message: result.message,
+        user1: result.user1,
+        user2: result.user2,
+      });
+    } catch (error) {
+      console.error("Link Partners Error:", error);
+      return res.status(500).json({
+        message: "An error occurred while linking partners",
+      });
+    }
+  },
+
+  // Get partner data
+  getPartnerData: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const result = await authService.getPartnerData(uid);
+      
+      if (!result.status) {
+        return res.status(404).json({ message: result.message });
+      }
+      
+      res.status(200).json(result.partner);
+    } catch (error) {
+      console.error("Get Partner Error:", error);
+      res.status(500).json({ 
+        message: "An error occurred while retrieving partner data" 
+      });
+    }
+  },
 };

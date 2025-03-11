@@ -5,7 +5,7 @@
  Author: Ryan Fernando
  Input validation and error handling: Melissa Joanne
 
- Last Modified: 2025-02-14 | Irosh Perera | CCS-42-returned user data after registration
+ Last Modified: 2025-03-11 | Chamod Kamiss | CCS-67-Added linkPartners and getPartnerData functions
 */
 const User = require("../models/User");
 const admin = require("firebase-admin");
@@ -58,8 +58,12 @@ class AuthService {
       try {
         await admin.auth().getUserByEmail(userData.email);
         return { status: false, message: "Firebase account exists." };
+        
       } catch (error) {
         if (error.code === "auth/user-not-found") {
+          if (!userData.role || !['mother', 'partner'].includes(userData.role)) {
+            userData.role = 'mother'; // Default to mother if not specified
+          }
           const userResponse = await admin.auth().createUser({
             email: userData.email,
             password: userData.password,
@@ -75,6 +79,8 @@ class AuthService {
             username: userData.username,
             location: userData.location,
             phone: userData.phone,
+            role: userData.role,
+            partnerId: userData.partnerId || null,
           });
           await newUser.save();
           return {
@@ -184,6 +190,57 @@ class AuthService {
     } catch (err) {
       console.error("Error deleting user:", err);
       return { status: false, message: "Error deleting user." };
+    }
+  }
+
+  // link two users as partners
+  async linkPartners(userId1, userId2) {
+    try {
+      const user1 = await User.findOne({ uid: userId1 });
+      const user2 = await User.findOne({ uid: userId2 });
+      
+      if (!user1 || !user2) {
+        return { status: false, message: "One or both users not found." };
+      }
+      
+      // Set partner relationship
+      user1.partnerId = user2.uid;
+      user2.partnerId = user1.uid;
+      
+      await user1.save();
+      await user2.save();
+      
+      return { 
+        status: true, 
+        message: "Partners linked successfully.",
+        user1: user1,
+        user2: user2
+      };
+    } catch (err) {
+      console.error("Error linking partners:", err);
+      return { status: false, message: "Error linking partners." };
+    }
+  }
+  
+  // Get partner data
+  async getPartnerData(userId) {
+    try {
+      const user = await User.findOne({ uid: userId });
+      
+      if (!user || !user.partnerId) {
+        return { status: false, message: "No linked partner found." };
+      }
+      
+      const partner = await User.findOne({ uid: user.partnerId });
+      
+      if (!partner) {
+        return { status: false, message: "Partner not found." };
+      }
+      
+      return { status: true, partner };
+    } catch (err) {
+      console.error("Error fetching partner:", err);
+      return { status: false, message: "Error fetching partner." };
     }
   }
 }
