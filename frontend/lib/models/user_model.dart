@@ -4,7 +4,7 @@
  Created Date: 11/02/2021 CCS-55 State Management
  Author: Dinith Perera
 
- last modified: 11/02/2021 | Dinith | CCS-55 model for user created
+ last modified: 11/03/2025 | Chamod | CCS-67 model for partner role
 */
 
 class User {
@@ -13,6 +13,8 @@ class User {
   final String username;
   final String? location;
   final String? phone;
+  final String? role;
+  final String? partnerId;
 
   User({
     required this.uid,
@@ -20,6 +22,8 @@ class User {
     required this.username,
     this.location,
     this.phone,
+    this.role,
+    this.partnerId,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class User {
       username: json['username'] ?? '',
       location: json['location'] as String?,
       phone: json['phone'] as String?,
+      role: json['role'] as String?,
+      partnerId: json['partnerId'] as String?,
     );
   }
 
@@ -39,6 +45,8 @@ class User {
       'username': username,
       'location': location,
       'phone': phone,
+      'role': role,
+      'partnerId': partnerId,
     };
   }
 
@@ -48,6 +56,8 @@ class User {
     String? username,
     String? location,
     String? phone,
+    String? role,
+    String? partnerId,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -55,6 +65,8 @@ class User {
       username: username ?? this.username,
       location: location ?? this.location,
       phone: phone ?? this.phone,
+      role: role ?? this.role,
+      partnerId: partnerId ?? this.partnerId,
     );
   }
 }

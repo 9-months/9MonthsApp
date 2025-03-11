@@ -7,6 +7,8 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true },
   location: { type: String },
   phone: { type: String },
+  role: { type: String, enum: ['mother', 'partner'], default: 'mother' },
+  partnerId: { type: String, ref: 'User' }, // For linking partners
 }, { collection: 'users' });  // Ensure it points to 'users' collection
 
 
