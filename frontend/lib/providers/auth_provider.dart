@@ -22,10 +22,13 @@ class AuthProvider extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
   final AuthService _authService = AuthService();
   static const _userKey = 'user_data';
-
+  
   User? get user => _user;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null;
+  
+  User? _partner;
+  User? get partner => _partner;
 
   // Login and register methods
   Future<void> login(String username, String password) async {
@@ -54,6 +57,7 @@ class AuthProvider extends ChangeNotifier {
     required String username,
     String? location,
     String? phone,
+    String role = 'mother',
   }) async {
     _username = username;
     _isLoading = true;
@@ -66,6 +70,7 @@ class AuthProvider extends ChangeNotifier {
         username: username,
         location: location,
         phone: phone,
+        role: role,
       );
       if (_user != null) {
         await _saveUser(_user!);
@@ -94,7 +99,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // Load user method
-  Future<void> loadUser() async {
+  Future<void> loadUserData() async {
     _user = await _getUser();
     notifyListeners();
   }
@@ -133,5 +138,45 @@ class AuthProvider extends ChangeNotifier {
       return User.fromJson(jsonDecode(userData));
     }
     return null;
+  }
+
+  // Link with partner
+  Future<bool> linkPartner(String partnerId) async {
+    if (_user == null) return false;
+    
+    try {
+      final success = await _authService.linkPartner(_user!.uid, partnerId);
+      if (success) {
+        await loadPartnerData();
+      }
+      return success;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // Load partner data
+  Future<void> loadPartnerData() async {
+    if (_user == null || _user!.partnerId == null) {
+      _partner = null;
+      notifyListeners();
+      return;
+    }
+    
+    try {
+      _partner = await _authService.getPartnerData(_user!.uid);
+      notifyListeners();
+    } catch (e) {
+      _partner = null;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadUser() async {
+    _user = await _getUser();
+    if (_user != null) {
+      await loadPartnerData();
+    }
+    notifyListeners();
   }
 }

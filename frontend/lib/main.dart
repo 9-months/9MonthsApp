@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'partner/partner_linking_page.dart';
+import 'partner/role_selection_page.dart';
 import 'providers/pregnancy_provider.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
@@ -116,6 +118,8 @@ class MyApp extends StatelessWidget {
         '/step': (context) => const StepScreen(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
+        '/role-selection': (context) => const RoleSelectionPage(),
+        '/partner-linking': (context) => const PartnerLinkingPage(),
         '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfilePage(),
       },

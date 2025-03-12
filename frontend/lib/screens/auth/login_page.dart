@@ -24,7 +24,15 @@ class _LoginPageState extends State<LoginPage> {
             _passwordController.text,
           );
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      
+      final user = context.read<AuthProvider>().user;
+      
+      // If user is new or role is not set, go to role selection
+      if (user?.role == null) {
+        Navigator.pushReplacementNamed(context, '/role-selection');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

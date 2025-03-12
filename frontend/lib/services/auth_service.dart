@@ -8,8 +8,17 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Login method
-  Future<User> login(String username, String password) async {
+  Future<User> login(String username, String password,{String? partnerLinkCode}) async {
     try {
+      final Map<String, dynamic> requestBody = {
+      'username': username,
+      'password': password,
+    };
+    
+    // Add partner link code if provided
+    if (partnerLinkCode != null && partnerLinkCode.isNotEmpty) {
+      requestBody['partnerLinkCode'] = partnerLinkCode;
+    }
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/login'),
         headers: {'Content-Type': 'application/json'},
@@ -20,8 +29,16 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return User.fromJson(data['user']);
+      final data = json.decode(response.body);
+      final user = User.fromJson(data['user']);
+      
+      // If partner was linked during login, store that information
+      if (data.containsKey('partnerInfo')) {
+        // You might want to update your local storage or state management here
+        // to indicate that a partner was just linked
+      }
+      
+      return user;
       } else {
         throw Exception(
             json.decode(response.body)['message'] ?? 'Login failed');
@@ -38,6 +55,7 @@ class AuthService {
     required String username,
     String? location,
     String? phone,
+    String role = 'mother',
   }) async {
     try {
       final response = await http.post(
@@ -49,6 +67,7 @@ class AuthService {
           'username': username,
           'location': location,
           'phone': phone,
+          'role': role,
         }),
       );
 
@@ -173,6 +192,62 @@ class AuthService {
       await _googleSignIn.signOut();
     } catch (e) {
       throw Exception('Logout failed: ${e.toString()}');
+    }
+  }
+
+  // Generate a partner link code
+  Future<String> generatePartnerLinkCode(String userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Config.apiBaseUrl}/auth/users/$userId/partner-link-code'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['linkCode'];
+      } else {
+        throw Exception('Failed to generate partner link code');
+      }
+    } catch (e) {
+      throw Exception('Failed to generate partner link code: ${e.toString()}');
+    }
+  }
+
+  // Link user with partner
+  Future<bool> linkPartner(String userId, String partnerId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Config.apiBaseUrl}/auth/link-partners'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userId1': userId,
+          'userId2': partnerId,
+        }),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception('Failed to link partner: ${e.toString()}');
+    }
+  }
+
+  // Get partner data
+  Future<User> getPartnerData(String userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${Config.apiBaseUrl}/auth/partner/$userId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return User.fromJson(data);
+      } else {
+        throw Exception('Failed to get partner data');
+      }
+    } catch (e) {
+      throw Exception('Failed to get partner data: ${e.toString()}');
     }
   }
 }
