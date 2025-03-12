@@ -36,7 +36,7 @@ module.exports = {
   // Log In
   logIn: async (req, res) => {
     try {
-      const { email, username, password } = req.body;
+      const { email, username, password, partnerLinkCode } = req.body;
       const credential = email || username;
 
       if (!credential || !password) {
@@ -46,7 +46,7 @@ module.exports = {
         });
       }
 
-      const result = await authService.logIn(credential, password);
+      const result = await authService.logIn(credential, password,partnerLinkCode);
 
       if (!result.status) {
         console.error("Login failed:", result.message);
@@ -54,11 +54,21 @@ module.exports = {
       }
 
       console.log("User logged in successfully:", credential);
-      return res.status(200).json({
+
+       // Prepare response object
+      const response = {
         message: result.message,
         token: result.token,
         user: result.user,
-      });
+      };
+      
+      // Include partner info if linking was successful
+      if (result.partnerInfo) {
+        response.partnerInfo = result.partnerInfo;
+        response.message += " Partner successfully linked.";
+      }
+      res.status(200).json(response);
+
     } catch (error) {
       console.error("Log In Error:", error.message || error);
 
@@ -157,6 +167,28 @@ module.exports = {
       res
         .status(500)
         .json({ message: "An error occurred while deleting user" });
+    }
+  },
+
+  generatePartnerLinkCode: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      
+      const result = await authService.generatePartnerLinkCode(uid);
+      
+      if (!result.status) {
+        return res.status(404).json({ message: result.message });
+      }
+      
+      return res.status(200).json({
+        message: result.message,
+        linkCode: result.linkCode
+      });
+    } catch (error) {
+      console.error("Generate Link Code Error:", error);
+      return res.status(500).json({
+        message: "An error occurred while generating partner link code"
+      });
     }
   },
 

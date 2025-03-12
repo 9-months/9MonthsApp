@@ -235,6 +235,6 @@ router.put("/user/:uid", authController.updateUser);
 router.delete("/user/:uid", authController.deleteUser);
 
 router.post("/link-partners", authController.linkPartners);
-router.get("/partners/:uid", authController.getPartners);
+router.get("/partner/:uid", authController.getPartnerData);
 
 module.exports = router;
