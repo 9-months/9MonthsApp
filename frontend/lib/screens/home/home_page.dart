@@ -15,6 +15,7 @@ import '../../providers/pregnancy_provider.dart';
 import '../../widgets/homePregnancy.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
+import '../../widgets/partner_home_content.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -47,6 +48,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final pregnancyProvider = Provider.of<PregnancyProvider>(context);
+    final isPartner = authProvider.user?.role == 'partner';
 
     return Scaffold(
       body: SafeArea(
@@ -68,9 +70,20 @@ class _HomePageState extends State<HomePage> {
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 4),
+
+                          // Showing which role they have and partner if applicable
+                          if (isPartner && authProvider.partner != null)
+                            Text(
+                              'Supporting ${authProvider.partner?.username}',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+
                           FutureBuilder(
-                            future: pregnancyProvider
-                                .fetchPregnancyData(authProvider.username),
+                            future: isPartner && authProvider.partner != null
+                              ? pregnancyProvider.fetchPregnancyData(authProvider.partner!.username)
+                              : pregnancyProvider.fetchPregnancyData(authProvider.username),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
@@ -120,6 +133,16 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   const SizedBox(height: 24),
+
+                  if (isPartner)
+                  PartnerHomeContent(partnerId: authProvider.partner?.uid)
+                else
+                  Column(
+                    children: [
+                      HomePregnancyWidget(),
+                      HomeTipsWidget(),
+                    ],
+                  ),
 
                   // Pregnancy Info
                   HomePregnancyWidget(),

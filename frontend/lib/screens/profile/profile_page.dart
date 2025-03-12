@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/partnerLinkCode.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -416,6 +417,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Partner Link Code Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: const PartnerLinkCodeSection(),
                   ),
 
                   const SizedBox(height: 30),

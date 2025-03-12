@@ -113,4 +113,13 @@ class PregnancyProvider with ChangeNotifier {
       throw e.toString();
     }
   }
+
+  Future<List<String>> fetchPartnerTips(String? partnerId) async {
+    // Replace with actual implementation
+    return Future.delayed(
+      const Duration(seconds: 2),
+      () => ['Tip 1', 'Tip 2', 'Tip 3'],
+    );
+  }
+
 }
