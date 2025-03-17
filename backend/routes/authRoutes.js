@@ -234,6 +234,7 @@ router.put("/user/:uid", authController.updateUser);
  */
 router.delete("/user/:uid", authController.deleteUser);
 
+router.post('/partner-link-code/:uid', authController.generatePartnerLinkCode);
 router.post("/link-partners", authController.linkPartners);
 router.get("/partner/:uid", authController.getPartnerData);
 

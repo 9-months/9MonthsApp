@@ -30,6 +30,11 @@ class AuthProvider extends ChangeNotifier {
   User? _partner;
   User? get partner => _partner;
 
+  String? _partnerLinkCode;
+  String? get partnerLinkCode => _partnerLinkCode;
+
+
+
   // Login and register methods
   Future<void> login(String username, String password) async {
     _username = username;
@@ -140,6 +145,13 @@ class AuthProvider extends ChangeNotifier {
     return null;
   }
 
+  //Generate partner link code
+  Future<String> generatePartnerLinkCode() async {
+    if (_user == null) throw Exception('User not authenticated');
+    _partnerLinkCode = await _authService.generatePartnerLinkCode(_user!.uid);
+    notifyListeners();
+    return _partnerLinkCode!;
+  }
   // Link with partner
   Future<bool> linkPartner(String partnerId) async {
     if (_user == null) return false;
@@ -155,7 +167,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
   
-  // Load partner data
+  // // Load partner data
   Future<void> loadPartnerData() async {
     if (_user == null || _user!.partnerId == null) {
       _partner = null;

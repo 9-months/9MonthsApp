@@ -172,9 +172,11 @@ module.exports = {
 
   generatePartnerLinkCode: async (req, res) => {
     try {
+      console.log("Received request to generate code for UID:", req.params.uid);
       const { uid } = req.params;
       
       const result = await authService.generatePartnerLinkCode(uid);
+      console.log("Generation result:", result);
       
       if (!result.status) {
         return res.status(404).json({ message: result.message });
@@ -192,7 +194,7 @@ module.exports = {
     }
   },
 
-  // Link partners
+  // // Link partners
   linkPartners: async (req, res) => {
     try {
       const { userId1, userId2 } = req.body;
@@ -222,7 +224,7 @@ module.exports = {
     }
   },
 
-  // Get partner data
+  // // Get partner data
   getPartnerData: async (req, res) => {
     try {
       const { uid } = req.params;

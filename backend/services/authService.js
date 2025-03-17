@@ -211,35 +211,44 @@ class AuthService {
       }
       
       // Find partner by the linking code
-      // Assuming you store a temporary linkCode in the user document
       const partner = await User.findOne({ linkCode: partnerLinkCode });
       
       if (!partner) {
         return { status: false, message: "Invalid partner linking code" };
       }
       
-      // Verify the roles are complementary (mother-partner)
-      const user = await User.findOne({ uid: userId });
-      
-      if (!user) {
-        return { status: false, message: "User not found" };
-      }
-      
-      // Don't link if already linked
-      if (user.partnerId || partner.partnerId) {
-        return { status: false, message: "One or both users already have partners" };
-      }
-      
-      // Link the partners
-      user.partnerId = partner.uid;
-      partner.partnerId = user.uid;
-      
-      // Clear the linking code after successful linking
-      partner.linkCode = undefined;
-      
-      // Save both users
-      await Promise.all([user.save(), partner.save()]);
-      
+      // Verify the roles are complementary
+    const user = await User.findOne({ uid: userId });
+    
+    if (!user) {
+      return { status: false, message: "User not found" };
+    }
+    
+    // Don't link if already linked
+    if (user.partnerId || partner.partnerId) {
+      return { status: false, message: "One or both users already have partners" };
+    }
+    
+    // Ensure partner is trying to link with mother
+    if (user.role === 'mother' && partner.role === 'mother') {
+      return { status: false, message: "Both users have mother role" };
+    }
+    
+    if (user.role === 'partner' && partner.role === 'partner') {
+      return { status: false, message: "Both users have partner role" };
+    }
+    
+    // Link the partners
+    user.partnerId = partner.uid;
+    partner.partnerId = user.uid;
+    
+    // Clear the linking code after successful linking
+    partner.linkCode = undefined;
+    partner.linkCodeExpiry = undefined;
+    
+    // Save both users
+    await Promise.all([user.save(), partner.save()]);
+    
       return { 
         status: true, 
         message: "Partner linked successfully", 
@@ -253,11 +262,15 @@ class AuthService {
 
   async generatePartnerLinkCode(userId) {
     try {
+      console.log("Generating link code for user ID:", userId);
       const user = await User.findOne({ uid: userId });
       
       if (!user) {
+        console.log("User not found for ID:", userId);
         return { status: false, message: "User not found" };
       }
+      
+      console.log("Found user:", user.email);
       
       // Generate a random 6-character alphanumeric code
       const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -266,10 +279,15 @@ class AuthService {
         linkCode += characters.charAt(Math.floor(Math.random() * characters.length));
       }
       
+      console.log("Generated code:", linkCode);
+      
       // Save the code to the user
       user.linkCode = linkCode;
       user.linkCodeExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours expiry
+      
+      console.log("Saving user with new code...");
       await user.save();
+      console.log("User saved successfully");
       
       return { 
         status: true, 

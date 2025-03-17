@@ -196,21 +196,31 @@ class AuthService {
   }
 
   // Generate a partner link code
-  Future<String> generatePartnerLinkCode(String userId) async {
+  Future<String> generatePartnerLinkCode(String uid) async {
     try {
+      // Get your API URL from configuration
+      final url = Uri.parse('${Config.apiBaseUrl}/auth/partner-link-code/$uid');
+      
+      // Include authorization headers
       final response = await http.post(
-        Uri.parse('${Config.apiBaseUrl}/auth/users/$userId/partner-link-code'),
-        headers: {'Content-Type': 'application/json'},
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
       );
-
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = jsonDecode(response.body);
         return data['linkCode'];
       } else {
-        throw Exception('Failed to generate partner link code');
+        throw Exception('Server returned ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      throw Exception('Failed to generate partner link code: ${e.toString()}');
+      print('Network error in generatePartnerLinkCode: $e');
+      throw e; // Re-throw to handle in calling function
     }
   }
 
@@ -232,7 +242,7 @@ class AuthService {
     }
   }
 
-  // Get partner data
+//   // Get partner data
   Future<User> getPartnerData(String userId) async {
     try {
       final response = await http.get(
