@@ -7,7 +7,9 @@ import 'screens/home/home_page.dart';
 import 'screens/profile/profile_page.dart';
 import 'screens/splash/splash.dart';
 import 'screens/onboarding/step_screen.dart';
+import 'screens/calendar/calendar_screen.dart'; // Import CalendarScreen
 import 'package:provider/provider.dart';
+
 import 'providers/auth_provider.dart';
 
 void main() async {
@@ -118,6 +120,10 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfilePage(),
+        '/calendar': (context) => CalendarScreen(
+              userId:
+                  Provider.of<AuthProvider>(context, listen: false).user!.uid,
+            ),
       },
     );
   }

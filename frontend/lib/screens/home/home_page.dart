@@ -4,26 +4,19 @@
  Created Date: CCS-29
  Author: Irosh Perera
 
-<<<<<<< HEAD
- last modified: 02-03-2025 | Chamod Kamiss | Added calendar integration and auth provider
-=======
  last modified: 2025-02-15 | Chamod | CCS-8 Pregnancy Tracker
->>>>>>> main
 */
 
 import 'package:_9months/widgets/homeTIps.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-<<<<<<< HEAD
-=======
 import '../../providers/auth_provider.dart';
 import '../../providers/pregnancy_provider.dart';
 import '../../widgets/homePregnancy.dart';
->>>>>>> main
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
+
 import '../calendar/calendar_screen.dart';
-import '../reminders/reminder_screen.dart';
 import '../../providers/auth_provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -63,48 +56,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-    // Use the current user's name from the auth provider
-    final userName = Provider.of<AuthProvider>(context).user?.username ?? 'User';
-    
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hello $userName',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '16th Week of Pregnancy',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/profile'),
-                      child: const CircleAvatar(
-                        radius: 24,
-                        backgroundImage:
-                            AssetImage('assets/images/profile_picture.png'),
-=======
     final authProvider = Provider.of<AuthProvider>(context);
     final pregnancyProvider = Provider.of<PregnancyProvider>(context);
 
@@ -168,15 +119,33 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
                         ],
->>>>>>> main
                       ),
-                      GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/profile'),
-                        child: const CircleAvatar(
-                          radius: 24,
-                          backgroundImage:
-                              AssetImage('assets/images/profile_picture.png'),
-                        ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CalendarScreen(
+                                    userId: authProvider.user!.uid,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Icon(Icons.calendar_today, size: 28),
+                          ),
+                          const SizedBox(width: 16),
+                          GestureDetector(
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/profile'),
+                            child: const CircleAvatar(
+                              radius: 24,
+                              backgroundImage: AssetImage(
+                                  'assets/images/profile_picture.png'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -185,64 +154,10 @@ class _HomePageState extends State<HomePage> {
                   // Pregnancy Info
                   HomePregnancyWidget(),
 
-<<<<<<< HEAD
-                // Menu Grid
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  children: [
-                    _buildMenuCard(
-                      Icons.medication, 
-                      'Medicines',
-                      Theme.of(context).colorScheme.secondary
-                    ),
-                    _buildMenuCard(
-                      Icons.fitness_center, 
-                      'Exercises', 
-                      Colors.green
-                    ),
-                    _buildMenuCard(
-                      Icons.local_hospital, 
-                      'Hospitals', 
-                      Colors.red
-                    ),
-                    _buildMenuCard(
-                      Icons.article, 
-                      'Articles', 
-                      Colors.purple
-                    ),
-                    _buildMenuCard(
-                      Icons.video_library, 
-                      'Videos', 
-                      Colors.blue
-                    ),
-                    _buildMenuCard(
-                      Icons.restaurant_menu, 
-                      'Food', 
-                      Colors.teal
-                    ),
-                    _buildMenuCard(
-                      Icons.calendar_today, 
-                      'Calendar', 
-                      Colors.orange
-                    ),
-                    _buildMenuCard(
-                      Icons.notification_important, 
-                      'Reminders', 
-                      Colors.amber
-                    ),
-                  ],
-                ),
-              ],
-=======
                   //Tips Widget
                   HomeTipsWidget(),
                 ],
               ),
->>>>>>> main
             ),
           ),
         ),
@@ -254,78 +169,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-<<<<<<< HEAD
-
-  Widget _buildInfoColumn(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMenuCard(IconData icon, String title, Color color) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        onTap: () {
-          if (title == 'Calendar') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CalendarScreen(userId: userId),
-              ),
-            );
-          } else if (title == 'Medicines' || title == 'Reminders') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ReminderScreen(userId: userId),
-              ),
-            );
-          }
-          // Add other navigation options as needed
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 32,
-              color: color,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
-=======
-}
->>>>>>> main
