@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:_9months/providers/auth_provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import '../../providers/auth_provider.dart';
 
 class EditReminderForm extends StatefulWidget {
   final String userId;
   final Map<String, dynamic> reminder;
 
-  const EditReminderForm(
-      {super.key, required this.userId, required this.reminder});
+  const EditReminderForm({
+    super.key,
+    required this.userId,
+    required this.reminder,
+  });
 
   @override
   _EditReminderFormState createState() => _EditReminderFormState();
@@ -21,8 +24,12 @@ class _EditReminderFormState extends State<EditReminderForm> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  DateTime? _selectedTime;
-  List<int> _alertOffsets = [0]; // Default alert offset at the time of reminder
+  DateTime? _selectedDateTime;
+  List<int> _alertOffsets = [0];
+  String _type = 'appointment';
+  String _repeat = 'none';
+  String _location = '';
+
   final List<Map<String, dynamic>> _alertOptions = [
     {'label': 'At time of reminder', 'value': 0},
     {'label': '5 mins before', 'value': 5},
@@ -31,42 +38,46 @@ class _EditReminderFormState extends State<EditReminderForm> {
     {'label': '30 mins before', 'value': 30},
     {'label': '1 hour before', 'value': 60},
   ];
-  String _type = 'appointment';
-  String _timezone = 'Asia/Colombo'; // Default to Sri Lankan timezone
-  String _repeat = 'none';
-  String _location = '';
 
   @override
   void initState() {
     super.initState();
-    tzdata.initializeTimeZones(); // Initialize time zone data
+    tz.initializeTimeZones();
 
     _titleController = TextEditingController(text: widget.reminder['title']);
     _descriptionController =
         TextEditingController(text: widget.reminder['description']);
-    _selectedTime = DateTime.parse(widget.reminder['dateTime']);
+    _selectedDateTime = DateTime.parse(widget.reminder['dateTime']);
     _alertOffsets = List<int>.from(widget.reminder['alertOffsets']);
     _type = widget.reminder['type'];
-    _timezone = widget.reminder['timezone'];
     _repeat = widget.reminder['repeat'];
     _location = widget.reminder['location'];
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
+  Future<void> _selectDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(_selectedTime!),
+      initialDate: _selectedDateTime ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
     );
-    if (picked != null) {
-      setState(() {
-        _selectedTime = DateTime(
-          _selectedTime!.year,
-          _selectedTime!.month,
-          _selectedTime!.day,
-          picked.hour,
-          picked.minute,
-        );
-      });
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime:
+            TimeOfDay.fromDateTime(_selectedDateTime ?? DateTime.now()),
+      );
+      if (pickedTime != null) {
+        setState(() {
+          _selectedDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
     }
   }
 
@@ -81,38 +92,21 @@ class _EditReminderFormState extends State<EditReminderForm> {
         body: json.encode({
           'title': _titleController.text,
           'description': _descriptionController.text,
-          'dateTime': _selectedTime!.toIso8601String(),
-          'timezone': _timezone,
-          'repeat': _repeat,
+          'dateTime': _selectedDateTime!.toIso8601String(),
           'alertOffsets': _alertOffsets,
           'type': _type,
+          'repeat': _repeat,
           'location': _location,
         }),
       );
       if (response.statusCode == 200) {
         Navigator.pop(context);
       } else {
-        print('Failed to update reminder. Status code: ${response.statusCode}');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Failed to update reminder")));
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to update reminder")),
+        );
       }
     }
-    print('Timezone: $_timezone');
-    print('Updated Time: ${_selectedTime!.toIso8601String()}');
-    print(
-        'Request URL: ${Uri.parse('http://localhost:3000/reminder/${Provider.of<AuthProvider>(context, listen: false).user!.uid}/${widget.reminder['_id']}')}');
-    print('Request Body: ${json.encode({
-          'title': _titleController.text,
-          'description': _descriptionController.text,
-          'dateTime': _selectedTime!.toIso8601String(),
-          'timezone': _timezone,
-          'repeat': _repeat,
-          'alertOffsets': _alertOffsets,
-          'type': _type,
-          'location': _location,
-        })}');
   }
 
   @override
@@ -125,130 +119,153 @@ class _EditReminderFormState extends State<EditReminderForm> {
           key: _formKey,
           child: ListView(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
+              Text(
+                'Reminder Details',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: ElevatedButton(
-                  onPressed: () => _selectTime(context),
-                  child: Text(_selectedTime == null
-                      ? 'Select Time'
-                      : DateFormat('HH:mm').format(_selectedTime!)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<String>(
-                  value: _type,
-                  items:
-                      ['appointment', 'medicine', 'other'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _type = value!;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Type',
-                    border: OutlineInputBorder(),
+              SizedBox(height: 16),
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          labelText: 'Title',
+                          prefixIcon: Icon(Icons.title),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a title';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          prefixIcon: Icon(Icons.description),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => _selectDateTime(context),
+                        icon: Icon(Icons.calendar_today),
+                        label: Text(
+                          _selectedDateTime == null
+                              ? 'Select Date & Time'
+                              : DateFormat('yyyy-MM-dd HH:mm')
+                                  .format(_selectedDateTime!),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<String>(
-                  value: _repeat,
-                  items: ['none', 'daily', 'weekly', 'monthly', 'yearly']
-                      .map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _repeat = value!;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Repeat',
-                    border: OutlineInputBorder(),
+              SizedBox(height: 16),
+              Text(
+                'Additional Settings',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: _type,
+                        items: ['appointment', 'medicine', 'other']
+                            .map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _type = value!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Type',
+                          prefixIcon: Icon(Icons.category),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _repeat,
+                        items: ['none', 'daily', 'weekly', 'monthly', 'yearly']
+                            .map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _repeat = value!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Repeat',
+                          prefixIcon: Icon(Icons.repeat),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Location',
+                          prefixIcon: Icon(Icons.location_on),
+                          border: OutlineInputBorder(),
+                        ),
+                        initialValue: _location,
+                        onChanged: (value) {
+                          setState(() {
+                            _location = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      DropdownButtonFormField<int>(
+                        value: _alertOffsets.first,
+                        items: _alertOptions.map((option) {
+                          return DropdownMenuItem<int>(
+                            value: option['value'],
+                            child: Text(option['label']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _alertOffsets = [value!];
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Alert',
+                          prefixIcon: Icon(Icons.alarm),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Location',
-                    border: OutlineInputBorder(),
-                  ),
-                  initialValue: _location,
-                  onChanged: (value) {
-                    setState(() {
-                      _location = value;
-                    });
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<int>(
-                  value: _alertOffsets.first,
-                  items: _alertOptions.map((option) {
-                    return DropdownMenuItem<int>(
-                      value: option['value'],
-                      child: Text(option['label']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _alertOffsets = [value!];
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Early reminder',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: _updateReminder,
-                  child: Text('Update Reminder'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    textStyle: TextStyle(fontSize: 16),
-                  ),
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _updateReminder,
+                child: Text('Update Reminder'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  textStyle: TextStyle(fontSize: 16),
                 ),
               ),
             ],
