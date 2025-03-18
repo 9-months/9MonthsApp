@@ -22,6 +22,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   List<dynamic> _reminders = [];
+  Map<DateTime, List<dynamic>> _remindersByDate = {};
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       if (response.statusCode == 200) {
         setState(() {
           _reminders = json.decode(response.body);
+          _remindersByDate = _groupRemindersByDate(_reminders);
         });
       } else {
         print('Failed to fetch reminders. Status code: ${response.statusCode}');
@@ -59,11 +61,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  List<dynamic> _getRemindersForDay(DateTime day) {
-    return _reminders.where((reminder) {
+  Map<DateTime, List<dynamic>> _groupRemindersByDate(List<dynamic> reminders) {
+    Map<DateTime, List<dynamic>> groupedReminders = {};
+    for (var reminder in reminders) {
       DateTime reminderDate = DateTime.parse(reminder['dateTime']);
-      return isSameDay(reminderDate, day);
-    }).toList();
+      DateTime dateOnly =
+          DateTime(reminderDate.year, reminderDate.month, reminderDate.day);
+      if (groupedReminders[dateOnly] == null) {
+        groupedReminders[dateOnly] = [];
+      }
+      groupedReminders[dateOnly]!.add(reminder);
+    }
+    return groupedReminders;
+  }
+
+  List<dynamic> _getRemindersForDay(DateTime day) {
+    return _remindersByDate[DateTime(day.year, day.month, day.day)] ?? [];
   }
 
   Future<void> _deleteReminder(String reminderId) async {
@@ -95,7 +108,86 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Calendar')),
+      appBar: AppBar(
+        title: Text('Calendar'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _fetchReminders,
+          ),
+          IconButton(
+            icon: Icon(Icons.list),
+            onPressed: () {
+              // Navigate to a screen or show a dialog with all reminders
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text("All Reminders"),
+                    content: Container(
+                      width: double.maxFinite,
+                      child: ListView(
+                        children: _reminders
+                            .map((reminder) {
+                              return ListTile(
+                                title: Text(reminder['title']),
+                                subtitle: Text(DateFormat('yyyy-MM-dd HH:mm')
+                                    .format(
+                                        DateTime.parse(reminder['dateTime']))),
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: Text(reminder['title']),
+                                        content: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                                'Date: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(reminder['dateTime']))}'),
+                                            Text(
+                                                'Time: ${DateFormat('HH:mm').format(DateTime.parse(reminder['dateTime']))}'),
+                                            if (reminder['description'] !=
+                                                    null &&
+                                                reminder['description']
+                                                    .isNotEmpty)
+                                              Text(
+                                                  'Description: ${reminder['description']}'),
+                                          ],
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: Text("Close"),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            })
+                            .toList()
+                            .reversed
+                            .toList(),
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text("Close"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           TableCalendar(
@@ -120,6 +212,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
             },
+            eventLoader: (day) {
+              return _getRemindersForDay(day);
+            },
+            calendarStyle: CalendarStyle(
+              markerDecoration: BoxDecoration(
+                color: Colors.blue,
+                shape: BoxShape.circle,
+              ),
+            ),
           ),
           Expanded(
             child: ListView(
@@ -186,28 +287,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
               }).toList(),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ReminderForm(
-                      userId: widget.userId,
-                      selectedDate: _selectedDay,
-                    ),
-                  ),
-                ).then((value) => {_fetchReminders()});
-              },
-              child: Text('Add Reminder'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                textStyle: TextStyle(fontSize: 16),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ReminderForm(
+                userId: widget.userId,
+                selectedDate: _selectedDay,
               ),
             ),
-          ),
-        ],
+          ).then((value) => {_fetchReminders()});
+        },
+        child: Icon(Icons.add),
       ),
     );
   }
