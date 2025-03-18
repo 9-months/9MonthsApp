@@ -1,18 +1,11 @@
-/*
- File: add_reminder_screen.dart
- Purpose: UI for adding a new reminder
- Created Date: 02-03-2025
- Author: Chamod Kamiss
-*/
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../../services/reminder_service.dart';
-import 'package:_9months/providers/auth_provider.dart';
+
+import '../../providers/auth_provider.dart';
 
 class ReminderForm extends StatefulWidget {
   final String userId;
@@ -29,7 +22,7 @@ class _ReminderFormState extends State<ReminderForm> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   DateTime? _selectedTime;
-  List<int> _alertOffsets = [0]; // Default alert offset at the time of reminder
+  List<int> _alertOffsets = [0];
   final List<Map<String, dynamic>> _alertOptions = [
     {'label': 'At time of reminder', 'value': 0},
     {'label': '5 mins before', 'value': 5},
@@ -39,14 +32,14 @@ class _ReminderFormState extends State<ReminderForm> {
     {'label': '1 hour before', 'value': 60},
   ];
   String _type = 'appointment';
-  String _timezone = 'Asia/Colombo'; // Default to Sri Lankan timezone
+  String _timezone = 'Asia/Colombo';
   String _repeat = 'none';
   String _location = '';
 
   @override
   void initState() {
     super.initState();
-    tzdata.initializeTimeZones(); // Initialize time zone data
+    tzdata.initializeTimeZones();
   }
 
   Future<void> _selectTime(BuildContext context) async {
@@ -88,27 +81,11 @@ class _ReminderFormState extends State<ReminderForm> {
       if (response.statusCode == 201) {
         Navigator.pop(context);
       } else {
-        print('Failed to create reminder. Status code: ${response.statusCode}');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Failed to create reminder")));
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to create reminder")),
+        );
       }
     }
-    print('Timezone: $_timezone');
-    print('Created Time: ${_selectedTime!.toIso8601String()}');
-    print(
-        'Request URL: ${Uri.parse('http://localhost:3000/reminder/${Provider.of<AuthProvider>(context, listen: false).user!.uid}')}');
-    print('Request Body: ${json.encode({
-          'title': _titleController.text,
-          'description': _descriptionController.text,
-          'dateTime': _selectedTime!.toIso8601String(),
-          'timezone': _timezone,
-          'repeat': _repeat,
-          'alertOffsets': _alertOffsets,
-          'type': _type,
-          'location': _location,
-        })}');
   }
 
   @override
@@ -121,130 +98,153 @@ class _ReminderFormState extends State<ReminderForm> {
           key: _formKey,
           child: ListView(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
+              Text(
+                'Reminder Details',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  controller: _descriptionController,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: ElevatedButton(
-                  onPressed: () => _selectTime(context),
-                  child: Text(_selectedTime == null
-                      ? 'Select Time'
-                      : DateFormat('HH:mm').format(_selectedTime!)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<String>(
-                  value: _type,
-                  items:
-                      ['appointment', 'medicine', 'other'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _type = value!;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Type',
-                    border: OutlineInputBorder(),
+              SizedBox(height: 16),
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          labelText: 'Title',
+                          prefixIcon: Icon(Icons.title),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a title';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          prefixIcon: Icon(Icons.description),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => _selectTime(context),
+                        icon: Icon(Icons.access_time),
+                        label: Text(
+                          _selectedTime == null
+                              ? 'Select Time'
+                              : DateFormat('yyyy-MM-dd HH:mm')
+                                  .format(_selectedTime!),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<String>(
-                  value: _repeat,
-                  items: ['none', 'daily', 'weekly', 'monthly', 'yearly']
-                      .map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _repeat = value!;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Repeat',
-                    border: OutlineInputBorder(),
+              SizedBox(height: 16),
+              Text(
+                'Additional Settings',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: _type,
+                        items: ['appointment', 'medicine', 'other']
+                            .map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _type = value!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Type',
+                          prefixIcon: Icon(Icons.category),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _repeat,
+                        items: ['none', 'daily', 'weekly', 'monthly', 'yearly']
+                            .map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _repeat = value!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Repeat',
+                          prefixIcon: Icon(Icons.repeat),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Location',
+                          prefixIcon: Icon(Icons.location_on),
+                          border: OutlineInputBorder(),
+                        ),
+                        initialValue: _location,
+                        onChanged: (value) {
+                          setState(() {
+                            _location = value;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      DropdownButtonFormField<int>(
+                        value: _alertOffsets.first,
+                        items: _alertOptions.map((option) {
+                          return DropdownMenuItem<int>(
+                            value: option['value'],
+                            child: Text(option['label']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _alertOffsets = [value!];
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Alert',
+                          prefixIcon: Icon(Icons.alarm),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Location',
-                    border: OutlineInputBorder(),
-                  ),
-                  initialValue: _location,
-                  onChanged: (value) {
-                    setState(() {
-                      _location = value;
-                    });
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<int>(
-                  value: _alertOffsets.first,
-                  items: _alertOptions.map((option) {
-                    return DropdownMenuItem<int>(
-                      value: option['value'],
-                      child: Text(option['label']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _alertOffsets = [value!];
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Early reminder',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: _createReminder,
-                  child: Text('Create Reminder'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    textStyle: TextStyle(fontSize: 16),
-                  ),
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _createReminder,
+                child: Text('Create Reminder'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  textStyle: TextStyle(fontSize: 16),
                 ),
               ),
             ],
