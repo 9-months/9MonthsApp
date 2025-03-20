@@ -21,9 +21,9 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String _dateOfBirth = '01/01/1990';
-  String _location = 'Colombo';
-  String _phone = '';
+  final String _dateOfBirth = '01/01/1990';
+  final String _location = 'Colombo';
+  final String _phone = '';
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
@@ -245,13 +245,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                   color: Colors.white,
                                 ),
                               ),
-                              if (user.email != null)
-                                Text(
-                                  user.email,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
-                                  ),
+                              Text(
+                                user.email,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.white.withOpacity(0.9),
                                 ),
+                              ),
                             ],
                           ),
                         ),
@@ -424,7 +423,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24.0, vertical: 10.0),
-                    child: Container(
+                    child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {

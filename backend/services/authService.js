@@ -148,7 +148,7 @@ class AuthService {
   // Update User
   async updateUser(userId, updateData) {
     try {
-      const allowedUpdates = ["email", "phone", "location"];
+      const allowedUpdates = ["email", "phone", "location", "dateOfBirth"];
       const updates = Object.keys(updateData);
       const isValidUpdate = updates.every((update) =>
         allowedUpdates.includes(update)
