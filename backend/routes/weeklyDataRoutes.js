@@ -7,6 +7,7 @@ const router = express.Router();
  * /week/{week}:
  *   get:
  *     summary: Get weekly data for a specific week
+ *    tags: [WeeklyData]
  *     parameters:
  *       - in: path
  *         name: week
@@ -28,6 +29,7 @@ const router = express.Router();
  * /week/{week}/tips:
  *   get:
  *     summary: Get only tips for a specific week
+ *     tags:[Weekly Data]
  *     parameters:
  *       - in: path
  *         name: week
