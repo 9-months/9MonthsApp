@@ -6,6 +6,7 @@
  Input validation and error handling: Melissa Joanne
 
  Last Modified: 2025-02-14 | Irosh Perera | CCS-42-returned user data after registration
+              Updated: 2025-03-15 | Your Name | Added googleSignIn handling with extra registration data
 */
 const User = require("../models/User");
 const admin = require("firebase-admin");
@@ -168,6 +169,85 @@ class AuthService {
     } catch (err) {
       console.error("Error updating user:", err);
       return { status: false, message: "Error updating user." };
+    }
+  }
+
+  // Google Sign In - New method for handling Google sign in
+  async googleSignIn(data) {
+    try {
+      // Expect: data = { idToken, location, username, phone }
+      const { idToken, location, username, phone } = data;
+      if (!idToken) {
+        return { status: false, message: "Google ID token is required." };
+      }
+      // Verify the Google token to extract user details
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const email = decodedToken.email;
+      if (!email) {
+        return { status: false, message: "Google token did not provide email." };
+      }
+      // Check if the user already exists in our local DB
+      let existingUser = await User.findOne({ email: email });
+      if (existingUser) {
+        // User exists – generate a custom token and return user details
+        const token = await admin.auth().createCustomToken(existingUser.uid);
+        return { status: true, message: "Google sign in successful.", token, user: existingUser };
+      }
+      // If the user does not exist, require additional data for registration.
+      if (!location || !username || !phone) {
+        return {
+          status: false,
+          message: "Additional registration data required: location, username, and phone."
+        };
+      }
+      
+      // Validate the additional registration data
+      if (!/^\+94\d{9}$/.test(phone)) {
+        return { status: false, message: "Invalid phone number." };
+      }
+      
+      const normalizedUsername = username.toLowerCase().trim();
+      if (!/^[a-z0-9]+$/.test(normalizedUsername)) {
+        return { status: false, message: "Invalid username." };
+      }
+      
+      if (await User.findOne({ phone })) {
+        return { status: false, message: "Phone number already in use." };
+      }
+      
+      if (await User.findOne({ username: normalizedUsername })) {
+        return { status: false, message: "Username taken." };
+      }
+      
+      // Create a new Firebase user with a default password.
+      const userResponse = await admin.auth().createUser({
+        email: email,
+        password: "GoogleSignInDefault#1" // default password for Google sign in
+      });
+      const encryptedPassword = CryptoJS.AES.encrypt(
+        "GoogleSignInDefault#1",
+        process.env.SECRET
+      ).toString();
+      // Save additional user details in our local database.
+      const newUser = new User({
+        uid: userResponse.uid,
+        email: email,
+        password: encryptedPassword,
+        username: normalizedUsername,
+        location: location,
+        phone: phone,
+      });
+      await newUser.save();
+      const token = await admin.auth().createCustomToken(newUser.uid);
+      return {
+        status: true,
+        message: "Google sign in successful - new user registered.",
+        token,
+        user: newUser
+      };
+    } catch (error) {
+      console.error("Error during Google sign in:", error);
+      return { status: false, message: "Google sign in failed." };
     }
   }
 

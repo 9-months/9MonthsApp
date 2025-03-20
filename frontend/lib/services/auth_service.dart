@@ -29,7 +29,9 @@ class AuthService {
         throw Exception(
             json.decode(response.body)['message'] ?? 'Login failed');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('Login failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Login failed: ${e.toString()}');
     }
   }
@@ -63,13 +65,16 @@ class AuthService {
         final error = json.decode(response.body);
         throw Exception(error['message'] ?? 'Registration failed');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('Registration failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Registration failed: ${e.toString()}');
     }
   }
 
   // Google Sign-In method
-  Future<user.User> googleSignIn() async {
+  // Optional parameters: extraData containing additional fields such as 'location', 'username', and 'phone'
+  Future<user.User> googleSignIn({Map<String, dynamic>? extraData}) async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) throw Exception('Google sign in cancelled');
@@ -80,20 +85,41 @@ class AuthService {
 
       if (idToken == null) throw Exception('Failed to get ID Token');
 
+      // Prepare payload with idToken and any extra registration data (if available)
+      final Map<String, dynamic> payload = {'idToken': idToken};
+      if (extraData != null) {
+        payload.addAll(extraData);
+      }
+
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/google'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'idToken': idToken}),
+        body: json.encode(payload),
       );
+
+      // Log the raw response to debug HTML output
+      print('Google sign-in response status: ${response.statusCode}');
+      print('Google sign-in response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return user.User.fromJson(data['user']);
       } else {
+        // Attempt to extract error message if possible, else fallback
+        dynamic responseData;
+        try {
+          responseData = json.decode(response.body);
+        } catch (_) {
+          responseData = response.body;
+        }
         throw Exception(
-            json.decode(response.body)['message'] ?? 'Google sign-in failed');
+            responseData is Map && responseData['message'] != null 
+              ? responseData['message'] 
+              : 'Google sign-in failed');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('Google sign-in failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Google sign-in failed: ${e.toString()}');
     }
   }
@@ -112,7 +138,9 @@ class AuthService {
       } else {
         throw Exception('Failed to get profile data');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('getUserById failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Failed to get profile data: ${e.toString()}');
     }
   }
@@ -145,7 +173,9 @@ class AuthService {
       } else {
         throw Exception('Failed to update profile');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('UpdateProfile failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Failed to update profile: ${e.toString()}');
     }
   }
@@ -161,7 +191,9 @@ class AuthService {
       if (response.statusCode != 200) {
         throw Exception('Failed to delete user');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('DeleteUser failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Failed to delete user: ${e.toString()}');
     }
   }
@@ -174,7 +206,10 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
       );
       await _googleSignIn.signOut();
-    } catch (e) {
+      await FirebaseAuth.instance.signOut();
+    } catch (e, s) {
+      print('Logout failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Logout failed: ${e.toString()}');
     }
   }
