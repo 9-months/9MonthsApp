@@ -1,14 +1,16 @@
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:_9months/models/user_model.dart' as user;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
-import '../models/user_model.dart';
 import '../config/config.dart';
 
 class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Login method
-  Future<User> login(String username, String password) async {
+  Future<user.User> login(String username, String password) async {
     try {
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/login'),
@@ -21,7 +23,8 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return User.fromJson(data['user']);
+        await FirebaseAuth.instance.signInWithCustomToken(data['token']);
+        return user.User.fromJson(data['user']);
       } else {
         throw Exception(
             json.decode(response.body)['message'] ?? 'Login failed');
@@ -32,7 +35,7 @@ class AuthService {
   }
 
   // Registration method
-  Future<User> register({
+  Future<user.User> register({
     required String email,
     required String password,
     required String username,
@@ -55,7 +58,7 @@ class AuthService {
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = json.decode(response.body);
         final Map<String, dynamic> userData = data['user'] ?? data;
-        return User.fromJson(userData);
+        return user.User.fromJson(userData);
       } else {
         final error = json.decode(response.body);
         throw Exception(error['message'] ?? 'Registration failed');
@@ -66,7 +69,7 @@ class AuthService {
   }
 
   // Google Sign-In method
-  Future<User> googleSignIn() async {
+  Future<user.User> googleSignIn() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) throw Exception('Google sign in cancelled');
@@ -85,7 +88,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return User.fromJson(data['user']);
+        return user.User.fromJson(data['user']);
       } else {
         throw Exception(
             json.decode(response.body)['message'] ?? 'Google sign-in failed');
@@ -96,7 +99,7 @@ class AuthService {
   }
 
   // Get single user by id
-  Future<User> getUserById(String uid) async {
+  Future<user.User> getUserById(String uid) async {
     try {
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}auth/user/$uid'),
@@ -105,7 +108,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return User.fromJson(data); // Return user profile data as a User object
+        return user.User.fromJson(data); // Return user profile data as a User object
       } else {
         throw Exception('Failed to get profile data');
       }
@@ -115,7 +118,7 @@ class AuthService {
   }
 
   // Update user details
-  Future<User> updateProfile(
+  Future<user.User> updateProfile(
     String uid, {
     String? email,
     String? username,
@@ -138,7 +141,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return User.fromJson(data); // Return updated user data
+        return user.User.fromJson(data); // Return updated user data
       } else {
         throw Exception('Failed to update profile');
       }

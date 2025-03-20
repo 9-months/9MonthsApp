@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'providers/pregnancy_provider.dart';
 import 'screens/auth/login_page.dart';
@@ -11,6 +12,13 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 
 void main() async {
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Load environment variables
   await dotenv.load(fileName: '.env');
   runApp(
     MultiProvider(
