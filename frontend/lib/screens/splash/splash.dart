@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../auth/register_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -52,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Timer(const Duration(milliseconds: 500), () {
-          Navigator.of(context).pushReplacementNamed('/step');
+          Navigator.of(context).pushReplacementNamed('/register');
         });
       }
     });

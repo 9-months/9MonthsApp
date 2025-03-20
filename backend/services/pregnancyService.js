@@ -4,79 +4,115 @@
  Created Date: 2025-02-08 CCS-8 Chamod Kamiss
  Author: Chamod Kamiss
 
- last modified: 2025-02-08 | Chamod | CCS-8 Create Service
+ last modified: 2025-03-07 | Chamod | CCS-8 Add weekly tips and baby development data
  */
 
-const Pregnancy = require('../models/Pregnancy');
-
+const Pregnancy = require("../models/Pregnancy");
+const WeeklyData = require("../models/WeeklyData");
 
 class PregnancyService {
-    calculateWeek(lastPeriodDate) {
-      const today = new Date();
-      const diffTime = Math.abs(today - lastPeriodDate);
-      const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-      return Math.min(diffWeeks, 40);
+  calculateWeek(dueDate) {
+    const today = new Date();
+    const totalDays = 280; // 40 weeks
+    const daysRemaining = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    const currentWeek = Math.min(Math.max(1, Math.ceil((totalDays - daysRemaining) / 7)), 40);
+    return currentWeek;
+  }
+
+  async getWeeklyData(week) {
+    const weekData = await WeeklyData.findOne({ week });
+    if (!weekData) {
+      throw new Error(`Data for week ${week} not found`);
     }
-  
-    getBabySize(week) {
-      const sizes = {
-        4: 'Poppy seed',
-        8: 'Raspberry',
-        12: 'Lime',
-        16: 'Avocado',
-        20: 'Banana',
-        24: 'Corn',
-        28: 'Eggplant',
-        32: 'Pineapple',
-        36: 'Honeydew melon',
-        40: 'Small pumpkin'
-      };
-      
-      const nearestWeek = Object.keys(sizes)
-        .map(Number)
-        .reduce((prev, curr) => 
-          Math.abs(curr - week) < Math.abs(prev - week) ? curr : prev
-        );
-        
-      return sizes[nearestWeek];
-    }
-  
-    async createPregnancy(userData) {
-      const dueDate = new Date(userData.lastPeriodDate);
-      dueDate.setDate(dueDate.getDate() + 280);
-      
-      const currentWeek = this.calculateWeek(new Date(userData.lastPeriodDate));
-      const babySize = this.getBabySize(currentWeek);
+    return weekData;
+  }
+
+
+
+  async createPregnancy(userData) {
+    try {
+      console.log('Creating pregnancy with data:', userData);
       
       const pregnancy = new Pregnancy({
         userId: userData.userId,
-        lastPeriodDate: userData.lastPeriodDate,
-        dueDate,
-        currentWeek,
-        babySize,
-        weeklyTips: [
-          'Stay hydrated',
-          'Take your prenatal vitamins',
-          'Get enough rest'
-        ]
+        dueDate: new Date(userData.dueDate)
       });
+
+      const savedPregnancy = await pregnancy.save();
+      const currentWeek = this.calculateWeek(savedPregnancy.dueDate);
+      const weeklyData = await this.getWeeklyData(currentWeek);
       
-      return await pregnancy.save();
-    }
-  
-    async getPregnancyByUserId(userId) {
-      const pregnancy = await Pregnancy.findOne({ userId });
-      if (!pregnancy) {
-        throw new Error('Pregnancy data not found');
-      }
-      
-      pregnancy.currentWeek = this.calculateWeek(pregnancy.lastPeriodDate);
-      pregnancy.babySize = this.getBabySize(pregnancy.currentWeek);
-      pregnancy.updatedAt = new Date();
-      
-      return await pregnancy.save();
+      return {
+        ...savedPregnancy.toObject(),
+        currentWeek,
+        ...weeklyData.toObject()
+      };
+    } catch (error) {
+      console.error('Error in createPregnancy:', error);
+      throw error;
     }
   }
-  
-module.exports = new PregnancyService();
 
+  async getPregnancyByUserId(userId) {
+    const pregnancy = await Pregnancy.findOne({ userId });
+    if (!pregnancy) {
+      throw new Error("Pregnancy data not found");
+    }
+
+    const currentWeek = this.calculateWeek(pregnancy.dueDate);
+    const weeklyData = await this.getWeeklyData(currentWeek);
+
+    return {
+      ...pregnancy.toObject(),
+      currentWeek,
+      ...weeklyData.toObject()
+    };
+  }
+
+  async updatePregnancy(userId, updatedData) {
+    const pregnancy = await Pregnancy.findOneAndUpdate(
+      { userId },
+      { $set: { dueDate: updatedData.dueDate } },
+      { new: true }
+    );
+  
+    if (!pregnancy) {
+      throw new Error("Pregnancy data not found");
+    }
+  
+    const currentWeek = this.calculateWeek(pregnancy.dueDate);
+    const weeklyData = await this.getWeeklyData(currentWeek);
+    
+    return {
+      ...pregnancy.toObject(),
+      currentWeek,
+      ...weeklyData.toObject()
+    };
+  }
+
+  // Delete a pregnancy record
+  async deletePregnancy(userId) {
+    const result = await Pregnancy.deleteOne({ userId });
+    if (result.deletedCount === 0) {
+      throw new Error("Pregnancy data not found");
+    }
+    return { message: "Pregnancy data deleted successfully" };
+  }
+
+  async getWeeklyData(week) {
+    const weekData = await WeeklyData.findOne({ week });
+    if (!weekData) {
+      return {
+        week,
+        babySize: "Information not available",
+        tips: ["Stay hydrated", "Get regular checkups"],
+        babyDevelopment: "Information not available",
+        motherChanges: "Information not available",
+        toObject: function() { return this; }
+      };
+    }
+    return weekData;
+  }
+}
+
+module.exports = new PregnancyService();

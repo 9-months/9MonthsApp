@@ -1,19 +1,16 @@
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:_9months/models/user_model.dart' as user;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
-import '../models/user_model.dart';
 import '../config/config.dart';
 
-/// Service class that handles all authentication-related operations
 class AuthService {
-  /// Instance of GoogleSignIn for handling Google authentication
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  /// Authenticates a user with username and password
-  ///
-  /// Returns a [User] object if successful
-  /// Throws an exception if authentication fails
-  Future<User> login(String username, String password) async {
+  // Login method
+  Future<user.User> login(String username, String password) async {
     try {
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/login'),
@@ -26,30 +23,21 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return User.fromJson(data['user']);
+        await FirebaseAuth.instance.signInWithCustomToken(data['token']);
+        return user.User.fromJson(data['user']);
       } else {
         throw Exception(
             json.decode(response.body)['message'] ?? 'Login failed');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('Login failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Login failed: ${e.toString()}');
     }
   }
 
-  /// Registers a new user with the provided information
-  ///
-  /// Required parameters:
-  /// - [email]: User's email address
-  /// - [password]: User's password
-  /// - [username]: User's chosen username
-  ///
-  /// Optional parameters:
-  /// - [location]: User's location
-  /// - [phone]: User's phone number
-  ///
-  /// Returns a [User] object if registration is successful
-  /// Throws an exception if registration fails
-  Future<User> register({
+  // Registration method
+  Future<user.User> register({
     required String email,
     required String password,
     required String username,
@@ -57,7 +45,6 @@ class AuthService {
     String? phone,
   }) async {
     try {
-      // Send registration request to the server
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/signup'),
         headers: {'Content-Type': 'application/json'},
@@ -71,66 +58,159 @@ class AuthService {
       );
 
       if (response.statusCode == 201) {
-        // Parse the response and extract user data
         final Map<String, dynamic> data = json.decode(response.body);
-        // Handle both nested and direct user data structures
         final Map<String, dynamic> userData = data['user'] ?? data;
-        return User.fromJson(userData);
+        return user.User.fromJson(userData);
       } else {
-        // Handle registration error
         final error = json.decode(response.body);
         throw Exception(error['message'] ?? 'Registration failed');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('Registration failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Registration failed: ${e.toString()}');
     }
   }
 
-  /// Handles Google Sign-In authentication
-  ///
-  /// This method:
-  /// 1. Initiates Google Sign-In flow
-  /// 2. Gets authentication token
-  /// 3. Verifies token with our backend
-  ///
-  /// Returns a [User] object if successful
-  /// Throws an exception if any step fails
-  Future<User> googleSignIn() async {
+  // Google Sign-In method
+  // Optional parameters: extraData containing additional fields such as 'location', 'username', and 'phone'
+  Future<user.User> googleSignIn({Map<String, dynamic>? extraData}) async {
     try {
-      // Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) throw Exception('Google sign in cancelled');
 
-      // Get authentication details
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) throw Exception('Failed to get ID Token');
 
-      // Verify token with backend
+      // Prepare payload with idToken and any extra registration data (if available)
+      final Map<String, dynamic> payload = {'idToken': idToken};
+      if (extraData != null) {
+        payload.addAll(extraData);
+      }
+
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/google'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'idToken': idToken}),
+        body: json.encode(payload),
       );
+
+      // Log the raw response to debug HTML output
+      print('Google sign-in response status: ${response.statusCode}');
+      print('Google sign-in response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return User.fromJson(data['user']);
+        return user.User.fromJson(data['user']);
       } else {
+        // Attempt to extract error message if possible, else fallback
+        dynamic responseData;
+        try {
+          responseData = json.decode(response.body);
+        } catch (_) {
+          responseData = response.body;
+        }
         throw Exception(
-            json.decode(response.body)['message'] ?? 'Google sign-in failed');
+            responseData is Map && responseData['message'] != null 
+              ? responseData['message'] 
+              : 'Google sign-in failed');
       }
-    } catch (e) {
+    } catch (e, s) {
+      print('Google sign-in failed with error: $e');
+      print('Stack trace: $s');
       throw Exception('Google sign-in failed: ${e.toString()}');
     }
   }
 
-  /// Signs out the current user
-  ///
-  /// This includes signing out from Google if it was used for authentication
+  // Get single user by id
+  Future<user.User> getUserById(String uid) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${Config.apiBaseUrl}auth/user/$uid'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return user.User.fromJson(data); // Return user profile data as a User object
+      } else {
+        throw Exception('Failed to get profile data');
+      }
+    } catch (e, s) {
+      print('getUserById failed with error: $e');
+      print('Stack trace: $s');
+      throw Exception('Failed to get profile data: ${e.toString()}');
+    }
+  }
+
+  // Update user details
+  Future<user.User> updateProfile(
+    String uid, {
+    String? email,
+    String? username,
+    String? location,
+    String? phone,
+    String? dateOfBirth,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${Config.apiBaseUrl}auth/users/$uid'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'location': location,
+          'phone': phone,
+          'dateOfBirth': dateOfBirth,
+          'username': username,
+          'email': email,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return user.User.fromJson(data); // Return updated user data
+      } else {
+        throw Exception('Failed to update profile');
+      }
+    } catch (e, s) {
+      print('UpdateProfile failed with error: $e');
+      print('Stack trace: $s');
+      throw Exception('Failed to update profile: ${e.toString()}');
+    }
+  }
+
+  // Delete user by id
+  Future<void> deleteUser(String uid) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${Config.apiBaseUrl}auth/user/$uid'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete user');
+      }
+    } catch (e, s) {
+      print('DeleteUser failed with error: $e');
+      print('Stack trace: $s');
+      throw Exception('Failed to delete user: ${e.toString()}');
+    }
+  }
+
+  // Logout method
   Future<void> logout() async {
-    await _googleSignIn.signOut();
+    try {
+      await http.post(
+        Uri.parse('${Config.apiBaseUrl}/auth/logout'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      await _googleSignIn.signOut();
+      await FirebaseAuth.instance.signOut();
+    } catch (e, s) {
+      print('Logout failed with error: $e');
+      print('Stack trace: $s');
+      throw Exception('Logout failed: ${e.toString()}');
+    }
   }
 }

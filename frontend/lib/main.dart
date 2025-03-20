@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'providers/pregnancy_provider.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
 import 'screens/home/home_page.dart';
@@ -10,11 +12,19 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 
 void main() async {
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Load environment variables
   await dotenv.load(fileName: '.env');
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => PregnancyProvider()),
       ],
       child: const MyApp(),
     ),
@@ -36,7 +46,7 @@ class MyApp extends StatelessWidget {
           primary: const Color(0xFF2196F3),
           secondary: const Color(0xFF03A9F4),
           tertiary: const Color(0xFFE91E63), // Pink for accents
-          background: const Color(0xFFF5F5F5),
+          surface: const Color(0xFFF5F5F5),
         ),
         scaffoldBackgroundColor: const Color(0xFFF5F5F5),
         cardTheme: CardTheme(
@@ -108,7 +118,7 @@ class MyApp extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
-      initialRoute: '/register',
+      initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
         '/step': (context) => const StepScreen(),
