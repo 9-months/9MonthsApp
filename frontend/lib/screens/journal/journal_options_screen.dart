@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'mood_tracking.dart';
-import 'diary_screen.dart';
 
 class JournalOptionsScreen extends StatelessWidget {
   const JournalOptionsScreen({Key? key}) : super(key: key);

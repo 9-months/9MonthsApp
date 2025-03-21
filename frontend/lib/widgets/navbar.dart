@@ -1,7 +1,4 @@
-import 'package:_9months/screens/news/news_Feed.dart';
-import 'package:_9months/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
-import '../screens/journal/journal_options_screen.dart';
 import 'emergency_btn.dart';
 
 class CustomNavBar extends StatelessWidget {
@@ -57,13 +54,8 @@ class CustomNavBar extends StatelessWidget {
                 Icons.article,
                 'News',
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => NewsFeed(),
-                    ),
-                  );
-                  onTap(1);
+                  Navigator.pushNamed(context, '/news');
+                  onTap(3);
                 },
               ),
               _buildNavItem(
@@ -73,13 +65,8 @@ class CustomNavBar extends StatelessWidget {
                 Icons.person,
                 'Profile',
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfilePage(),
-                    ),
-                  );
-                  onTap(1);
+                  Navigator.pushNamed(context, '/profile');
+                  onTap(4);
                 },
               ),
             ],
