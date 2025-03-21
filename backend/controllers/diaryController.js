@@ -8,12 +8,18 @@
 */
 const Diary = require("../models/diary");
 const diaryService = require("../services/diaryService");
+const mongoose = require("mongoose");
 
 // CREATE: Add a new diary entry
 exports.createDiary = async (req, res) => {
   try {
     const { userId } = req.params; // Get userId from URL
     const { description } = req.body; // User provides description
+
+    // Validate if description is provided
+    if (!description) {
+      return res.status(400).json({ message: "Description is required" });
+    }
 
     const newDiaryEntry = await diaryService.createDiaryEntry(userId, description);
     res.status(201).json({ message: "Diary entry created successfully", newDiaryEntry });
@@ -26,10 +32,17 @@ exports.createDiary = async (req, res) => {
 exports.getDiaryById = async (req, res) => {
   try {
     const { userId, diaryId } = req.params; // Get userId and diaryId from URL
+
+    // Check if diaryId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(diaryId)) {
+      return res.status(400).json({ message: "Invalid diary ID" });
+    }
+
     const diary = await diaryService.getDiaryById(userId, diaryId);
     if (!diary) {
       return res.status(404).json({ message: "Diary entry not found" });
     }
+
     res.status(200).json(diary);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -53,6 +66,11 @@ exports.updateDiary = async (req, res) => {
     const { userId, diaryId } = req.params; // Get userId and diaryId from URL
     const { description } = req.body; // User provides updated description
 
+    // Validate if description is provided
+    if (!description) {
+      return res.status(400).json({ message: "Description is required" });
+    }
+
     const updatedDiary = await diaryService.updateDiaryEntry(userId, diaryId, description);
     if (!updatedDiary) {
       return res.status(404).json({ message: "Diary entry not found" });
@@ -68,6 +86,11 @@ exports.updateDiary = async (req, res) => {
 exports.deleteDiary = async (req, res) => {
   try {
     const { userId, diaryId } = req.params; // Get userId and diaryId from URL
+
+    // Check if diaryId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(diaryId)) {
+      return res.status(400).json({ message: "Invalid diary ID" });
+    }
 
     const deletedDiary = await diaryService.deleteDiaryEntry(userId, diaryId);
     if (!deletedDiary) {
