@@ -51,7 +51,15 @@ class _DiaryScreenState extends State<DiaryScreen> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        // If the error is "user not found", we don't set an error message
+        // so that the empty diary view is shown instead
+        if (e.toString().contains('user not found') ||
+            e.toString().contains('User not found')) {
+          _diaries = []; // Ensure diaries is empty
+          _errorMessage = null;
+        } else {
+          _errorMessage = e.toString();
+        }
         _isLoading = false;
       });
     }
