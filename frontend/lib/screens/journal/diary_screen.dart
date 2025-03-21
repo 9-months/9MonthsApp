@@ -1,3 +1,11 @@
+/*
+ File: Diary_screen.dart
+ Purpose: Screen for users to view, add, edit, and delete diary entries
+ Created Date: CCS-50 23-02-2025
+ Author: Melissa Joanne
+
+ last modified: 24-02-2025 | Melissa | CCS-50 Diary screen
+*/
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/diary_model.dart';

@@ -1,8 +1,17 @@
+/*
+ File: journal_options_screen.dart
+ Purpose: Screen for users to choose between writing a diary entry or tracking their mood
+ Created Date: CCS-50 23-02-2025
+ Author: Melissa Joanne
+
+ last modified: 24-02-2025 | Melissa | CCS-50 Journal options screen
+*/
+
 import 'package:flutter/material.dart';
 
 class JournalOptionsScreen extends StatelessWidget {
   const JournalOptionsScreen({Key? key}) : super(key: key);
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
