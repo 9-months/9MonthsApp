@@ -8,6 +8,7 @@
 */
 
 const authService = require("../services/authService");
+const User = require("../models/User"); // Ensure User model is imported
 
 module.exports = {
   // Create User
@@ -240,6 +241,33 @@ module.exports = {
       res.status(500).json({ 
         message: "An error occurred while retrieving partner data" 
       });
+    }
+  },
+
+  checkPartnerCode: async (req, res) => {
+    try {
+      const { linkCode } = req.body;
+
+      if (!linkCode || linkCode.trim() === "") {
+        return res.status(400).json({ message: "Link code is required." });
+      }
+
+      // Query the database for the user with the provided link code
+      const user = await User.findOne({ linkCode });
+
+      if (!user) {
+        return res.status(400).json({ message: "Invalid link code." });
+      }
+
+      // Check if the link code has expired
+      if (new Date() > new Date(user.linkCodeExpiry)) {
+        return res.status(400).json({ message: "Link code has expired." });
+      }
+
+      return res.status(200).json({ message: "Link code is valid.", user });
+    } catch (err) {
+      console.error("Error checking partner code:", err);
+      return res.status(500).json({ message: "Server error." });
     }
   },
 };

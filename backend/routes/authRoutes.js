@@ -238,4 +238,31 @@ router.post('/partner-link-code/:uid', authController.generatePartnerLinkCode);
 router.post("/link-partners", authController.linkPartners);
 router.get("/partner/:uid", authController.getPartnerData);
 
+/**
+ * @swagger
+ * /check-partner-code:
+ *   post:
+ *     summary: Check partner link code
+ *     description: Verifies if the provided partner link code exists in the database.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - linkCode
+ *             properties:
+ *               linkCode:
+ *                 type: string
+ *                 example: "ABC123"
+ *     responses:
+ *       200:
+ *         description: Link code is valid.
+ *       400:
+ *         description: Invalid or expired link code.
+ */
+router.post("/check-partner-code", authController.checkPartnerCode);
+
 module.exports = router;
