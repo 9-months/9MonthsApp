@@ -39,22 +39,16 @@ class CustomNavBar extends StatelessWidget {
               _buildNavItem(
                   context, 0, Icons.home_outlined, Icons.home, 'Home'),
               _buildNavItem(
-                context,
-                1,
-                Icons.book_outlined,
-                Icons.book,
-                'Journal',
-                onPressed: () {
-                  // Navigate to the JournalOptionsScreen instead of MoodTrackingScreen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => JournalOptionsScreen(),
-                    ),
-                  );
-                  onTap(1);
-                },
-              ),
+                  context,
+                  1,
+                  Icons.book_outlined,
+                  Icons.book,
+                  'Journal',
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/journal');
+                    onTap(1);
+                  },
+                ),
               _buildEmergencyButton(context),
               _buildNavItem(
                 context,
