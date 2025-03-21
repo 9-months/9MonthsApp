@@ -1,3 +1,6 @@
+import 'package:_9months/screens/journal/diary_screen.dart';
+import 'package:_9months/screens/journal/journal_options_screen.dart';
+import 'package:_9months/screens/journal/mood_tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'providers/pregnancy_provider.dart';
@@ -118,6 +121,9 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfilePage(),
+        '/journal': (context) => const JournalOptionsScreen(),  
+        '/journal/diary': (context) => const DiaryScreen(),     
+        '/journal/mood': (context) => const MoodTrackingScreen(),    
       },
     );
   }

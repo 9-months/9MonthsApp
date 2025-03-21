@@ -3,6 +3,8 @@ import 'mood_tracking.dart';
 import 'diary_screen.dart';
 
 class JournalOptionsScreen extends StatelessWidget {
+  const JournalOptionsScreen({Key? key}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,10 +35,7 @@ class JournalOptionsScreen extends StatelessWidget {
                 title: 'Write a Diary Entry',
                 description: 'Express your thoughts and feelings freely',
                 icon: Icons.edit_note,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DiaryScreen()),
-                ),
+                onTap: () => Navigator.pushNamed(context, '/journal/diary'),
               ),
               SizedBox(height: 16),
               _buildJournalOption(
@@ -44,10 +43,7 @@ class JournalOptionsScreen extends StatelessWidget {
                 title: 'Track Your Mood',
                 description: 'Record and monitor your emotional well-being',
                 icon: Icons.mood,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MoodTrackingScreen()),
-                ),
+                onTap: () => Navigator.pushNamed(context, '/journal/mood'),
               ),
             ],
           ),
