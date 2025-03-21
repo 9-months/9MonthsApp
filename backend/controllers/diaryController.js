@@ -4,7 +4,7 @@
  Created Date: 23-02-2025 CCS-50 Melissa Joanne
  Author: Melissa Joanne
 
- last modified: 11-02-2025 | Dinith | CCS-50 Create Controller
+ last modified: 21-03-2025 | Melissa | CCS-50 updated error messages
 */
 const Diary = require("../models/diary");
 const diaryService = require("../services/diaryService");
@@ -15,10 +15,16 @@ exports.createDiary = async (req, res) => {
     const { userId } = req.params; // Get userId from URL
     const { description } = req.body; // User provides description
 
+    // Input validation
+    if (!description || description.trim() === "") {
+      return res.status(400).json({ message: "Description is required" });
+    }
+
     const newDiaryEntry = await diaryService.createDiaryEntry(userId, description);
     res.status(201).json({ message: "Diary entry created successfully", newDiaryEntry });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error creating diary entry:", err); // Log the error for debugging
+    res.status(500).json({ message: "Server error while creating diary entry", error: err.message });
   }
 };
 
@@ -26,24 +32,43 @@ exports.createDiary = async (req, res) => {
 exports.getDiaryById = async (req, res) => {
   try {
     const { userId, diaryId } = req.params; // Get userId and diaryId from URL
+
+    // Call the service to get the diary entry
     const diary = await diaryService.getDiaryById(userId, diaryId);
+
+    // If the diary entry is not found, return 404
     if (!diary) {
       return res.status(404).json({ message: "Diary entry not found" });
     }
+
     res.status(200).json(diary);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error retrieving diary entry:", err); // Log the error for debugging
+    // Handle database or other unexpected errors
+    if (err.name === 'MongoError') {
+      return res.status(500).json({ message: "Database error occurred", error: err.message });
+    }
+    // Default server error message for other issues
+    res.status(500).json({ message: "Server error while retrieving diary entry", error: err.message });
   }
 };
+
+
 
 // READ: Get all diary entries for a user
 exports.getDiariesByUser = async (req, res) => {
   try {
     const { userId } = req.params; // Get userId from URL
     const diaries = await diaryService.getDiariesByUserId(userId);
+
+    if (!diaries || diaries.length === 0) {
+      return res.status(404).json({ message: "No diary entries found for this user" });
+    }
+
     res.status(200).json(diaries);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error retrieving diaries:", err); // Log the error for debugging
+    res.status(500).json({ message: "Server error while retrieving diaries", error: err.message });
   }
 };
 
@@ -53,6 +78,11 @@ exports.updateDiary = async (req, res) => {
     const { userId, diaryId } = req.params; // Get userId and diaryId from URL
     const { description } = req.body; // User provides updated description
 
+    // Input validation
+    if (!description || description.trim() === "") {
+      return res.status(400).json({ message: "Updated description is required" });
+    }
+
     const updatedDiary = await diaryService.updateDiaryEntry(userId, diaryId, description);
     if (!updatedDiary) {
       return res.status(404).json({ message: "Diary entry not found" });
@@ -60,7 +90,8 @@ exports.updateDiary = async (req, res) => {
 
     res.status(200).json({ message: "Diary entry updated", updatedDiary });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error updating diary entry:", err); // Log the error for debugging
+    res.status(500).json({ message: "Server error while updating diary entry", error: err.message });
   }
 };
 
@@ -74,8 +105,9 @@ exports.deleteDiary = async (req, res) => {
       return res.status(404).json({ message: "Diary entry not found" });
     }
 
-    res.status(200).json({ message: "Diary entry deleted" });
+    res.status(200).json({ message: "Diary entry deleted successfully" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error deleting diary entry:", err); // Log the error for debugging
+    res.status(500).json({ message: "Server error while deleting diary entry", error: err.message });
   }
 };
