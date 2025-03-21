@@ -100,25 +100,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // googleSignIn method
-<<<<<<< HEAD
-Future<void> googleSignIn() async {
-  _isLoading = true;
-  notifyListeners();
-
-  try {
-    _user = await _authService.googleSignIn();
-    if (_user != null) {
-      await _saveUser(_user!);
-    }
-  } catch (e) {
-    _user = null;
-    rethrow;
-  } finally {
-    _isLoading = false;
-=======
   Future<void> googleSignIn() async {
     _isLoading = true;
->>>>>>> main
     notifyListeners();
 
     try {
