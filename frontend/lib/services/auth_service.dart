@@ -40,8 +40,6 @@ class AuthService {
     required String email,
     required String password,
     required String username,
-    String? location,
-    String? phone,
   }) async {
     try {
       final response = await http.post(
@@ -51,8 +49,6 @@ class AuthService {
           'email': email,
           'password': password,
           'username': username,
-          'location': location,
-          'phone': phone,
         }),
       );
 
