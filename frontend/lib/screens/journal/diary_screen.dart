@@ -24,6 +24,7 @@ class DiaryScreen extends StatefulWidget {
 class _DiaryScreenState extends State<DiaryScreen> {
   late DiaryService _diaryService;
   late String _userId;
+  String? _token; 
   List<DiaryEntry> _diaries = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -37,18 +38,27 @@ class _DiaryScreenState extends State<DiaryScreen> {
   void _initialize() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     _userId = authProvider.user?.uid ?? '';
+    _token = authProvider.token; // Get token from authProvider
     _diaryService = DiaryService();
     await _fetchDiaries();
   }
 
   Future<void> _fetchDiaries() async {
+    if (_token == null) {
+      setState(() {
+        _errorMessage = 'Authentication required. Please login again.';
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
 
-      final diaries = await _diaryService.getDiaries(_userId);
+      final diaries = await _diaryService.getDiaries(_userId, _token!);
 
       // Sort diaries by date (newest first)
       diaries.sort((a, b) => b.date.compareTo(a.date));
@@ -215,6 +225,13 @@ class _DiaryScreenState extends State<DiaryScreen> {
   }
 
   Future<void> _showDiaryDialog({DiaryEntry? diary}) async {
+    if (_token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Authentication required. Please login again.')),
+      );
+      return;
+    }
+
     final textController = TextEditingController(text: diary?.description);
     final currentDate = diary?.date ?? DateTime.now();
     DateTime selectedDate = currentDate;
@@ -337,6 +354,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             _userId,
             result['text'],
             result['date'],
+            _token!, // Pass the token
           );
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -351,6 +369,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
             diary.diaryId!,
             result['text'],
             result['date'],
+            _token!, // Pass the token
           );
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -371,6 +390,13 @@ class _DiaryScreenState extends State<DiaryScreen> {
   }
 
   Future<void> _showDeleteConfirmation(DiaryEntry diary) async {
+    if (_token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Authentication required. Please login again.')),
+      );
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -397,7 +423,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     if (confirmed == true) {
       try {
         setState(() => _isLoading = true);
-        await _diaryService.deleteDiary(_userId, diary.diaryId!);
+        await _diaryService.deleteDiary(_userId, diary.diaryId!, _token!); // Pass the token
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
