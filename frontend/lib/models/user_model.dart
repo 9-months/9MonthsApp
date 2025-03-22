@@ -13,7 +13,11 @@ class User {
   final String username;
   final String? location;
   final String? phone;
-  final String? dataOfBirth;
+  final String? partnerId;
+  final String? linkCode;
+  final DateTime? linkCodeExpiry;
+  final String? dateOfBirth;
+  final String? accountType;
 
   User({
     required this.uid,
@@ -21,7 +25,11 @@ class User {
     required this.username,
     this.location,
     this.phone,
-    this.dataOfBirth,
+    this.partnerId,
+    this.linkCode,
+    this.linkCodeExpiry,
+    this.dateOfBirth,
+    this.accountType,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -31,7 +39,13 @@ class User {
       username: json['username'] ?? '',
       location: json['location'] as String?,
       phone: json['phone'] as String?,
-      dataOfBirth: json['dataOfBirth'] as String?,
+      partnerId: json['partnerId'] as String?,
+      linkCode: json['linkCode'] as String?,
+      linkCodeExpiry: json['linkCodeExpiry'] != null
+          ? DateTime.parse(json['linkCodeExpiry'])
+          : null,
+      dateOfBirth: json['dateofBirth'] as String?,
+      accountType: json['accountType'] as String?,
     );
   }
 
@@ -42,7 +56,11 @@ class User {
       'username': username,
       'location': location,
       'phone': phone,
-      'dataOfBirth': dataOfBirth,
+      'partnerId': partnerId,
+      'linkCode': linkCode,
+      'linkCodeExpiry': linkCodeExpiry?.toIso8601String(),
+      'dateofBirth': dateOfBirth,
+      'accountType': accountType,
     };
   }
 
@@ -52,7 +70,11 @@ class User {
     String? username,
     String? location,
     String? phone,
-    String? dataOfBirth,
+    String? partnerId,
+    String? linkCode,
+    DateTime? linkCodeExpiry,
+    String? dateOfBirth,
+    String? accountType,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -60,7 +82,11 @@ class User {
       username: username ?? this.username,
       location: location ?? this.location,
       phone: phone ?? this.phone,
-      dataOfBirth: dataOfBirth ?? this.dataOfBirth,
+      partnerId: partnerId ?? this.partnerId,
+      linkCode: linkCode ?? this.linkCode,
+      linkCodeExpiry: linkCodeExpiry ?? this.linkCodeExpiry,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      accountType: accountType ?? this.accountType,
     );
   }
 }
