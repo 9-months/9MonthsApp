@@ -1,5 +1,5 @@
 
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:_9months/models/user_model.dart' as user;
 import 'package:google_sign_in/google_sign_in.dart';
@@ -23,7 +23,6 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        await FirebaseAuth.instance.signInWithCustomToken(data['token']);
         return user.User.fromJson(data['user']);
       } else {
         throw Exception(
@@ -206,7 +205,6 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
       );
       await _googleSignIn.signOut();
-      await FirebaseAuth.instance.signOut();
     } catch (e, s) {
       print('Logout failed with error: $e');
       print('Stack trace: $s');
