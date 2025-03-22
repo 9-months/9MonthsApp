@@ -18,7 +18,7 @@ const ReminderSchema = new mongoose.Schema({
     type: String,
   },
   dateTime: {
-    type: Date,
+    type: String, 
     required: true
   },
   timezone: {

@@ -1,3 +1,4 @@
+import 'package:_9months/config/config.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -87,7 +88,7 @@ class _EditReminderFormState extends State<EditReminderForm> {
           Provider.of<AuthProvider>(context, listen: false).user!.uid;
       final response = await http.put(
         Uri.parse(
-            'http://localhost:3000/reminder/$userId/${widget.reminder['_id']}'),
+            '${Config.apiBaseUrl}/reminder/$userId/${widget.reminder['_id']}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'title': _titleController.text,

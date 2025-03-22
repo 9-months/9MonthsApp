@@ -4,13 +4,11 @@
  Created Date: CCS-42 Profile page
  Author: Melissa Joanne
 
- last modified: 2025-03-08 | Melissa | CCS-42 Signout button added
+ last modified: 2025-03-22 | Melissa | CCS-42 Display account type
 */
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../../screens/calendar/calendar_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
@@ -25,6 +23,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final String _birthday = '01/01/1990';
   final String _location = 'Colombo';
   final String _phone = '';
+  final String _accountType = 'mother';
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
@@ -190,15 +189,6 @@ class _ProfilePageState extends State<ProfilePage> {
         elevation: 0,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              // Add edit profile logic here
-            },
-            tooltip: 'Edit Profile',
-          ),
-        ],
       ),
       body: user == null
           ? const Center(child: CircularProgressIndicator())
@@ -380,7 +370,17 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(height: 20),
 
-                            // Info items with smooth dividers
+                            // Account Type Info
+                            _buildInfoItem(
+                              context,
+                              Icons.badge_outlined,
+                              'Account Type',
+                              user.accountType ?? _accountType,
+                              primaryColor,
+                            ),
+                            const Divider(height: 30),
+
+                            // Email Info
                             _buildInfoItem(
                               context,
                               Icons.email_outlined,
@@ -389,6 +389,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               primaryColor,
                             ),
                             const Divider(height: 30),
+
+                            // Phone Info
                             _buildInfoItem(
                               context,
                               Icons.phone_outlined,
@@ -397,6 +399,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               primaryColor,
                             ),
                             const Divider(height: 30),
+
+                            // DOB Info
                             _buildInfoItem(
                               context,
                               Icons.calendar_today_outlined,
@@ -405,6 +409,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               primaryColor,
                             ),
                             const Divider(height: 30),
+
+                            // Location Info
                             _buildInfoItem(
                               context,
                               Icons.location_on_outlined,
@@ -420,7 +426,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 30),
 
-                  // Sign Out Button (from first file)
+                  // Sign Out Button
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24.0, vertical: 10.0),
@@ -467,61 +473,48 @@ class _ProfilePageState extends State<ProfilePage> {
     String value,
     Color primaryColor,
   ) {
-    return Row(
-      children: [
-        Icon(icon, color: primaryColor, size: 20),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value.isEmpty ? 'Not provided' : value,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {Color? color}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: color ?? Colors.deepPurple, size: 20),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: primaryColor,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value.isEmpty ? 'Not provided' : value,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : Colors.black87,
+              const SizedBox(height: 4),
+              Text(
+                value.isEmpty ? 'Not provided' : value,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

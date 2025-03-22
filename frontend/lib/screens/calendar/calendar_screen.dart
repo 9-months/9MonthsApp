@@ -35,10 +35,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Future<void> _fetchReminders() async {
     try {
       final userId =
-          Provider.of<AuthProvider>(context, listen: false).user!.uid;
+          Provider.of<AuthProvider>(context, listen: false).user?.uid;
+
+      if (userId == null) {
+        _showErrorSnackBar("Failed to load reminders: User not logged in.");
+        return;
+      }
+
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
+        headers: {'Content-Type': 'application/json'},
       );
+
       if (response.statusCode == 200) {
         setState(() {
           _reminders = json.decode(response.body);
@@ -46,32 +54,68 @@ class _CalendarScreenState extends State<CalendarScreen> {
         });
       } else {
         print('Failed to fetch reminders. Status code: ${response.statusCode}');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to load reminders")),
-          );
-        }
+        print('Response body: ${response.body}');
+        _showErrorSnackBar(
+            "Failed to load reminders: ${response.reasonPhrase}");
       }
     } catch (e) {
       print('Error fetching reminders: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load reminders")),
-        );
+      _showErrorSnackBar("Failed to load reminders: Network error.");
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
+  DateTime? _tryParseDate(String rawDate) {
+    try {
+      // Attempt to parse in ISO 8601 format (most common)
+      if (rawDate.contains('T')) {
+        return DateTime.parse(rawDate).toLocal();
       }
+      // Attempt to parse the custom format you encountered
+      if (rawDate.contains('GMT')) {
+        final cleanedDate = rawDate.split('GMT')[0].trim();
+        final dateFormat = DateFormat("EEE MMM dd yyyy HH:mm:ss", 'en_US');
+        return dateFormat.parseStrict(cleanedDate).toLocal();
+      }
+      // Add more parsing attempts for other potential formats if needed
+      return null; // Return null if parsing fails
+    } catch (e) {
+      print('Error parsing date: $rawDate - $e');
+      return null;
     }
   }
 
   Map<DateTime, List<dynamic>> _groupRemindersByDate(List<dynamic> reminders) {
     Map<DateTime, List<dynamic>> groupedReminders = {};
+
     for (var reminder in reminders) {
-      DateTime reminderDate = DateTime.parse(reminder['dateTime']);
-      DateTime dateOnly =
-          DateTime(reminderDate.year, reminderDate.month, reminderDate.day);
-      if (groupedReminders[dateOnly] == null) {
-        groupedReminders[dateOnly] = [];
+      final dateTime = reminder['dateTime'];
+      if (dateTime is String) {
+        final parsedDate = _tryParseDate(dateTime);
+        if (parsedDate != null) {
+          final dateOnly =
+              DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+          groupedReminders.putIfAbsent(dateOnly, () => []);
+          groupedReminders[dateOnly]!.add(reminder);
+        } else {
+          print(
+              'Warning: Could not parse date: $dateTime for reminder: ${reminder['title']}');
+        }
+      } else if (dateTime is DateTime) {
+        final dateOnly = DateTime(dateTime.year, dateTime.month, dateTime.day);
+        groupedReminders.putIfAbsent(dateOnly, () => []);
+        groupedReminders[dateOnly]!.add(reminder);
+      } else {
+        print(
+            'Warning: Invalid dateTime format in reminder: ${reminder['title']} - $dateTime');
       }
-      groupedReminders[dateOnly]!.add(reminder);
     }
     return groupedReminders;
   }
@@ -80,29 +124,82 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return _remindersByDate[DateTime(day.year, day.month, day.day)] ?? [];
   }
 
+  Widget _buildReminderListTile(dynamic reminder) {
+    DateTime? reminderDate;
+    if (reminder['dateTime'] is String) {
+      reminderDate = _tryParseDate(reminder['dateTime']);
+    } else if (reminder['dateTime'] is DateTime) {
+      reminderDate = reminder['dateTime'].toLocal();
+    }
+
+    if (reminderDate == null) {
+      return ListTile(
+        title: Text(reminder['title']),
+        subtitle: const Text('Invalid date format'),
+      );
+    }
+
+    return ListTile(
+      title: Text(reminder['title']),
+      subtitle: Text(DateFormat('yyyy-MM-dd HH:mm').format(reminderDate)),
+      onTap: () {
+        _showReminderDetailsDialog(reminder, reminderDate!);
+      },
+    );
+  }
+
+  void _showReminderDetailsDialog(dynamic reminder, DateTime reminderDate) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(reminder['title']),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Date: ${DateFormat('yyyy-MM-dd').format(reminderDate)}'),
+              Text('Time: ${DateFormat('HH:mm').format(reminderDate)}'),
+              if (reminder['description'] != null &&
+                  reminder['description'].isNotEmpty)
+                Text('Description: ${reminder['description']}'),
+              if (reminder['type'] != null) Text('Type: ${reminder['type']}'),
+              if (reminder['location'] != null &&
+                  reminder['location'].isNotEmpty)
+                Text('Location: ${reminder['location']}'),
+              if (reminder['repeat'] != null)
+                Text('Repeat: ${reminder['repeat']}'),
+              if (reminder['alertOffsets'] != null &&
+                  (reminder['alertOffsets'] as List).isNotEmpty)
+                Text(
+                    'Alerts: ${(reminder['alertOffsets'] as List).join(", ")} minutes before'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _deleteReminder(String reminderId) async {
     try {
       final response = await http.delete(
-        Uri.parse(
-            '${Config.apiBaseUrl}/reminder/${widget.userId}/$reminderId'),
+        Uri.parse('${Config.apiBaseUrl}/reminder/${widget.userId}/$reminderId'),
       );
       if (response.statusCode == 200) {
         _fetchReminders(); // Refresh reminders
       } else {
         print('Failed to delete reminder. Status code: ${response.statusCode}');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to delete reminder")),
-          );
-        }
+        _showErrorSnackBar("Failed to delete reminder.");
       }
     } catch (e) {
       print('Error deleting reminder: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to delete reminder")),
-        );
-      }
+      _showErrorSnackBar("Failed to delete reminder: Network error.");
     }
   }
 
@@ -110,76 +207,54 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Calendar'),
+        title: const Text('Calendar'),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: _fetchReminders,
           ),
           IconButton(
-            icon: Icon(Icons.list),
+            icon: const Icon(Icons.list),
             onPressed: () {
-              // Navigate to a screen or show a dialog with all reminders
               showDialog(
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: Text("All Reminders"),
-                    content: Container(
+                    title: const Text("All Reminders"),
+                    content: SizedBox(
                       width: double.maxFinite,
-                      child: ListView(
-                        children: _reminders
-                            .map((reminder) {
-                              return ListTile(
-                                title: Text(reminder['title']),
-                                subtitle: Text(DateFormat('yyyy-MM-dd HH:mm')
-                                    .format(
-                                        DateTime.parse(reminder['dateTime']))),
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: Text(reminder['title']),
-                                        content: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                                'Date: ${DateFormat('yyyy-MM-dd').format(DateTime.parse(reminder['dateTime']))}'),
-                                            Text(
-                                                'Time: ${DateFormat('HH:mm').format(DateTime.parse(reminder['dateTime']))}'),
-                                            if (reminder['description'] !=
-                                                    null &&
-                                                reminder['description']
-                                                    .isNotEmpty)
-                                              Text(
-                                                  'Description: ${reminder['description']}'),
-                                          ],
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: Text("Close"),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            })
-                            .toList()
-                            .reversed
-                            .toList(),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _reminders.length,
+                        itemBuilder: (context, index) {
+                          final reminder = _reminders[index];
+                          return ListTile(
+                            title: Text(reminder['title']),
+                            subtitle: Text(
+                              _tryParseDate(reminder['dateTime']) != null
+                                  ? DateFormat('yyyy-MM-dd HH:mm').format(
+                                      _tryParseDate(reminder['dateTime'])!)
+                                  : 'Invalid date format',
+                            ),
+                            onTap: () {
+                              final reminderDate =
+                                  _tryParseDate(reminder['dateTime']);
+                              if (reminderDate != null) {
+                                _showReminderDetailsDialog(
+                                    reminder, reminderDate);
+                              } else {
+                                _showErrorSnackBar(
+                                    "Invalid date format for this reminder.");
+                              }
+                            },
+                          );
+                        },
                       ),
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: Text("Close"),
+                        child: const Text("Close"),
                       ),
                     ],
                   );
@@ -216,7 +291,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             eventLoader: (day) {
               return _getRemindersForDay(day);
             },
-            calendarStyle: CalendarStyle(
+            calendarStyle: const CalendarStyle(
               markerDecoration: BoxDecoration(
                 color: Colors.blue,
                 shape: BoxShape.circle,
@@ -224,68 +299,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
           Expanded(
-            child: ListView(
-              children: _getRemindersForDay(_selectedDay!).map((reminder) {
+            child: ListView.builder(
+              itemCount:
+                  _getRemindersForDay(_selectedDay ?? _focusedDay).length,
+              itemBuilder: (context, index) {
+                final reminder =
+                    _getRemindersForDay(_selectedDay ?? _focusedDay)[index];
                 return Dismissible(
-                  key: Key(reminder['_id']),
+                  key: Key(reminder['_id'].toString()),
                   onDismissed: (direction) {
                     _deleteReminder(reminder['_id']);
                   },
                   background: Container(color: Colors.red),
                   child: Card(
-                    margin:
-                        EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.all(16.0),
-                      title: Text(
-                        reminder['title'],
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.0,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 8.0),
-                          Text(
-                            DateFormat('HH:mm')
-                                .format(DateTime.parse(reminder['dateTime'])),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 16.0,
-                            ),
-                          ),
-                          if (reminder['description'] != null &&
-                              reminder['description'].isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                reminder['description'],
-                                style: TextStyle(
-                                  color: Colors.grey[700],
-                                  fontSize: 14.0,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      trailing: Icon(Icons.arrow_forward_ios, size: 16.0),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditReminderForm(
-                              userId: widget.userId,
-                              reminder: reminder,
-                            ),
-                          ),
-                        ).then((value) => {_fetchReminders()});
-                      },
-                    ),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
+                    child: _buildReminderListItem(reminder),
                   ),
                 );
-              }).toList(),
+              },
             ),
           ),
         ],
@@ -302,8 +334,75 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ).then((value) => {_fetchReminders()});
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget _buildReminderListItem(dynamic reminder) {
+    DateTime? reminderDate;
+    if (reminder['dateTime'] is String) {
+      reminderDate = _tryParseDate(reminder['dateTime']);
+    } else if (reminder['dateTime'] is DateTime) {
+      reminderDate = reminder['dateTime'].toLocal();
+    }
+
+    return ListTile(
+      contentPadding: const EdgeInsets.all(16.0),
+      title: Text(
+        reminder['title'],
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 18.0,
+        ),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8.0),
+          if (reminderDate != null)
+            Text(
+              DateFormat('HH:mm').format(reminderDate),
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 16.0,
+              ),
+            )
+          else
+            const Text(
+              'Invalid time format',
+              style: TextStyle(color: Colors.red),
+            ),
+          if (reminder['description'] != null &&
+              reminder['description'].isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                reminder['description'],
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14.0,
+                ),
+              ),
+            ),
+        ],
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16.0),
+      onTap: () {
+        if (reminderDate != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EditReminderForm(
+                userId: widget.userId,
+                reminder: reminder,
+              ),
+            ),
+          ).then((value) => {_fetchReminders()});
+        } else {
+          _showErrorSnackBar("Cannot edit reminder with invalid date.");
+        }
+      },
     );
   }
 }
