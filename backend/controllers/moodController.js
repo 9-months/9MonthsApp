@@ -20,7 +20,7 @@ module.exports = {
       const moodEntry = await moodService.createMoodEntry(userId, { mood, note });
       res.status(201).json(moodEntry);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   },
 

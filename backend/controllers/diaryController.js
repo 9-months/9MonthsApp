@@ -32,7 +32,7 @@ exports.getDiaryById = async (req, res) => {
     }
     res.status(200).json(diary);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(404).json({ error: err.message });
   }
 };
 
@@ -43,7 +43,7 @@ exports.getDiariesByUser = async (req, res) => {
     const diaries = await diaryService.getDiariesByUserId(userId);
     res.status(200).json(diaries);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(404).json({ error: err.message });
   }
 };
 
