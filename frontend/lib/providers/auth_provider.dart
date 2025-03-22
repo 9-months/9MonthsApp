@@ -166,6 +166,7 @@ class AuthProvider extends ChangeNotifier {
 
   // Storage methods
   Future<void> _saveUser(User user) async {
+    print(user.birthday);
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
   }
 
@@ -186,6 +187,7 @@ class AuthProvider extends ChangeNotifier {
     if (userData != null) {
       try {
         final user = User.fromJson(jsonDecode(userData));
+        print(user.birthday);
         return user;
       } catch (e) {
         if (kDebugMode) {

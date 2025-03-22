@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true },
   location: { type: String },
   phone: { type: String },
-  dateodBirth: { type: String },
+  birthday: { type: String },
   accountType: { type: String, default: "Mother" },
 }, { collection: 'users' });  // Ensure it points to 'users' collection
 
