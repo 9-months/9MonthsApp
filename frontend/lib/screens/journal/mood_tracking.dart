@@ -45,15 +45,34 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
   String? _getUserId() {
     return Provider.of<AuthProvider>(context, listen: false).user?.uid;
   }
+  
+  // Get token from AuthProvider
+  String? _getToken() {
+    return Provider.of<AuthProvider>(context, listen: false).token;
+  }
 
   // load all moods for the current user
   Future<void> _loadMoods() async {
     final userId = _getUserId();
-    if (userId == null) return;
+    final token = _getToken();
+    
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not authenticated')),
+      );
+      return;
+    }
+    
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Session expired. Please login again')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
     try {
-      _moods = await _moodService.getAllMoods(userId);
+      _moods = await _moodService.getAllMoods(userId, token);
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -67,7 +86,9 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
   // save a new mood entry
   Future<void> _saveMood() async {
     final userId = _getUserId();
-    if (userId == null) {
+    final token = _getToken();
+    
+    if (userId == null || token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User not authenticated')),
       );
@@ -89,7 +110,7 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
     );
 
     try {
-      await _moodService.createMood(newMood);
+      await _moodService.createMood(newMood, token);
       _noteController.clear();
       setState(() => _selectedMood = null);
       _loadMoods();
@@ -103,7 +124,14 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
   // update an existing mood entry
   Future<void> _updateMood(MoodModel mood) async {
     final userId = _getUserId();
-    if (userId == null || mood.id == null) return;
+    final token = _getToken();
+    
+    if (userId == null || mood.id == null || token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Missing required data')),
+      );
+      return;
+    }
 
     try {
       final updatedMood = MoodModel(
@@ -113,7 +141,7 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
         date: mood.date,
       );
 
-      await _moodService.updateMood(userId, mood.id!, updatedMood);
+      await _moodService.updateMood(userId, mood.id!, updatedMood, token);
       _noteController.clear();
       setState(() => _selectedMood = null);
       _loadMoods();
@@ -131,10 +159,17 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
   // delete an existing mood entry
   Future<void> _deleteMood(String moodId) async {
     final userId = _getUserId();
-    if (userId == null) return;
+    final token = _getToken();
+    
+    if (userId == null || token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not authenticated')),
+      );
+      return;
+    }
 
     try {
-      await _moodService.deleteMood(userId, moodId);
+      await _moodService.deleteMood(userId, moodId, token);
       _loadMoods();
       
       ScaffoldMessenger.of(context).showSnackBar(
@@ -146,7 +181,6 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
       );
     }
   }
-
 
   // screen layout
   @override

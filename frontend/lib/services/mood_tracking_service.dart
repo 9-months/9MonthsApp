@@ -16,10 +16,13 @@ class MoodTrackingService {
   final String baseUrl = Config.apiBaseUrl;
 
   // Create a new mood entry
-  Future<MoodModel> createMood(MoodModel mood) async {
+  Future<MoodModel> createMood(MoodModel mood, String token) async {
     final response = await http.post(
       Uri.parse('$baseUrl/moods/create/${mood.userId}'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add token to authorization header
+      },
       body: json.encode(mood.toJson()),
     );
 
@@ -31,9 +34,13 @@ class MoodTrackingService {
   }
 
   // Get all mood entries for a user
-  Future<List<MoodModel>> getAllMoods(String userId) async {
+  Future<List<MoodModel>> getAllMoods(String userId, String token) async {
     final response = await http.get(
       Uri.parse('$baseUrl/moods/getAll/$userId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add token to authorization header
+      },
     );
 
     if (response.statusCode == 200) {
@@ -45,9 +52,13 @@ class MoodTrackingService {
   }
 
   // delete a mood entry
-  Future<void> deleteMood(String userId, String moodId) async {
+  Future<void> deleteMood(String userId, String moodId, String token) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/moods/delete/$userId/$moodId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add token to authorization header
+      },
     );
 
     if (response.statusCode != 200) {
@@ -56,10 +67,13 @@ class MoodTrackingService {
   }
 
   // update a mood entry
-  Future<MoodModel> updateMood(String userId, String moodId, MoodModel mood) async {
+  Future<MoodModel> updateMood(String userId, String moodId, MoodModel mood, String token) async {
     final response = await http.put(
       Uri.parse('$baseUrl/moods/update/$userId/$moodId'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // Add token to authorization header
+      },
       body: json.encode(mood.toJson()),
     );
 
