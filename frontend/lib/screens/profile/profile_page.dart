@@ -4,9 +4,8 @@
  Created Date: CCS-42 Profile page
  Author: Melissa Joanne
 
- last modified: 2025-03-08 | Melissa | CCS-42 Signout button added
+ last modified: 2025-03-22 | Melissa | CCS-42 Display account type
 */
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -24,6 +23,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final String _dateOfBirth = '01/01/1990';
   final String _location = 'Colombo';
   final String _phone = '';
+  final String _accountType = 'mother';
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
@@ -189,15 +189,6 @@ class _ProfilePageState extends State<ProfilePage> {
         elevation: 0,
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              // Add edit profile logic here
-            },
-            tooltip: 'Edit Profile',
-          ),
-        ],
       ),
       body: user == null
           ? const Center(child: CircularProgressIndicator())
@@ -379,7 +370,17 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(height: 20),
 
-                            // Info items with smooth dividers
+                            // Account Type Info
+                            _buildInfoItem(
+                              context,
+                              Icons.badge_outlined,
+                              'Account Type',
+                              user.accountType ?? _accountType,
+                              primaryColor,
+                            ),
+                            const Divider(height: 30),
+
+                            // Email Info
                             _buildInfoItem(
                               context,
                               Icons.email_outlined,
@@ -388,6 +389,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               primaryColor,
                             ),
                             const Divider(height: 30),
+
+                            // Phone Info
                             _buildInfoItem(
                               context,
                               Icons.phone_outlined,
@@ -396,6 +399,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               primaryColor,
                             ),
                             const Divider(height: 30),
+
+                            // DOB Info
                             _buildInfoItem(
                               context,
                               Icons.calendar_today_outlined,
@@ -404,6 +409,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               primaryColor,
                             ),
                             const Divider(height: 30),
+
+                            // Location Info
                             _buildInfoItem(
                               context,
                               Icons.location_on_outlined,
@@ -419,7 +426,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 30),
 
-                  // Sign Out Button (from first file)
+                  // Sign Out Button
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24.0, vertical: 10.0),

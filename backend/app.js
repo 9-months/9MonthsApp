@@ -16,6 +16,7 @@ const authRoutes = require("./routes/authRoutes");
 const moodRoutes = require('./routes/moodRoutes');
 const emergencyRouter = require("./routes/emergencyRouter");
 const pregnancyRouter = require("./routes/pregnancyRoutes");
+const reminderRoutes = require('./routes/reminderRoutes');
 const diaryRoutes = require("./routes/diaryRoutes");
 
 
@@ -23,6 +24,12 @@ const diaryRoutes = require("./routes/diaryRoutes");
 dotenv.config();
 
 const admin = require("firebase-admin");
+
+// Ensure FIREBASE_CREDENTIALS is defined
+if (!process.env.FIREBASE_CREDENTIALS) {
+  throw new Error("Missing FIREBASE_CREDENTIALS environment variable");
+}
+
 const credentials = JSON.parse(Buffer.from(process.env.FIREBASE_CREDENTIALS, 'base64').toString());
 
 admin.initializeApp({
@@ -41,6 +48,7 @@ app.use("/emergency", emergencyRouter);
 app.use("/auth", authRoutes);
 app.use('/moods', moodRoutes);
 app.use("/pregnancy", pregnancyRouter);
+app.use('/reminder', reminderRoutes);
 app.use("/diary", diaryRoutes);
 app.use('/weekly-data', require('./routes/weeklyDataRoutes'));
 app.use('/tips', require('./routes/weeklyDataRoutes'));
