@@ -467,49 +467,37 @@ class _ProfilePageState extends State<ProfilePage> {
     String value,
     Color primaryColor,
   ) {
-    return InkWell(
-      onTap: () {
-        if (label == 'Reminders') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CalendarScreen(
-                userId: context.read<AuthProvider>().user!.uid,
+    return Row(
+      children: [
+        Icon(icon, color: primaryColor, size: 20),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
               ),
             ),
-          );
-        }
-        // Add other button actions here if needed
-      },
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 4),
+            Text(
+              value.isEmpty ? 'Not provided' : value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+              ),
             ),
-            padding: const EdgeInsets.all(12),
-            child: Icon(
-              icon,
-              color: color,
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value,
-      {Color? color}) {
+  Widget _buildInfoRow(IconData icon, String label, String value, {Color? color}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Icon(icon, color: color ?? Colors.deepPurple, size: 20),
@@ -523,17 +511,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 fontSize: 14,
                 color: Colors.grey[600],
               ),
-              const SizedBox(height: 4),
-              Text(
-                value.isEmpty ? 'Not provided' : value,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value.isEmpty ? 'Not provided' : value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black87,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ],
     );

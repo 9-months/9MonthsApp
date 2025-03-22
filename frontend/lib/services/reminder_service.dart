@@ -17,7 +17,7 @@ class ReminderService {
   // Create a new reminder
   Future<Reminder> createReminder(String userId, Map<String, dynamic> reminderData) async {
      final response = await http.post(
-    Uri.parse('$baseUrl/reminder/$userId'),
+    Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
     headers: {
       'Content-Type': 'application/json',
     },
