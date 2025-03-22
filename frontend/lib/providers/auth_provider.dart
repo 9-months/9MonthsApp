@@ -1,10 +1,11 @@
 /*
- * File: auth_provider.dart
- * Purpose: State management for user authentication.
- * Created: 11/02/2021 CCS-55 State Management
- * 
- * Last modified: Current Date | State management optimization and code cleanup
- */
+ File: auth_provider.dart
+ Purpose: State management for user authentication.
+ Created Date: 11/02/2021 CCS-55 State Management
+ Author: Dinith Perera
+
+ last modified: 15/02/2024 | Chamod | CCS-55 provider functionality updated
+*/
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -12,42 +13,41 @@ import 'dart:convert';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
-/// Manages authentication state throughout the application
 class AuthProvider extends ChangeNotifier {
-  // Private fields
+  String? _username;
+  bool get isLoggedIn => _username != null;
+  String get username => _username ?? '';
   User? _user;
   bool _isLoading = false;
   final _storage = const FlutterSecureStorage();
-  final _authService = AuthService();
-  // Storage constants
+  final AuthService _authService = AuthService();
   static const _userKey = 'user_data';
 
-  // Public getters
   User? get user => _user;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _user != null;
-  String get username => _user?.username ?? '';
 
-  /// Authenticates user with email/username and password
-  /// Throws exceptions for authentication failures
+  // Login and register methods
   Future<void> login(String username, String password) async {
-    _setLoading(true);
-    
+    _username = username;
+    _isLoading = true;
+    notifyListeners();
+
     try {
       _user = await _authService.login(username, password);
       if (_user != null) {
         await _saveUser(_user!);
       }
+      notifyListeners();
     } catch (e) {
       _user = null;
       rethrow;
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  /// Registers a new user account
-  /// Throws exceptions for registration failures
   Future<void> register({
     required String email,
     required String password,
@@ -55,8 +55,10 @@ class AuthProvider extends ChangeNotifier {
     String? location,
     String? phone,
   }) async {
-    _setLoading(true);
-    
+    _username = username;
+    _isLoading = true;
+    notifyListeners();
+
     try {
       _user = await _authService.register(
         email: email,
@@ -66,68 +68,87 @@ class AuthProvider extends ChangeNotifier {
       if (_user != null) {
         await _saveUser(_user!);
       }
+      notifyListeners();
     } catch (e) {
       _user = null;
       rethrow;
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  /// Signs out the current user and clears stored credentials
+  // Logout method
   Future<void> logout() async {
     await _clearUser();
+    _username = null;
     _user = null;
     notifyListeners();
   }
 
-  /// Loads user data from secure storage if available
+  // Sign out method
+  Future<void> signOut() async {
+    await logout();
+  }
+
+  // Load user method
   Future<void> loadUser() async {
     _user = await _getUser();
     notifyListeners();
   }
 
+  // googleSignIn method
+  Future<void> googleSignIn() async {
+    _isLoading = true;
+    notifyListeners();
 
-  /// Updates the current user's profile information
+    try {
+      _user = await _authService.googleSignIn();
+      if (_user != null) {
+        await _saveUser(_user!);
+      }
+    } catch (e) {
+      _user = null;
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Update user profile data and save to secure storage
   Future<void> updateUserProfile({
     String? location,
     String? phone,
     String? dateOfBirth,
     String? accountType,
   }) async {
-    if (_user == null) return;
-    
-    _user = _user!.copyWith(
-      location: location,
-      phone: phone,
-      dateOfBirth: dateOfBirth,
-      accountType: accountType,
-    );
-    
-    await _saveUser(_user!);
-    notifyListeners();
+    if (_user != null) {
+      _user = _user!.copyWith(
+        location: location,
+        phone: phone,
+        dateOfBirth: dateOfBirth,
+        accountType: accountType,
+      );
+      await _saveUser(_user!);
+      notifyListeners();
+    }
   }
 
-  // Helper methods
-  /// Saves user data to secure storage
+  // Storage methods
   Future<void> _saveUser(User user) async {
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
   }
 
-  /// Clears user data from secure storage
   Future<void> _clearUser() async {
     await _storage.delete(key: _userKey);
   }
 
-  /// Retrieves user data from secure storage
   Future<User?> _getUser() async {
     final userData = await _storage.read(key: _userKey);
-    return userData != null ? User.fromJson(jsonDecode(userData)) : null;
-  }
-  
-  /// Updates loading state and notifies listeners
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
+    if (userData != null) {
+      return User.fromJson(jsonDecode(userData));
+    }
+    return null;
   }
 }

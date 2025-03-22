@@ -427,7 +427,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          await context.read<AuthProvider>().logout();
+                          await context.read<AuthProvider>().signOut();
                           Navigator.pushReplacementNamed(context, '/login');
                         },
                         style: ElevatedButton.styleFrom(
