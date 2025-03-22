@@ -14,7 +14,8 @@ class User {
   final String accountType;
   final String? location;
   final String? phone;
-  final String? birthday;
+  final String? dateOfBirth;
+  final String? token;
 
   User({
     required this.uid,
@@ -23,7 +24,8 @@ class User {
     required this.accountType,
     this.location,
     this.phone,
-    this.birthday,
+    this.dateOfBirth,
+    this.token,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -34,7 +36,8 @@ class User {
       location: json['location'] as String?,
       phone: json['phone'] as String?,
       accountType : json['accountType'] ?? 'mother',
-      birthday: json['birthday'] as String?,
+      dateOfBirth: json['dateOfBirth'] as String?,
+      token: json['token'] as String?,
     );
   }
 
@@ -45,8 +48,8 @@ class User {
       'username': username,
       'location': location,
       'phone': phone,
-      'birthday': birthday,
       'accountType': accountType,
+      'token': token,
     };
   }
 
@@ -58,6 +61,7 @@ class User {
     String? phone,
     String? birthday,
     String? accountType,
+    String? token,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -65,8 +69,8 @@ class User {
       username: username ?? this.username,
       location: location ?? this.location,
       phone: phone ?? this.phone,
-      birthday: birthday ?? this.birthday,
       accountType: accountType ?? this.accountType,
+      token: token ?? this.token,
     );
   }
 }

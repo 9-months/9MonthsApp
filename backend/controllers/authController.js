@@ -23,7 +23,11 @@ module.exports = {
       console.log("User created successfully:", req.body.email);
       return res
         .status(201)
-        .json({ message: result.message, user: result.user });
+        .json({ 
+          message: result.message, 
+          user: result.user,
+          token: result.token 
+        });
     } catch (error) {
       console.error("Create User Error:", error.message || error);
 

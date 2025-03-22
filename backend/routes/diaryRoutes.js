@@ -10,6 +10,7 @@
 const express = require("express");
 const router = express.Router();
 const diaryController = require("../controllers/diaryController");
+const { verifyToken } = require('../middleware/authMiddleware');
 
 /**
  * @swagger
@@ -68,7 +69,7 @@ const diaryController = require("../controllers/diaryController");
  *       404:
  *         description: User not found.
  */
-router.post("/create/:userId", diaryController.createDiary);
+router.post("/create/:userId", verifyToken, diaryController.createDiary);
 
 /**
  * @swagger
@@ -97,7 +98,7 @@ router.post("/create/:userId", diaryController.createDiary);
  *       404:
  *         description: Diary entry or user not found.
  */
-router.get("/get/:userId/:diaryId", diaryController.getDiaryById);
+router.get("/get/:userId/:diaryId", verifyToken, diaryController.getDiaryById);
 
 /**
  * @swagger
@@ -123,7 +124,7 @@ router.get("/get/:userId/:diaryId", diaryController.getDiaryById);
  *       404:
  *         description: User not found.
  */
-router.get("/getAll/:userId", diaryController.getDiariesByUser);
+router.get("/getAll/:userId", verifyToken, diaryController.getDiariesByUser);
 
 /**
  * @swagger
@@ -159,7 +160,7 @@ router.get("/getAll/:userId", diaryController.getDiariesByUser);
  *       404:
  *         description: Diary entry or user not found.
  */
-router.put("/update/:userId/:diaryId", diaryController.updateDiary);
+router.put("/update/:userId/:diaryId", verifyToken, diaryController.updateDiary);
 
 /**
  * @swagger
@@ -188,6 +189,6 @@ router.put("/update/:userId/:diaryId", diaryController.updateDiary);
  *       404:
  *         description: Diary entry or user not found.
  */
-router.delete("/delete/:userId/:diaryId", diaryController.deleteDiary);
+router.delete("/delete/:userId/:diaryId", verifyToken, diaryController.deleteDiary);
 
 module.exports = router;

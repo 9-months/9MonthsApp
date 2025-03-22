@@ -15,11 +15,14 @@ import '../config/config.dart';
 class DiaryService {
   final String _baseUrl = '${Config.apiBaseUrl}/diary';
 
-  Future<List<DiaryEntry>> getDiaries(String userId) async {
+  Future<List<DiaryEntry>> getDiaries(String userId, String token) async {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/getAll/$userId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Add token to header
+        },
       );
 
       if (response.statusCode == 200) {
@@ -38,11 +41,14 @@ class DiaryService {
     }
   }
 
-  Future<DiaryEntry> getDiaryById(String userId, String diaryId) async {
+  Future<DiaryEntry> getDiaryById(String userId, String diaryId, String token) async {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/get/$userId/$diaryId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Add token to header
+        },
       );
 
       if (response.statusCode == 200) {
@@ -60,16 +66,19 @@ class DiaryService {
     }
   }
 
-  Future<DiaryEntry> createDiary(String userId, String description) async {
-    return createDiaryWithDate(userId, description, DateTime.now());
+  Future<DiaryEntry> createDiary(String userId, String description, String token) async {
+    return createDiaryWithDate(userId, description, DateTime.now(), token);
   }
 
   Future<DiaryEntry> createDiaryWithDate(
-      String userId, String description, DateTime date) async {
+      String userId, String description, DateTime date, String token) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/create/$userId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', 
+        },
         body: json.encode({
           'description': description,
           'date': date.toIso8601String(),
@@ -94,18 +103,21 @@ class DiaryService {
   }
 
   Future<DiaryEntry> updateDiary(
-      String userId, String diaryId, String description) async {
+      String userId, String diaryId, String description, String token) async {
     // Get the current diary to preserve its date if not provided
-    final currentDiary = await getDiaryById(userId, diaryId);
-    return updateDiaryWithDate(userId, diaryId, description, currentDiary.date);
+    final currentDiary = await getDiaryById(userId, diaryId, token);
+    return updateDiaryWithDate(userId, diaryId, description, currentDiary.date, token);
   }
 
   Future<DiaryEntry> updateDiaryWithDate(
-      String userId, String diaryId, String description, DateTime date) async {
+      String userId, String diaryId, String description, DateTime date, String token) async {
     try {
       final response = await http.put(
         Uri.parse('$_baseUrl/update/$userId/$diaryId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Add token to header
+        },
         body: json.encode({
           'description': description,
           'date': date.toIso8601String(),
@@ -129,11 +141,14 @@ class DiaryService {
     }
   }
 
-  Future<void> deleteDiary(String userId, String diaryId) async {
+  Future<void> deleteDiary(String userId, String diaryId, String token) async {
     try {
       final response = await http.delete(
         Uri.parse('$_baseUrl/delete/$userId/$diaryId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Add token to header
+        },
       );
 
       if (response.statusCode == 200) {
@@ -153,12 +168,15 @@ class DiaryService {
 
   // New method for getting diaries by date range
   Future<List<DiaryEntry>> getDiariesByDateRange(
-      String userId, DateTime startDate, DateTime endDate) async {
+      String userId, DateTime startDate, DateTime endDate, String token) async {
     try {
       final response = await http.get(
         Uri.parse(
             '$_baseUrl/getByDateRange/$userId?start=${startDate.toIso8601String()}&end=${endDate.toIso8601String()}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Add token to header
+        },
       );
 
       if (response.statusCode == 200) {
