@@ -1,3 +1,4 @@
+import 'package:_9months/config/config.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:http/http.dart' as http;
@@ -36,7 +37,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       final userId =
           Provider.of<AuthProvider>(context, listen: false).user!.uid;
       final response = await http.get(
-        Uri.parse('http://localhost:3000/reminder/$userId'),
+        Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -64,7 +65,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Map<DateTime, List<dynamic>> _groupRemindersByDate(List<dynamic> reminders) {
     Map<DateTime, List<dynamic>> groupedReminders = {};
     for (var reminder in reminders) {
-      DateTime reminderDate = DateTime.parse(reminder['dateTime']);
+      DateTime reminderDate =
+          DateTime.parse(reminder['dateTime']).toLocal(); // Ensure local time
       DateTime dateOnly =
           DateTime(reminderDate.year, reminderDate.month, reminderDate.day);
       if (groupedReminders[dateOnly] == null) {
@@ -82,8 +84,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Future<void> _deleteReminder(String reminderId) async {
     try {
       final response = await http.delete(
-        Uri.parse(
-            'http://localhost:3000/reminder/${widget.userId}/$reminderId'),
+        Uri.parse('${Config.apiBaseUrl}/reminder/${widget.userId}/$reminderId'),
       );
       if (response.statusCode == 200) {
         _fetchReminders(); // Refresh reminders

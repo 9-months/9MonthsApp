@@ -1,3 +1,4 @@
+import 'package:_9months/config/config.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -62,15 +63,18 @@ class _ReminderFormState extends State<ReminderForm> {
 
   Future<void> _createReminder() async {
     if (_formKey.currentState!.validate()) {
+      print(
+          'Reminder Time (Local): ${_selectedTime!.toIso8601String()}'); // Log local time
       final userId =
           Provider.of<AuthProvider>(context, listen: false).user!.uid;
       final response = await http.post(
-        Uri.parse('http://localhost:3000/reminder/$userId'),
+        Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'title': _titleController.text,
           'description': _descriptionController.text,
-          'dateTime': _selectedTime!.toIso8601String(),
+          'dateTime':
+              _selectedTime!.toIso8601String(), // Send local time to backend
           'timezone': _timezone,
           'repeat': _repeat,
           'alertOffsets': _alertOffsets,
