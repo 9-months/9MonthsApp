@@ -16,6 +16,9 @@ import '../../widgets/homePregnancy.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
 
+import '../calendar/calendar_screen.dart';
+import '../../providers/auth_provider.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -25,6 +28,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+  late String userId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Get userId from the auth provider
+    userId = Provider.of<AuthProvider>(context, listen: false).user?.uid ?? '';
+  }
 
   Future<void> _handleEmergency() async {
     try {
@@ -109,13 +120,32 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                      GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/profile'),
-                        child: const CircleAvatar(
-                          radius: 24,
-                          backgroundImage:
-                              AssetImage('assets/images/profile_picture.png'),
-                        ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CalendarScreen(
+                                    userId: authProvider.user!.uid,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Icon(Icons.calendar_today, size: 28),
+                          ),
+                          const SizedBox(width: 16),
+                          GestureDetector(
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/profile'),
+                            child: const CircleAvatar(
+                              radius: 24,
+                              backgroundImage: AssetImage(
+                                  'assets/images/profile_picture.png'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

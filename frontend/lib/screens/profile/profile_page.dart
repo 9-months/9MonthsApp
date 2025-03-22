@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../../screens/calendar/calendar_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
@@ -466,36 +467,61 @@ class _ProfilePageState extends State<ProfilePage> {
     String value,
     Color primaryColor,
   ) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+    return InkWell(
+      onTap: () {
+        if (label == 'Reminders') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CalendarScreen(
+                userId: context.read<AuthProvider>().user!.uid,
+              ),
+            ),
+          );
+        }
+        // Add other button actions here if needed
+      },
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Icon(
+              icon,
+              color: color,
+              size: 28,
+            ),
           ),
-          child: Icon(
-            icon,
-            color: primaryColor,
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  fontWeight: FontWeight.w500,
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.bold,
                 ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value,
+      {Color? color}) {
+    return Row(
+      children: [
+        Icon(icon, color: color ?? Colors.deepPurple, size: 20),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
               ),
               const SizedBox(height: 4),
               Text(

@@ -143,7 +143,7 @@ class _StepScreenState extends State<StepScreen> {
         Positioned(
           left: 73,
           top: 84,
-          child: Container(
+          child: SizedBox(
             width: 260,
             height: 48,
             child: Row(
@@ -236,7 +236,7 @@ class _StepScreenState extends State<StepScreen> {
         Positioned(
           left: 76,
           top: 85,
-          child: Container(
+          child: SizedBox(
             width: 260,
             height: 48,
             child: Row(
@@ -290,7 +290,7 @@ class _StepScreenState extends State<StepScreen> {
         Positioned(
           left: 112,
           top: 355,
-          child: Container(
+          child: SizedBox(
             width: 157,
             height: 403,
             child: Image.asset(
@@ -318,7 +318,7 @@ class _StepScreenState extends State<StepScreen> {
         Positioned(
           left: 76,
           top: 85,
-          child: Container(
+          child: SizedBox(
             width: 260,
             height: 48,
             child: Row(
@@ -372,7 +372,7 @@ class _StepScreenState extends State<StepScreen> {
         Positioned(
           left: 88,
           top: 437,
-          child: Container(
+          child: SizedBox(
             width: 239,
             height: 329,
             child: Image.asset(
@@ -400,7 +400,7 @@ class _StepScreenState extends State<StepScreen> {
         Positioned(
           left: 76,
           top: 85,
-          child: Container(
+          child: SizedBox(
             width: 260,
             height: 48,
             child: Row(
@@ -454,7 +454,7 @@ class _StepScreenState extends State<StepScreen> {
         Positioned(
           left: 104,
           top: 456,
-          child: Container(
+          child: SizedBox(
             width: 180,
             height: 290,
             child: Image.asset(
