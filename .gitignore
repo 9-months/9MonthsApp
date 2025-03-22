@@ -137,3 +137,7 @@ backend/.vscode/
 backend/*.code-workspace
 backend/*.bak
 backend/*.DS_Store
+frontend/android/app/
+
+.qodo/history.sqlite
+.qodo

@@ -10,7 +10,9 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['mother', 'partner'], default: 'mother' },
   partnerId: { type: String, ref: 'User' },
   linkCode: { type: String },
-  linkCodeExpiry: { type: Date } // For linking partners
+  linkCodeExpiry: { type: Date }, // For linking partners
+  dateofBirth: { type: String },
+  accountType: { type: String, default: "Mother" },
 }, { collection: 'users' });  // Ensure it points to 'users' collection
 
 

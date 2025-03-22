@@ -33,7 +33,7 @@ module.exports = {
       });
     }
   },
-
+  
   // Log In
   logIn: async (req, res) => {
     try {
@@ -268,6 +268,34 @@ module.exports = {
     } catch (err) {
       console.error("Error checking partner code:", err);
       return res.status(500).json({ message: "Server error." });
+    }
+  },
+
+  // Complete Profile
+  completeProfile: async (req, res) => {
+    try {
+      const uid = req.body.uid;
+      const profileData = req.body.profileData;
+
+      console.log(uid);
+      console.log(profileData);
+
+      const result = await authService.completeProfile(uid, profileData);
+
+      if (!result.status) {
+        return res.status(400).json({ message: result.message });
+      }
+
+      return res.status(200).json({
+        message: result.message,
+        user: result.user,
+      });
+    } catch (error) {
+      console.error("Complete Profile Error:", error.message || error);
+
+      return res.status(500).json({
+        message: "An error occurred while completing the profile",
+      });
     }
   },
 };

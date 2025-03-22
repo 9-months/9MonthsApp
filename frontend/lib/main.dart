@@ -1,3 +1,7 @@
+import 'package:_9months/screens/journal/diary_screen.dart';
+import 'package:_9months/screens/journal/journal_options_screen.dart';
+import 'package:_9months/screens/journal/mood_tracking.dart';
+import 'package:_9months/screens/news/news_Feed.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/partner/partner_linking_page.dart';
@@ -11,8 +15,15 @@ import 'screens/splash/splash.dart';
 import 'screens/onboarding/step_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'screens/profile/profile_form.dart';
 
 void main() async {
+  
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+  
+ 
+  // Load environment variables
   await dotenv.load(fileName: '.env');
   runApp(
     MultiProvider(
@@ -122,6 +133,11 @@ class MyApp extends StatelessWidget {
         '/partner-linking': (context) => const PartnerLinkingPage(),
         '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfilePage(),
+        '/journal': (context) => const JournalOptionsScreen(),  
+        '/journal/diary': (context) => const DiaryScreen(),     
+        '/journal/mood': (context) => const MoodTrackingScreen(),
+        '/news': (context) => const NewsFeed(),
+        '/profile/form': (context) => ProfileForm(),
       },
     );
   }

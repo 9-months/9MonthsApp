@@ -1,8 +1,17 @@
+/*
+ File: journal_options_screen.dart
+ Purpose: Screen for users to choose between writing a diary entry or tracking their mood
+ Created Date: CCS-50 23-02-2025
+ Author: Melissa Joanne
+
+ last modified: 24-02-2025 | Melissa | CCS-50 Journal options screen
+*/
+
 import 'package:flutter/material.dart';
-import 'mood_tracking.dart';
-import 'diary_screen.dart';
 
 class JournalOptionsScreen extends StatelessWidget {
+  const JournalOptionsScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,10 +42,7 @@ class JournalOptionsScreen extends StatelessWidget {
                 title: 'Write a Diary Entry',
                 description: 'Express your thoughts and feelings freely',
                 icon: Icons.edit_note,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DiaryScreen()),
-                ),
+                onTap: () => Navigator.pushNamed(context, '/journal/diary'),
               ),
               SizedBox(height: 16),
               _buildJournalOption(
@@ -44,10 +50,7 @@ class JournalOptionsScreen extends StatelessWidget {
                 title: 'Track Your Mood',
                 description: 'Record and monitor your emotional well-being',
                 icon: Icons.mood,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MoodTrackingScreen()),
-                ),
+                onTap: () => Navigator.pushNamed(context, '/journal/mood'),
               ),
             ],
           ),

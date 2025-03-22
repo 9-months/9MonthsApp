@@ -77,6 +77,7 @@ class _EmergencyButtonState extends State<EmergencyButton> {
   Future<void> _callPartner() async {
     // Hardcoded partner information as requested
     const partnerNumber = '+94729457512'; 
+    // ignore: unused_local_variable
     const partnerName = 'Irosh';
     
     _makePhoneCall(partnerNumber);

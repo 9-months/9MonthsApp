@@ -73,9 +73,6 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
         username: username,
-        location: location,
-        phone: phone,
-        role: role,
       );
       if (_user != null) {
         await _saveUser(_user!);

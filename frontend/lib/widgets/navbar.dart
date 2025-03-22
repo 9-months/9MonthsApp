@@ -1,7 +1,4 @@
-import 'package:_9months/screens/news/newsFeed.dart';
-import 'package:_9months/screens/profile/profile_page.dart';
 import 'package:flutter/material.dart';
-import '../screens/journal/journal_options_screen.dart';
 import 'emergency_btn.dart';
 
 class CustomNavBar extends StatelessWidget {
@@ -39,22 +36,16 @@ class CustomNavBar extends StatelessWidget {
               _buildNavItem(
                   context, 0, Icons.home_outlined, Icons.home, 'Home'),
               _buildNavItem(
-                context,
-                1,
-                Icons.book_outlined,
-                Icons.book,
-                'Journal',
-                onPressed: () {
-                  // Navigate to the JournalOptionsScreen instead of MoodTrackingScreen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => JournalOptionsScreen(),
-                    ),
-                  );
-                  onTap(1);
-                },
-              ),
+                  context,
+                  1,
+                  Icons.book_outlined,
+                  Icons.book,
+                  'Journal',
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/journal');
+                    onTap(1);
+                  },
+                ),
               _buildEmergencyButton(context),
               _buildNavItem(
                 context,
@@ -63,13 +54,8 @@ class CustomNavBar extends StatelessWidget {
                 Icons.article,
                 'News',
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => NewsFeed(),
-                    ),
-                  );
-                  onTap(1);
+                  Navigator.pushNamed(context, '/news');
+                  onTap(3);
                 },
               ),
               _buildNavItem(
@@ -79,13 +65,8 @@ class CustomNavBar extends StatelessWidget {
                 Icons.person,
                 'Profile',
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfilePage(),
-                    ),
-                  );
-                  onTap(1);
+                  Navigator.pushNamed(context, '/profile');
+                  onTap(4);
                 },
               ),
             ],

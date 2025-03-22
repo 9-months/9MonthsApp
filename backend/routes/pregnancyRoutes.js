@@ -13,16 +13,9 @@ const router = express.Router();
 
 /**
  * @swagger
- * tags:
- *   name: Pregnancy
- *   description: Pregnancy tracking API
- */
-
-/**
- * @swagger
- * /pregnancy:
+ * /:
  *   post:
- *     summary: Create a pregnancy record
+ *     summary: Create a new pregnancy record
  *     tags: [Pregnancy]
  *     requestBody:
  *       required: true
@@ -33,17 +26,78 @@ const router = express.Router();
  *             properties:
  *               userId:
  *                 type: string
- *                 example: "12345"
  *               dueDate:
  *                 type: string
  *                 format: date
- *                 example: "2025-12-01"
+ *               notes:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Pregnancy record created successfully
- *       500:
- *         description: Internal server error
+ *       400:
+ *         description: Bad request
+ * 
+ * /{userId}:
+ *   get:
+ *     summary: Get pregnancy record by user ID
+ *     tags: [Pregnancy]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Pregnancy record retrieved successfully
+ *       404:
+ *         description: Pregnancy record not found
+ * 
+ *   put:
+ *     summary: Update pregnancy record by user ID
+ *     tags: [Pregnancy]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               dueDate:
+ *                 type: string
+ *                 format: date
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Pregnancy record updated successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Pregnancy record not found
+ * 
+ *   delete:
+ *     summary: Delete pregnancy record by user ID
+ *     tags: [Pregnancy]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Pregnancy record deleted successfully
+ *       404:
+ *         description: Pregnancy record not found
  */
+
 router.post("/", PregnancyController.createPregnancy);
 
 /**
