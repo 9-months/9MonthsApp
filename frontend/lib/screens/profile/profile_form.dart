@@ -152,16 +152,32 @@ class _ProfileFormState extends State<ProfileForm> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final uid = authProvider.user!.uid;
     try {
-      await ProfileService.completeProfile(uid, {
+      // Format phone number with +94 prefix
+      final formattedPhone = '+94${_phoneNumber.trim()}';
+      
+      // Prepare profile data
+      final profileData = {
         'accountType': _accountType,
-        'birthday': _dateOfBirth.toIso8601String(),
+        'birthday': DateFormat('yyyy-MM-dd').format(_dateOfBirth),
         'location': _location,
-        'phone': '+94$_phoneNumber',
-      });
+        'phone': formattedPhone,
+      };
+      print(profileData);
+      // Submit profile data to backend
+      await ProfileService.completeProfile(uid, profileData);
+      
+      // Update user profile in AuthProvider
+      await authProvider.updateUserProfile(
+        accountType: _accountType,
+        dateOfBirth: DateFormat('yyyy-MM-dd').format(_dateOfBirth),
+        location: _location,
+        phone: formattedPhone,
+      );
+      
       Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to complete profile')),
+        SnackBar(content: Text('Failed to complete profile: ${e.toString()}')),
       );
     }
   }

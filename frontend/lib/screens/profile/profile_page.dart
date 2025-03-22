@@ -400,7 +400,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               context,
                               Icons.calendar_today_outlined,
                               'Date of Birth',
-                              _dateOfBirth,
+                              user.dateOfBirth ?? _dateOfBirth,
                               primaryColor,
                             ),
                             const Divider(height: 30),

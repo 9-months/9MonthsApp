@@ -116,6 +116,25 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Update user profile data and save to secure storage
+  Future<void> updateUserProfile({
+    String? location,
+    String? phone,
+    String? dateOfBirth,
+    String? accountType,
+  }) async {
+    if (_user != null) {
+      _user = _user!.copyWith(
+        location: location,
+        phone: phone,
+        dateOfBirth: dateOfBirth,
+        accountType: accountType,
+      );
+      await _saveUser(_user!);
+      notifyListeners();
+    }
+  }
+
   // Storage methods
   Future<void> _saveUser(User user) async {
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
