@@ -48,7 +48,6 @@ class User {
       'username': username,
       'location': location,
       'phone': phone,
-      'dateOfBirth': dateOfBirth,
       'accountType': accountType,
       'token': token,
     };
@@ -60,7 +59,7 @@ class User {
     String? username,
     String? location,
     String? phone,
-    String? dateOfBirth,
+    String? birthday,
     String? accountType,
     String? token,
   }) {
@@ -70,7 +69,6 @@ class User {
       username: username ?? this.username,
       location: location ?? this.location,
       phone: phone ?? this.phone,
-      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       accountType: accountType ?? this.accountType,
       token: token ?? this.token,
     );
