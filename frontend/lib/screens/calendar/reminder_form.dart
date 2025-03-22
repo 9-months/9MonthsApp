@@ -1,3 +1,4 @@
+import 'package:_9months/config/config.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -65,7 +66,7 @@ class _ReminderFormState extends State<ReminderForm> {
       final userId =
           Provider.of<AuthProvider>(context, listen: false).user!.uid;
       final response = await http.post(
-        Uri.parse('http://localhost:3000/reminder/$userId'),
+        Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'title': _titleController.text,
