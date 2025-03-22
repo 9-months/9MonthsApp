@@ -11,13 +11,21 @@ class ProfileForm extends StatefulWidget {
 
 class _ProfileFormState extends State<ProfileForm> {
   final _formKey = GlobalKey<FormState>();
-  String _accountType = 'mother';
-  DateTime _dateOfBirth = DateTime.now(); // Initialize with a default value
+  String _accountType = 'mother'; // Make sure this matches one of the dropdown options
+  DateTime _dateOfBirth = DateTime.now();
   late String _location;
   late String _phoneNumber;
 
   @override
   Widget build(BuildContext context) {
+    // Get possible values for dropdown
+    final accountTypes = ['mother', 'partner'];
+    
+    // Ensure _accountType is a valid option
+    if (!accountTypes.contains(_accountType)) {
+      _accountType = accountTypes[0]; // Default to 'mother' if invalid
+    }
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('Complete Profile'),
@@ -38,7 +46,7 @@ class _ProfileFormState extends State<ProfileForm> {
                   ),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
-                items: ['mother', 'father'].map((String value) {
+                items: accountTypes.map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),
