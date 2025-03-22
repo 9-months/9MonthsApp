@@ -48,7 +48,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final pregnancyProvider = Provider.of<PregnancyProvider>(context);
-    final isPartner = authProvider.user?.role == 'partner';
 
     return Scaffold(
       body: SafeArea(
