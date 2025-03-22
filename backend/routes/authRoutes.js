@@ -262,9 +262,7 @@ router.put("/user/:uid", authController.updateUser);
  */
 router.delete("/user/:uid", authController.deleteUser);
 
-router.post('/partner-link-code/:uid', authController.generatePartnerLinkCode);
-router.post("/link-partners", authController.linkPartners);
-router.get("/partner/:uid", authController.getPartnerData);
+
 
 /**
  * @swagger
@@ -291,6 +289,10 @@ router.get("/partner/:uid", authController.getPartnerData);
  *       400:
  *         description: Invalid or expired link code.
  */
-router.post("/check-partner-code", authController.checkPartnerCode);
+
+
+router.post('/generate-partner-code/:uid', authController.generatePartnerCode);
+router.post('/link-partner/:uid', authController.linkPartner);
+router.get('/partner-data/:uid', authController.getPartnerData);
 
 module.exports = router;
