@@ -171,106 +171,6 @@ module.exports = {
     }
   },
 
-  generatePartnerLinkCode: async (req, res) => {
-    try {
-      console.log("Received request to generate code for UID:", req.params.uid);
-      const { uid } = req.params;
-      
-      const result = await authService.generatePartnerLinkCode(uid);
-      console.log("Generation result:", result);
-      
-      if (!result.status) {
-        return res.status(404).json({ message: result.message });
-      }
-      
-      return res.status(200).json({
-        message: result.message,
-        linkCode: result.linkCode
-      });
-    } catch (error) {
-      console.error("Generate Link Code Error:", error);
-      return res.status(500).json({
-        message: "An error occurred while generating partner link code"
-      });
-    }
-  },
-
-  // // Link partners
-  linkPartners: async (req, res) => {
-    try {
-      const { userId1, userId2 } = req.body;
-      
-      if (!userId1 || !userId2) {
-        return res.status(400).json({
-          message: "Both user IDs are required",
-        });
-      }
-      
-      const result = await authService.linkPartners(userId1, userId2);
-      
-      if (!result.status) {
-        return res.status(400).json({ message: result.message });
-      }
-      
-      return res.status(200).json({
-        message: result.message,
-        user1: result.user1,
-        user2: result.user2,
-      });
-    } catch (error) {
-      console.error("Link Partners Error:", error);
-      return res.status(500).json({
-        message: "An error occurred while linking partners",
-      });
-    }
-  },
-
-  // // Get partner data
-  getPartnerData: async (req, res) => {
-    try {
-      const { uid } = req.params;
-      const result = await authService.getPartnerData(uid);
-      
-      if (!result.status) {
-        return res.status(404).json({ message: result.message });
-      }
-      
-      res.status(200).json(result.partner);
-    } catch (error) {
-      console.error("Get Partner Error:", error);
-      res.status(500).json({ 
-        message: "An error occurred while retrieving partner data" 
-      });
-    }
-  },
-
-  checkPartnerCode: async (req, res) => {
-    try {
-      const { linkCode } = req.body;
-
-      if (!linkCode || linkCode.trim() === "") {
-        return res.status(400).json({ message: "Link code is required." });
-      }
-
-      // Query the database for the user with the provided link code
-      const user = await User.findOne({ linkCode });
-
-      if (!user) {
-        return res.status(400).json({ message: "Invalid link code." });
-      }
-
-      // Check if the link code has expired
-      if (new Date() > new Date(user.linkCodeExpiry)) {
-        return res.status(400).json({ message: "Link code has expired." });
-      }
-
-      return res.status(200).json({ message: "Link code is valid.", user });
-    } catch (err) {
-      console.error("Error checking partner code:", err);
-      return res.status(500).json({ message: "Server error." });
-    }
-  },
-
   // Complete Profile
   completeProfile: async (req, res) => {
     try {
@@ -286,15 +186,96 @@ module.exports = {
         return res.status(400).json({ message: result.message });
       }
 
-      return res.status(200).json({
+      const response = {
         message: result.message,
-        user: result.user,
-      });
+        user: result.user
+      };
+      
+      // Include partner link code if it exists
+      if (result.partnerLinkCode) {
+        response.partnerLinkCode = result.partnerLinkCode;
+      }
+
+      return res.status(200).json(response);
     } catch (error) {
       console.error("Complete Profile Error:", error.message || error);
 
       return res.status(500).json({
         message: "An error occurred while completing the profile",
+      });
+    }
+  },
+
+  // Generate partner link code
+  generatePartnerCode: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const result = await authService.generatePartnerLinkCode(uid);
+      
+      if (!result.status) {
+        return res.status(400).json({ message: result.message });
+      }
+      
+      return res.status(200).json({
+        message: result.message,
+        code: result.code
+      });
+    } catch (error) {
+      console.error("Generate Partner Code Error:", error);
+      return res.status(500).json({
+        message: "An error occurred while generating partner code"
+      });
+    }
+  },
+
+  // Link partner
+  linkPartner: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const { linkCode } = req.body;
+      
+      if (!linkCode) {
+        return res.status(400).json({
+          message: "Partner link code is required"
+        });
+      }
+      
+      const result = await authService.checkAndLinkPartner(uid, linkCode);
+      
+      if (!result.status) {
+        return res.status(400).json({ message: result.message });
+      }
+      
+      return res.status(200).json({
+        message: result.message,
+        partner: result.partner
+      });
+    } catch (error) {
+      console.error("Link Partner Error:", error);
+      return res.status(500).json({
+        message: "An error occurred while linking partner"
+      });
+    }
+  },
+
+  // Get partner data
+  getPartnerData: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const result = await authService.getPartnerData(uid);
+      
+      if (!result.status) {
+        return res.status(404).json({ message: result.message });
+      }
+      
+      return res.status(200).json({
+        message: result.message,
+        partner: result.partner
+      });
+    } catch (error) {
+      console.error("Get Partner Data Error:", error);
+      return res.status(500).json({
+        message: "An error occurred while retrieving partner data"
       });
     }
   },
