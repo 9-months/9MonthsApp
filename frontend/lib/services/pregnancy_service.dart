@@ -48,7 +48,6 @@ class PregnancyService {
         throw 'Failed to create pregnancy data: ${response.statusCode} - ${response.body}';
       }
     } catch (e) {
-      print('Pregnancy Service Error: $e');
       throw 'Network error: $e';
     }
   }

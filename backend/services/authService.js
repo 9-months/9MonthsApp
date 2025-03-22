@@ -125,7 +125,6 @@ class AuthService {
   // Log In
   async logIn(identifier, password) {
     try {
-      console.log("logIn function called with:", identifier, password);
 
       if (!identifier || !password) {
         return { status: false, message: "Invalid credentials." };
@@ -148,7 +147,7 @@ class AuthService {
         return { status: false, message: "Invalid credentials." };
       }
       const token = generateToken(user);
-      console.log("Login successful:", user.email || user.username);
+      
 
       return { status: true, message: "Login successful.", token, user };
     } catch (err) {
