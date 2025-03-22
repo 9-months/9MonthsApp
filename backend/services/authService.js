@@ -110,9 +110,31 @@ class AuthService {
       updates.forEach((update) => {
         user[update] = profileData[update];
       });
+
+      let partnerLinkCode = null;
+      if (profileData.accountType && profileData.accountType.toLowerCase() === "mother") {
+        // Generate a random 8-character alphanumeric code
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) {
+          code += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        
+        user.partnerLinkCode = code;
+        partnerLinkCode = code;
+      }
   
       await user.save();
-      return { status: true, message: "Profile updated successfully.", user };
+      const response = { 
+        status: true, 
+        message: "Profile updated successfully.", 
+        user 
+      };
+      
+      if (partnerLinkCode) {
+        response.partnerLinkCode = partnerLinkCode;
+      }
+      return response;
     } catch (error) {
       console.error("Error updating profile:", error);
       return { status: false, message: "Error updating profile." };
@@ -303,154 +325,125 @@ class AuthService {
     }
   }
 
-  // Check and link partner if code provided during login
-  async checkAndLinkPartner(userId, partnerLinkCode) {
-    try {
-      // Skip if no linking code provided
-      if (!partnerLinkCode || partnerLinkCode.trim() === '') {
-        return { status: true, message: "No partner linking requested" };
-      }
-      
-      // Find partner by the linking code
-      const partner = await User.findOne({ linkCode: partnerLinkCode });
-      
-      if (!partner) {
-        return { status: false, message: "Invalid partner linking code" };
-      }
-      
-      // Verify the roles are complementary
+  // Generate a unique partner link code
+async generatePartnerLinkCode(userId) {
+  try {
     const user = await User.findOne({ uid: userId });
-    
     if (!user) {
-      return { status: false, message: "User not found" };
+      return { status: false, message: "User not found." };
     }
     
-    // Don't link if already linked
-    if (user.partnerId || partner.partnerId) {
-      return { status: false, message: "One or both users already have partners" };
+    if (user.accountType.toLowerCase() !== "mother") {
+      return { status: false, message: "Only mothers can generate partner codes." };
     }
     
-    // Ensure partner is trying to link with mother
-    if (user.role === 'mother' && partner.role === 'mother') {
-      return { status: false, message: "Both users have mother role" };
+    // Generate a random 8-character alphanumeric code
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     
-    if (user.role === 'partner' && partner.role === 'partner') {
-      return { status: false, message: "Both users have partner role" };
-    }
+    // Save the code to the user
+    user.partnerLinkCode = code;
+    await user.save();
     
-    // Link the partners
-    user.partnerId = partner.uid;
-    partner.partnerId = user.uid;
-    
-    // Clear the linking code after successful linking
-    partner.linkCode = undefined;
-    partner.linkCodeExpiry = undefined;
-    
-    // Save both users
-    await Promise.all([user.save(), partner.save()]);
-    
-      return { 
-        status: true, 
-        message: "Partner linked successfully", 
-        partner: partner 
-      };
-    } catch (err) {
-      console.error("Error checking/linking partner:", err);
-      return { status: false, message: "Error linking partner" };
-    }
+    return { 
+      status: true, 
+      message: "Partner link code generated successfully.", 
+      code 
+    };
+  } catch (error) {
+    console.error("Error generating partner code:", error);
+    return { status: false, message: "Error generating partner code." };
   }
+}
 
-  async generatePartnerLinkCode(userId) {
-    try {
-      console.log("Generating link code for user ID:", userId);
-      const user = await User.findOne({ uid: userId });
-      
-      if (!user) {
-        console.log("User not found for ID:", userId);
-        return { status: false, message: "User not found" };
-      }
-      
-      console.log("Found user:", user.email);
-      
-      // Generate a random 6-character alphanumeric code
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let linkCode = '';
-      for (let i = 0; i < 6; i++) {
-        linkCode += characters.charAt(Math.floor(Math.random() * characters.length));
-      }
-      
-      console.log("Generated code:", linkCode);
-      
-      // Save the code to the user
-      user.linkCode = linkCode;
-      user.linkCodeExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours expiry
-      
-      console.log("Saving user with new code...");
-      await user.save();
-      console.log("User saved successfully");
-      
-      return { 
-        status: true, 
-        message: "Partner link code generated", 
-        linkCode 
-      };
-    } catch (err) {
-      console.error("Error generating partner link code:", err);
-      return { status: false, message: "Error generating link code" };
+// Check and link a partner using the code
+async checkAndLinkPartner(userId, linkCode) {
+  try {
+    // Find the mother with this code
+    const mother = await User.findOne({ partnerLinkCode: linkCode });
+    if (!mother) {
+      return { status: false, message: "Invalid partner link code." };
     }
+    
+    // Find the partner user
+    const partner = await User.findOne({ uid: userId });
+    if (!partner) {
+      return { status: false, message: "Partner user not found." };
+    }
+    
+    // Check if already linked
+    if (mother.partnerId === partner.uid) {
+      return { status: true, message: "Already linked with this partner.", partner: mother };
+    }
+    
+    // Update mother's record with partner ID
+    mother.partnerId = partner.uid;
+    
+    // Update partner's record with mother ID and basic info
+    partner.partnerId = mother.uid;
+    partner.accountType = "Partner";
+    partner.motherInfo = {
+      uid: mother.uid,
+      username: mother.username,
+      email: mother.email
+    };
+    
+    // Save both records
+    await mother.save();
+    await partner.save();
+    
+    return { 
+      status: true, 
+      message: "Successfully linked with mother.", 
+      partner: {
+        uid: mother.uid,
+        username: mother.username,
+        email: mother.email
+      }
+    };
+  } catch (error) {
+    console.error("Error linking partner:", error);
+    return { status: false, message: "Error linking partner." };
   }
+}
 
-  // link two users as partners
-  async linkPartners(userId1, userId2) {
-    try {
-      const user1 = await User.findOne({ uid: userId1 });
-      const user2 = await User.findOne({ uid: userId2 });
-      
-      if (!user1 || !user2) {
-        return { status: false, message: "One or both users not found." };
-      }
-      
-      // Set partner relationship
-      user1.partnerId = user2.uid;
-      user2.partnerId = user1.uid;
-      
-      await user1.save();
-      await user2.save();
-      
-      return { 
-        status: true, 
-        message: "Partners linked successfully.",
-        user1: user1,
-        user2: user2
-      };
-    } catch (err) {
-      console.error("Error linking partners:", err);
-      return { status: false, message: "Error linking partners." };
+// Get partner data
+async getPartnerData(userId) {
+  try {
+    const user = await User.findOne({ uid: userId });
+    if (!user) {
+      return { status: false, message: "User not found." };
     }
+    
+    if (!user.partnerId) {
+      return { status: false, message: "No linked partner found." };
+    }
+    
+    const partner = await User.findOne({ uid: user.partnerId });
+    if (!partner) {
+      return { status: false, message: "Linked partner not found." };
+    }
+    
+    return { 
+      status: true, 
+      message: "Partner data retrieved successfully.", 
+      partner: {
+        uid: partner.uid,
+        username: partner.username,
+        email: partner.email,
+        accountType: partner.accountType
+      }
+    };
+  } catch (error) {
+    console.error("Error getting partner data:", error);
+    return { status: false, message: "Error retrieving partner data." };
   }
+}
+
   
-  // Get partner data
-  async getPartnerData(userId) {
-    try {
-      const user = await User.findOne({ uid: userId });
-      
-      if (!user || !user.partnerId) {
-        return { status: false, message: "No linked partner found." };
-      }
-      
-      const partner = await User.findOne({ uid: user.partnerId });
-      
-      if (!partner) {
-        return { status: false, message: "Partner not found." };
-      }
-      
-      return { status: true, partner };
-    } catch (err) {
-      console.error("Error fetching partner:", err);
-      return { status: false, message: "Error fetching partner." };
-    }
-  }
 }
 
 module.exports = new AuthService();
