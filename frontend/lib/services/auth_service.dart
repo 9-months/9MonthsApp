@@ -1,13 +1,13 @@
 
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:_9months/models/user_model.dart' as user;
-import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
 import '../config/config.dart';
 
 class AuthService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final secureStorage = FlutterSecureStorage();
 
   // Login method
   Future<user.User> login(String username, String password) async {
@@ -23,6 +23,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        secureStorage.write(key: 'authToken', value: data['token']);
         return user.User.fromJson(data['user']);
       } else {
         throw Exception(
@@ -64,58 +65,6 @@ class AuthService {
       print('Registration failed with error: $e');
       print('Stack trace: $s');
       throw Exception('Registration failed: ${e.toString()}');
-    }
-  }
-
-  // Google Sign-In method
-  // Optional parameters: extraData containing additional fields such as 'location', 'username', and 'phone'
-  Future<user.User> googleSignIn({Map<String, dynamic>? extraData}) async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) throw Exception('Google sign in cancelled');
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
-
-      if (idToken == null) throw Exception('Failed to get ID Token');
-
-      // Prepare payload with idToken and any extra registration data (if available)
-      final Map<String, dynamic> payload = {'idToken': idToken};
-      if (extraData != null) {
-        payload.addAll(extraData);
-      }
-
-      final response = await http.post(
-        Uri.parse('${Config.apiBaseUrl}/auth/google'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(payload),
-      );
-
-      // Log the raw response to debug HTML output
-      print('Google sign-in response status: ${response.statusCode}');
-      print('Google sign-in response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return user.User.fromJson(data['user']);
-      } else {
-        // Attempt to extract error message if possible, else fallback
-        dynamic responseData;
-        try {
-          responseData = json.decode(response.body);
-        } catch (_) {
-          responseData = response.body;
-        }
-        throw Exception(
-            responseData is Map && responseData['message'] != null 
-              ? responseData['message'] 
-              : 'Google sign-in failed');
-      }
-    } catch (e, s) {
-      print('Google sign-in failed with error: $e');
-      print('Stack trace: $s');
-      throw Exception('Google sign-in failed: ${e.toString()}');
     }
   }
 
@@ -200,7 +149,6 @@ class AuthService {
         Uri.parse('${Config.apiBaseUrl}/auth/logout'),
         headers: {'Content-Type': 'application/json'},
       );
-      await _googleSignIn.signOut();
     } catch (e, s) {
       print('Logout failed with error: $e');
       print('Stack trace: $s');
