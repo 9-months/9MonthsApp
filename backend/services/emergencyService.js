@@ -10,7 +10,6 @@
 class EmergencyService {
     async handleEmergencyCall(data) {
         // Logic to handle emergency call
-        console.log("Emergency call received:", data);
         // Add your business logic here
         return { status: "success", message: "Emergency call handled" };
     }

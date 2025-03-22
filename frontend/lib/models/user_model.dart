@@ -14,7 +14,7 @@ class User {
   final String accountType;
   final String? location;
   final String? phone;
-  final String? dateOfBirth;
+  final String? birthday;
   final String? token;
 
   User({
@@ -24,7 +24,7 @@ class User {
     required this.accountType,
     this.location,
     this.phone,
-    this.dateOfBirth,
+    this.birthday,
     this.token,
   });
 
@@ -36,7 +36,7 @@ class User {
       location: json['location'] as String?,
       phone: json['phone'] as String?,
       accountType : json['accountType'] ?? 'mother',
-      dateOfBirth: json['dateOfBirth'] as String?,
+      birthday: json['birthday'] as String?,
       token: json['token'] as String?,
     );
   }
@@ -48,6 +48,7 @@ class User {
       'username': username,
       'location': location,
       'phone': phone,
+      'birthday': birthday,
       'accountType': accountType,
       'token': token,
     };
@@ -69,6 +70,7 @@ class User {
       username: username ?? this.username,
       location: location ?? this.location,
       phone: phone ?? this.phone,
+      birthday: birthday ?? this.birthday,
       accountType: accountType ?? this.accountType,
       token: token ?? this.token,
     );

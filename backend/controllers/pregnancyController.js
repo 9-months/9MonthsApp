@@ -12,14 +12,7 @@ const PregnancyService = require("../services/pregnancyService");
 class PregnancyController {
   async createPregnancy(req, res) {
     try {
-      console.log('Received create pregnancy request:', {
-        body: req.body,
-        headers: req.headers
-      });
-      
       const pregnancy = await PregnancyService.createPregnancy(req.body);
-      console.log('Created pregnancy:', pregnancy);
-      
       res.status(201).json(pregnancy);
     } catch (error) {
       console.error('Create pregnancy error:', error);

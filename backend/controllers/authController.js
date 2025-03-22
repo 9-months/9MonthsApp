@@ -16,11 +16,10 @@ module.exports = {
       const result = await authService.createUser(req.body);
 
       if (!result.status) {
-        console.error(" User creation failed:", result.message);
+        console.error("User creation failed:", result.message);
         return res.status(400).json({ message: result.message });
       }
 
-      console.log("User created successfully:", req.body.email);
       return res
         .status(201)
         .json({ 
@@ -57,7 +56,6 @@ module.exports = {
         return res.status(401).json({ message: result.message });
       }
 
-      console.log("User logged in successfully:", credential);
       return res.status(200).json({
         message: result.message,
         token: result.token,
@@ -78,15 +76,13 @@ module.exports = {
       const { idToken } = req.body;
 
       if (!idToken) {
-        console.error(" Google Sign In failed: Missing ID token");
+        console.error("Google Sign In failed: Missing ID token");
         return res.status(400).json({
           message: "Google ID token is required",
         });
       }
 
       const result = await authService.googleSignIn(idToken);
-
-      console.log("Google Sign In successful");
       return res.status(200).json(result);
     } catch (error) {
       console.error("Google Sign In Error:", error.message || error);
@@ -169,9 +165,6 @@ module.exports = {
     try {
       const uid = req.body.uid;
       const profileData = req.body.profileData;
-
-      console.log(uid);
-      console.log(profileData);
 
       const result = await authService.completeProfile(uid, profileData);
 

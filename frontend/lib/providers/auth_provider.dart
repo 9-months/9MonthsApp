@@ -171,8 +171,6 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
-    // print the saved token
-    print('Saved token: $token');
   }
 
   Future<void> _clearUser() async {
@@ -187,20 +185,7 @@ class AuthProvider extends ChangeNotifier {
     final userData = await _storage.read(key: _userKey);
     if (userData != null) {
       try {
-        // For debugging
-        if (kDebugMode) {
-          print('Retrieved user data: $userData');
-          final decoded = jsonDecode(userData);
-          print('Decoded data contains birthday: ${decoded.containsKey('birthday')}');
-        }
-        
         final user = User.fromJson(jsonDecode(userData));
-        
-        // Verify the birthday was properly deserialized
-        if (kDebugMode && user.birthday == null) {
-          print('Warning: birthday is null after deserialization');
-        }
-        
         return user;
       } catch (e) {
         if (kDebugMode) {

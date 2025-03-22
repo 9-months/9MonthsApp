@@ -27,12 +27,8 @@ class PregnancyService {
     return weekData;
   }
 
-
-
   async createPregnancy(userData) {
-    try {
-      console.log('Creating pregnancy with data:', userData);
-      
+    try {      
       const pregnancy = new Pregnancy({
         userId: userData.userId,
         dueDate: new Date(userData.dueDate)
@@ -48,7 +44,6 @@ class PregnancyService {
         ...weeklyData.toObject()
       };
     } catch (error) {
-      console.error('Error in createPregnancy:', error);
       throw error;
     }
   }
