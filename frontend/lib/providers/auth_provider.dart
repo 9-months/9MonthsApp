@@ -120,14 +120,14 @@ class AuthProvider extends ChangeNotifier {
   Future<void> updateUserProfile({
     String? location,
     String? phone,
-    String? dateOfBirth,
+    String? birthday,
     String? accountType,
   }) async {
     if (_user != null) {
       _user = _user!.copyWith(
         location: location,
         phone: phone,
-        dateOfBirth: dateOfBirth,
+        birthday: birthday,
         accountType: accountType,
       );
       await _saveUser(_user!);
@@ -147,7 +147,29 @@ class AuthProvider extends ChangeNotifier {
   Future<User?> _getUser() async {
     final userData = await _storage.read(key: _userKey);
     if (userData != null) {
-      return User.fromJson(jsonDecode(userData));
+      try {
+        // For debugging
+        if (kDebugMode) {
+          print('Retrieved user data: $userData');
+          final decoded = jsonDecode(userData);
+          print('Decoded data contains birthday: ${decoded.containsKey('birthday')}');
+        }
+        
+        final user = User.fromJson(jsonDecode(userData));
+        
+        // Verify the birthday was properly deserialized
+        if (kDebugMode && user.birthday == null) {
+          print('Warning: birthday is null after deserialization');
+        }
+        
+        return user;
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error parsing user data: $e');
+        }
+        await _clearUser(); // Clear corrupted data
+        return null;
+      }
     }
     return null;
   }

@@ -12,7 +12,7 @@ class ProfileForm extends StatefulWidget {
 class _ProfileFormState extends State<ProfileForm> {
   final _formKey = GlobalKey<FormState>();
   String _accountType = 'mother'; // Make sure this matches one of the dropdown options
-  DateTime _dateOfBirth = DateTime.now();
+  DateTime _birthday = DateTime.now();
   late String _location;
   late String _phoneNumber;
 
@@ -84,20 +84,20 @@ class _ProfileFormState extends State<ProfileForm> {
                   );
                   if (pickedDate != null) {
                     setState(() {
-                      _dateOfBirth = pickedDate;
+                      _birthday = pickedDate;
                     });
                   }
                 },
                 validator: (value) {
-                  if (_dateOfBirth == null) {
+                  if (_birthday == null) {
                     return 'Please select your date of birth';
                   }
                   return null;
                 },
                 controller: TextEditingController(
-                  text: _dateOfBirth == null
+                  text: _birthday == null
                       ? ''
-                      : DateFormat('yyyy-MM-dd').format(_dateOfBirth),
+                      : DateFormat('yyyy-MM-dd').format(_birthday),
                 ),
               ),
               const SizedBox(height: 16),
@@ -166,7 +166,7 @@ class _ProfileFormState extends State<ProfileForm> {
       // Prepare profile data
       final profileData = {
         'accountType': _accountType,
-        'birthday': DateFormat('yyyy-MM-dd').format(_dateOfBirth),
+        'birthday': DateFormat('yyyy-MM-dd').format(_birthday),
         'location': _location,
         'phone': formattedPhone,
       };
@@ -177,7 +177,7 @@ class _ProfileFormState extends State<ProfileForm> {
       // Update user profile in AuthProvider
       await authProvider.updateUserProfile(
         accountType: _accountType,
-        dateOfBirth: DateFormat('yyyy-MM-dd').format(_dateOfBirth),
+        birthday: DateFormat('yyyy-MM-dd').format(_birthday),
         location: _location,
         phone: formattedPhone,
       );

@@ -22,7 +22,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final String _dateOfBirth = '01/01/1990';
+  final String _birthday = '01/01/1990';
   final String _location = 'Colombo';
   final String _phone = '';
   File? _imageFile;
@@ -401,7 +401,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               context,
                               Icons.calendar_today_outlined,
                               'Date of Birth',
-                              user.dateOfBirth ?? _dateOfBirth,
+                              user.birthday ?? _birthday,
                               primaryColor,
                             ),
                             const Divider(height: 30),

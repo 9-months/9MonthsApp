@@ -147,7 +147,7 @@ class AuthService {
     String? username,
     String? location,
     String? phone,
-    String? dateOfBirth,
+    String? birthday,
   }) async {
     try {
       final response = await http.put(
@@ -156,7 +156,7 @@ class AuthService {
         body: json.encode({
           'location': location,
           'phone': phone,
-          'dateOfBirth': dateOfBirth,
+          'birthday': birthday,
           'username': username,
           'email': email,
         }),
