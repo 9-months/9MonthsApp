@@ -7,11 +7,10 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true },
   location: { type: String },
   phone: { type: String },
-  partnerId: { type: String, ref: 'User' },
-  linkCode: { type: String },
-  linkCodeExpiry: { type: Date }, // For linking partners
   dateofBirth: { type: String },
   accountType: { type: String, default: "Mother" },
+  partnerLinkCode: { type: String, sparse: true }, // For mothers only
+  partnerId: { type: String, sparse: true }, 
 }, { collection: 'users' });  // Ensure it points to 'users' collection
 
 
