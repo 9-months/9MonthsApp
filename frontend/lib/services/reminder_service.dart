@@ -34,7 +34,7 @@ class ReminderService {
   // Get all reminders for a user
   Future<List<Reminder>> getRemindersByUser(String userId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/reminder/$userId'),
+      Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
       headers: {
         // Add authorization header here if needed
       },
@@ -51,7 +51,7 @@ class ReminderService {
   // Get a specific reminder
   Future<Reminder> getReminder(String userId, String reminderId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/reminder/$userId/$reminderId'), // Fixed path
+      Uri.parse('${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
       headers: {
         // Add authorization header here if needed
       },
@@ -67,7 +67,7 @@ class ReminderService {
   // Update an existing reminder
   Future<Reminder> updateReminder(String userId, String reminderId, Map<String, dynamic> reminderData) async {
      final response = await http.put(
-    Uri.parse('$baseUrl/reminder/$userId/$reminderId'), // Fixed path
+    Uri.parse('${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
     headers: {
       'Content-Type': 'application/json',
     },
@@ -83,7 +83,7 @@ class ReminderService {
   // Delete a reminder
   Future<void> deleteReminder(String userId, String reminderId) async {
     final response = await http.delete(
-      Uri.parse('$baseUrl/reminder/$userId/$reminderId'), // Fixed path
+      Uri.parse('${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
       headers: {
         // Add authorization header here if needed
       },
