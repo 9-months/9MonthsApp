@@ -68,17 +68,27 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _user = await _authService.register(
+      final result = await _authService.register(
         email: email,
         password: password,
         username: username,
       );
+      
+      _user = result['user'];
+      _token = result['token'];
+      
       if (_user != null) {
         await _saveUser(_user!);
       }
+      
+      if (_token != null) {
+        await _saveToken(_token!);
+      }
+      
       notifyListeners();
     } catch (e) {
       _user = null;
+      _token = null;
       rethrow;
     } finally {
       _isLoading = false;
@@ -114,12 +124,20 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _user = await _authService.googleSignIn();
+      final result = await _authService.googleSignIn();
+      _user = result['user'];
+      _token = result['token'];
+      
       if (_user != null) {
         await _saveUser(_user!);
       }
+      
+      if (_token != null) {
+        await _saveToken(_token!);
+      }
     } catch (e) {
       _user = null;
+      _token = null;
       rethrow;
     } finally {
       _isLoading = false;

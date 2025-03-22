@@ -69,10 +69,15 @@ class AuthService {
             username: userData.username,
           });
           await newUser.save();
+          
+          // Generate token for the newly created user
+          const token = generateToken(newUser);
+          
           return {
             status: true,
             message: "User registered successfully.",
             user: newUser,
+            token: token 
           };
         }
         throw error;
