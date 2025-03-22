@@ -1,3 +1,11 @@
+/*
+ File: Diary_screen.dart
+ Purpose: Screen for users to view, add, edit, and delete diary entries
+ Created Date: CCS-50 23-02-2025
+ Author: Melissa Joanne
+
+ last modified: 24-02-2025 | Melissa | CCS-50 Diary screen
+*/
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -51,7 +59,15 @@ class _DiaryScreenState extends State<DiaryScreen> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        // If the error is "user not found", we don't set an error message
+        // so that the empty diary view is shown instead
+        if (e.toString().contains('user not found') ||
+            e.toString().contains('User not found')) {
+          _diaries = []; // Ensure diaries is empty
+          _errorMessage = null;
+        } else {
+          _errorMessage = e.toString();
+        }
         _isLoading = false;
       });
     }
