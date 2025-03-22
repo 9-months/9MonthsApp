@@ -10,6 +10,7 @@
 
 const express = require('express');
 const moodController = require('../controllers/moodController');
+const { verifyToken } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 /**
@@ -42,7 +43,7 @@ const router = express.Router();
  *               note:
  *                 type: string
  */
-router.post('/create/:userId', moodController.createMoodEntry);
+router.post('/create/:userId', verifyToken, moodController.createMoodEntry);
 
 /**
  * @swagger
@@ -60,7 +61,7 @@ router.post('/create/:userId', moodController.createMoodEntry);
  *           type: string
  *         description: The user ID
  */
-router.get('/getAll/:userId', moodController.getMoodEntries);
+router.get('/getAll/:userId', verifyToken, moodController.getMoodEntries);
 
 /**
  * @swagger
@@ -84,7 +85,7 @@ router.get('/getAll/:userId', moodController.getMoodEntries);
  *           type: string
  *         description: The mood ID
  */
-router.get('/get/:userId/:moodId', moodController.getMoodEntry);
+router.get('/get/:userId/:moodId', verifyToken, moodController.getMoodEntry);
 
 /**
  * @swagger
@@ -122,7 +123,7 @@ router.get('/get/:userId/:moodId', moodController.getMoodEntry);
  *               note:
  *                 type: string
  */
-router.put('/update/:userId/:moodId', moodController.updateMoodEntry);
+router.put('/update/:userId/:moodId', verifyToken, moodController.updateMoodEntry);
 
 /**
  * @swagger
@@ -146,6 +147,6 @@ router.put('/update/:userId/:moodId', moodController.updateMoodEntry);
  *           type: string
  *         description: The mood ID
  */
-router.delete('/delete/:userId/:moodId', moodController.deleteMoodEntry);
+router.delete('/delete/:userId/:moodId', verifyToken, moodController.deleteMoodEntry);
 
 module.exports = router;

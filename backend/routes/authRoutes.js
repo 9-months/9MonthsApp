@@ -17,6 +17,7 @@
 
 const express = require("express");
 const authController = require("../controllers/authController");
+const { verifyToken } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -95,7 +96,7 @@ router.post("/signup", authController.createUser);
  *      404:
  *          description: User not found.
  */
-router.patch("/complete-profile", authController.completeProfile);
+router.patch("/complete-profile", verifyToken, authController.completeProfile);
 /**
  * @swagger
  * /login:
@@ -183,7 +184,7 @@ router.post("/google-signin", authController.googleSignIn);
  *       404:
  *         description: User not found.
  */
-router.get("/user/:uid", authController.getUser);
+router.get("/user/:uid", verifyToken, authController.getUser);
 
 /**
  * @swagger
@@ -198,7 +199,7 @@ router.get("/user/:uid", authController.getUser);
  *       500:
  *         description: Server error.
  */
-router.get("/users", authController.getAllUsers);
+router.get("/users", verifyToken, authController.getAllUsers);
 
 /**
  * @swagger
@@ -238,7 +239,7 @@ router.get("/users", authController.getAllUsers);
  *       404:
  *         description: User not found.
  */
-router.put("/user/:uid", authController.updateUser);
+router.put("/user/:uid", verifyToken, authController.updateUser);
 
 /**
  * @swagger
@@ -260,6 +261,6 @@ router.put("/user/:uid", authController.updateUser);
  *       404:
  *         description: User not found.
  */
-router.delete("/user/:uid", authController.deleteUser);
+router.delete("/user/:uid", verifyToken, authController.deleteUser);
 
 module.exports = router;

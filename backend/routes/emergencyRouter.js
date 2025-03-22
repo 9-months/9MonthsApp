@@ -10,6 +10,7 @@
 
 const express = require('express');
 const emergencyController = require('../controllers/emergencyController');
+const { verifyToken } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -58,6 +59,6 @@ const router = express.Router();
  *       500:
  *         description: Internal server error.
  */
-router.post('/', (req, res) => emergencyController.handleEmergencyRequest(req, res));
+router.post('/', verifyToken, (req, res) => emergencyController.handleEmergencyRequest(req, res));
 
 module.exports = router;

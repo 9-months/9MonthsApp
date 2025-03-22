@@ -1,11 +1,12 @@
 const express = require("express");
 const WeeklyDataController = require("../controllers/weeklyDataController");
+const { verifyToken } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // Get weekly data for a specific week
-router.get("/week/:week", WeeklyDataController.getWeeklyData);
+router.get("/week/:week", verifyToken, WeeklyDataController.getWeeklyData);
 
 // Get only tips for a specific week
-router.get("/week/:week/tips", WeeklyDataController.getTipsForWeek);
+router.get("/week/:week/tips", verifyToken, WeeklyDataController.getTipsForWeek);
 
 module.exports = router;

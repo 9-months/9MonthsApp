@@ -10,6 +10,7 @@
 
 const express = require("express");
 const PregnancyController = require("../controllers/pregnancyController");
+const { verifyToken } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 /**
@@ -99,10 +100,10 @@ const router = express.Router();
  *         description: Pregnancy record not found
  */
 
-router.post("/", PregnancyController.createPregnancy);
-router.get("/:userId", PregnancyController.getPregnancy);
-router.put("/:userId", PregnancyController.updatePregnancy);
-router.delete("/:userId", PregnancyController.deletePregnancy);
+router.post("/", verifyToken, PregnancyController.createPregnancy);
+router.get("/:userId", verifyToken, PregnancyController.getPregnancy);
+router.put("/:userId", verifyToken, PregnancyController.updatePregnancy);
+router.delete("/:userId", verifyToken, PregnancyController.deletePregnancy);
 
 
 module.exports = router;

@@ -12,6 +12,7 @@ const User = require("../models/User");
 const admin = require("firebase-admin");
 const CryptoJS = require("crypto-js");
 const emailValidator = require("email-validator");
+const { generateToken } = require('../middleware/authMiddleware');
 
 class AuthService {
   // Create User
@@ -147,7 +148,7 @@ class AuthService {
       if (decryptedPassword !== password) {
         return { status: false, message: "Invalid credentials." };
       }
-      const token = await admin.auth().createCustomToken(user.uid);
+      const token = generateToken(user);
       console.log("Login successful:", user.email || user.username);
 
       return { status: true, message: "Login successful.", token, user };
@@ -220,7 +221,7 @@ class AuthService {
       let existingUser = await User.findOne({ email: email });
       if (existingUser) {
         // User exists – generate a custom token and return user details
-        const token = await admin.auth().createCustomToken(existingUser.uid);
+        const token = generateToken(existingUser);
         return { status: true, message: "Google sign in successful.", token, user: existingUser };
       }
       // If the user does not exist, require additional data for registration.
@@ -268,7 +269,7 @@ class AuthService {
         phone: phone,
       });
       await newUser.save();
-      const token = await admin.auth().createCustomToken(newUser.uid);
+      const token = generateToken(newUser);
       return {
         status: true,
         message: "Google sign in successful - new user registered.",
