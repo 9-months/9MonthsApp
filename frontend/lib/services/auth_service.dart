@@ -1,5 +1,3 @@
-
-
 import 'package:http/http.dart' as http;
 import 'package:_9months/models/user_model.dart' as user;
 import 'package:google_sign_in/google_sign_in.dart';
@@ -10,7 +8,7 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Login method
-  Future<user.User> login(String username, String password) async {
+  Future<Map<String, dynamic>> login(String username, String password) async {
     try {
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/auth/login'),
@@ -23,7 +21,16 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return user.User.fromJson(data['user']);
+        final token = data['token']; // Extract the JWT token
+        // print the token to debug HTML output
+        print('Token: $token');
+        final userData = user.User.fromJson(data['user']);
+        
+        // Return both token and user
+        return {
+          'user': userData,
+          'token': token,
+        };
       } else {
         throw Exception(
             json.decode(response.body)['message'] ?? 'Login failed');
@@ -120,11 +127,14 @@ class AuthService {
   }
 
   // Get single user by id
-  Future<user.User> getUserById(String uid) async {
+  Future<user.User> getUserById(String uid, String token) async {
     try {
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}/auth/user/$uid'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Add token to the request header
+        },
       );
 
       if (response.statusCode == 200) {

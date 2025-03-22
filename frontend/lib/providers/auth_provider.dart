@@ -15,6 +15,7 @@ import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   String? _username;
+  String? _token; 
   bool get isLoggedIn => _username != null;
   String get username => _username ?? '';
   User? _user;
@@ -22,10 +23,12 @@ class AuthProvider extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
   final AuthService _authService = AuthService();
   static const _userKey = 'user_data';
+  static const _tokenKey = 'auth_token'; 
 
   User? get user => _user;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _user != null;
+  bool get isAuthenticated => _user != null && _token != null;
+  String? get token => _token; 
 
   // Login and register methods
   Future<void> login(String username, String password) async {
@@ -34,13 +37,18 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _user = await _authService.login(username, password);
-      if (_user != null) {
+      final result = await _authService.login(username, password);
+      _user = result['user'];
+      _token = result['token']; 
+      
+      if (_user != null && _token != null) {
         await _saveUser(_user!);
+        await _saveToken(_token!); 
       }
       notifyListeners();
     } catch (e) {
       _user = null;
+      _token = null;
       rethrow;
     } finally {
       _isLoading = false;
@@ -81,8 +89,10 @@ class AuthProvider extends ChangeNotifier {
   // Logout method
   Future<void> logout() async {
     await _clearUser();
+    await _clearToken(); 
     _username = null;
     _user = null;
+    _token = null;
     notifyListeners();
   }
 
@@ -94,6 +104,7 @@ class AuthProvider extends ChangeNotifier {
   // Load user method
   Future<void> loadUser() async {
     _user = await _getUser();
+    _token = await _getToken(); 
     notifyListeners();
   }
 
@@ -140,8 +151,18 @@ class AuthProvider extends ChangeNotifier {
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
   }
 
+  Future<void> _saveToken(String token) async {
+    await _storage.write(key: _tokenKey, value: token);
+    // print the saved token
+    print('Saved token: $token');
+  }
+
   Future<void> _clearUser() async {
     await _storage.delete(key: _userKey);
+  }
+
+  Future<void> _clearToken() async {
+    await _storage.delete(key: _tokenKey);
   }
 
   Future<User?> _getUser() async {
@@ -150,5 +171,9 @@ class AuthProvider extends ChangeNotifier {
       return User.fromJson(jsonDecode(userData));
     }
     return null;
+  }
+
+  Future<String?> _getToken() async {
+    return await _storage.read(key: _tokenKey);
   }
 }
