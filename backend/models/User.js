@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
   location: { type: String },
   phone: { type: String },
   dateodBirth: { type: String },
+  accountType: { type: String, default: "Mother" },
 }, { collection: 'users' });  // Ensure it points to 'users' collection
 
 

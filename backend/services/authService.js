@@ -22,8 +22,6 @@ class AuthService {
         "email",
         "password",
         "username",
-        "location",
-        "phone",
       ];
       for (const field of requiredFields) {
         if (!userData[field] || userData[field].trim().length === 0) {
@@ -74,8 +72,6 @@ class AuthService {
             email: userData.email,
             password: encryptedPassword,
             username: userData.username,
-            location: userData.location,
-            phone: userData.phone,
           });
           await newUser.save();
           return {
@@ -89,6 +85,40 @@ class AuthService {
     } catch (err) {
       console.error("Error creating user:", err);
       return { status: false, message: "Registration error." };
+    }
+  }
+
+  // Complete Profile
+  async completeProfile(userId, profileData) {
+    try {
+      const allowedFields = ["accountType", "phone", "location", "birthday"];
+      const updates = Object.keys(profileData);
+  
+      // Validate input fields
+      const isValidUpdate = updates.every((field) => allowedFields.includes(field));
+      if (!isValidUpdate) {
+        return { status: false, message: "Invalid update fields." };
+      }
+  
+      if (profileData.accountType.toLowerCase !== undefined && !["mother","partner","admin"].includes(profileData.accountType)) {
+        return { status: false, message: "Invalid account type." };
+      }
+  
+      const user = await User.findOne({ uid: userId });
+      if (!user) {
+        return { status: false, message: "User not found." };
+      }
+  
+      // Update fields
+      updates.forEach((update) => {
+        user[update] = profileData[update];
+      });
+  
+      await user.save();
+      return { status: true, message: "Profile updated successfully.", user };
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      return { status: false, message: "Error updating profile." };
     }
   }
 

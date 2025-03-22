@@ -37,8 +37,6 @@ const router = express.Router();
  *               - username
  *               - email
  *               - password
- *               - location
- *               - phone
  *             properties:
  *               username:
  *                 type: string
@@ -52,12 +50,6 @@ const router = express.Router();
  *                 format: password
  *                 minLength: 6
  *                 example: "securepassword123"
- *               location:
- *                 type: string
- *                 example: "New York, USA"
- *               phone:
- *                 type: string
- *                 example: "+94712345678"
  *     responses:
  *       201:
  *         description: User registered successfully.
@@ -68,6 +60,42 @@ const router = express.Router();
  */
 router.post("/signup", authController.createUser);
 
+/**
+ * @swagger
+ * /complete-profile:
+ *  patch:
+ *   summary: Complete user profile
+ *   description: Completes the user's profile by adding their Account Type, Birthday, and Phone number.
+ *   tags: [Authentication]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *      application/json:
+ *       schema:
+ *          type: object
+ *          properties:
+ *              accountType:
+ *                  type: string
+ *                  example: "mother"
+ *              birthday:
+ *                  type: string
+ *                  format: date
+ *                  example: "2003-01-01"
+ *              location:
+ *                  type: string
+ *                  example: "Ragama"
+ *              phone:
+ *                  type: string
+ *                  example: "+9476543210"
+ *   responses:
+ *      200:
+ *          description: Profile completed successfully.
+ *      400:
+ *          description: Invalid request parameters.
+ *      404:
+ *          description: User not found.
+ */
+router.patch("/complete-profile", authController.completeProfile);
 /**
  * @swagger
  * /login:
