@@ -13,6 +13,7 @@ import 'screens/splash/splash.dart';
 import 'screens/onboarding/step_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'screens/profile/profile_form.dart';
 
 void main() async {
   
@@ -132,6 +133,7 @@ class MyApp extends StatelessWidget {
         '/journal/diary': (context) => const DiaryScreen(),     
         '/journal/mood': (context) => const MoodTrackingScreen(),
         '/news': (context) => const NewsFeed(),
+        '/profile/form': (context) => ProfileForm(),
       },
     );
   }

@@ -40,8 +40,6 @@ class AuthService {
     required String email,
     required String password,
     required String username,
-    String? location,
-    String? phone,
   }) async {
     try {
       final response = await http.post(
@@ -51,8 +49,6 @@ class AuthService {
           'email': email,
           'password': password,
           'username': username,
-          'location': location,
-          'phone': phone,
         }),
       );
 
@@ -127,7 +123,7 @@ class AuthService {
   Future<user.User> getUserById(String uid) async {
     try {
       final response = await http.get(
-        Uri.parse('${Config.apiBaseUrl}auth/user/$uid'),
+        Uri.parse('${Config.apiBaseUrl}/auth/user/$uid'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -155,7 +151,7 @@ class AuthService {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('${Config.apiBaseUrl}auth/users/$uid'),
+        Uri.parse('${Config.apiBaseUrl}/auth/users/$uid'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'location': location,
@@ -183,7 +179,7 @@ class AuthService {
   Future<void> deleteUser(String uid) async {
     try {
       final response = await http.delete(
-        Uri.parse('${Config.apiBaseUrl}auth/user/$uid'),
+        Uri.parse('${Config.apiBaseUrl}/auth/user/$uid'),
         headers: {'Content-Type': 'application/json'},
       );
 

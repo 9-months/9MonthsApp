@@ -33,9 +33,6 @@ class AuthService {
       if (!emailValidator.validate(userData.email)) {
         return { status: false, message: "Invalid email format." };
       }
-      if (!/^\+94\d{9}$/.test(userData.phone)) {
-        return { status: false, message: "Invalid phone number." };
-      }
       if (
         userData.password.length < 6 ||
         !/[!@#$%^&*(),.?":{}|<>]/.test(userData.password)
@@ -48,9 +45,6 @@ class AuthService {
       }
       if (await User.findOne({ email: userData.email })) {
         return { status: false, message: "Email already registered." };
-      }
-      if (await User.findOne({ phone: userData.phone })) {
-        return { status: false, message: "Phone number already in use." };
       }
       if (await User.findOne({ username: userData.username })) {
         return { status: false, message: "Username taken." };

@@ -16,8 +16,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _phoneController = TextEditingController();
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
@@ -27,11 +25,9 @@ class _RegisterPageState extends State<RegisterPage> {
             email: _emailController.text,
             password: _passwordController.text,
             username: _usernameController.text,
-            location: _locationController.text,
-            phone: _phoneController.text,
           );
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/step');
+      Navigator.pushReplacementNamed(context, '/profile/form');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -129,23 +125,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.phone,
-              ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: isLoading ? null : _register,
@@ -191,8 +170,6 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _usernameController.dispose();
-    _locationController.dispose();
-    _phoneController.dispose();
     super.dispose();
   }
 }

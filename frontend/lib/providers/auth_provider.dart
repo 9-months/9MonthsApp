@@ -64,8 +64,6 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
         username: username,
-        location: location,
-        phone: phone,
       );
       if (_user != null) {
         await _saveUser(_user!);
@@ -114,6 +112,25 @@ class AuthProvider extends ChangeNotifier {
       rethrow;
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Update user profile data and save to secure storage
+  Future<void> updateUserProfile({
+    String? location,
+    String? phone,
+    String? dateOfBirth,
+    String? accountType,
+  }) async {
+    if (_user != null) {
+      _user = _user!.copyWith(
+        location: location,
+        phone: phone,
+        dateOfBirth: dateOfBirth,
+        accountType: accountType,
+      );
+      await _saveUser(_user!);
       notifyListeners();
     }
   }
