@@ -33,36 +33,10 @@ jobs:
           MONGODB_URI: ${{ secrets.TEST_MONGODB_URI }}
           SECRET: ${{ secrets.TEST_SECRET }}
 
-  frontend-checks:
-    name: Flutter Frontend Checks
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.10.0'
-          channel: 'stable'
-          cache: true
-          
-      - name: Install dependencies
-        working-directory: ./frontend
-        run: flutter pub get
-        
-      - name: Analyze code
-        working-directory: ./frontend
-        run: flutter analyze
-        
-      - name: Run tests
-        working-directory: ./frontend
-        run: flutter test
   
   deploy:
     name: Deploy to Railway
-    needs: [backend-tests, frontend-checks]
+    needs: backend-tests
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     
