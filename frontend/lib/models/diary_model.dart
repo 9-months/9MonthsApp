@@ -11,8 +11,8 @@ class DiaryEntry {
     required this.date,
   });
 
+  // Factory constructor to parse JSON data, handling nested responses from API
   factory DiaryEntry.fromJson(Map<String, dynamic> json) {
-    // Handle nested response from create/update operations
     final diaryData = json.containsKey('newDiaryEntry')
         ? json['newDiaryEntry']
         : (json.containsKey('updatedDiary') ? json['updatedDiary'] : json);
@@ -24,7 +24,7 @@ class DiaryEntry {
       date: DateTime.parse(diaryData['date']),
     );
   }
-
+// Converts the DiaryEntry instance into a JSON object for API requests
   Map<String, dynamic> toJson() => {
         'diaryId': diaryId,
         'userId': userId,
