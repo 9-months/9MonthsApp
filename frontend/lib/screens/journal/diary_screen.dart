@@ -24,7 +24,7 @@ class DiaryScreen extends StatefulWidget {
 class _DiaryScreenState extends State<DiaryScreen> {
   late DiaryService _diaryService;
   late String _userId;
-  String? _token; 
+  String? _token;
   List<DiaryEntry> _diaries = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -69,8 +69,6 @@ class _DiaryScreenState extends State<DiaryScreen> {
       });
     } catch (e) {
       setState(() {
-        // If the error is "user not found", we don't set an error message
-        // so that the empty diary view is shown instead
         if (e.toString().contains('user not found') ||
             e.toString().contains('User not found')) {
           _diaries = []; // Ensure diaries is empty
@@ -227,7 +225,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Future<void> _showDiaryDialog({DiaryEntry? diary}) async {
     if (_token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Authentication required. Please login again.')),
+        const SnackBar(
+            content: Text('Authentication required. Please login again.')),
       );
       return;
     }
@@ -392,7 +391,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
   Future<void> _showDeleteConfirmation(DiaryEntry diary) async {
     if (_token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Authentication required. Please login again.')),
+        const SnackBar(
+            content: Text('Authentication required. Please login again.')),
       );
       return;
     }
@@ -423,7 +423,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
     if (confirmed == true) {
       try {
         setState(() => _isLoading = true);
-        await _diaryService.deleteDiary(_userId, diary.diaryId!, _token!); // Pass the token
+        await _diaryService.deleteDiary(
+            _userId, diary.diaryId!, _token!); // Pass the token
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
