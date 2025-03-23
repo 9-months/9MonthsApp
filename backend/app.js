@@ -18,6 +18,7 @@ const emergencyRouter = require("./routes/emergencyRouter");
 const pregnancyRouter = require("./routes/pregnancyRoutes");
 const reminderRoutes = require('./routes/reminderRoutes');
 const diaryRoutes = require("./routes/diaryRoutes");
+const partnerRoutes = require('./routes/partnerRoutes');
 
 
 // Load environment variables
@@ -52,6 +53,7 @@ app.use('/reminder', reminderRoutes);
 app.use("/diary", diaryRoutes);
 app.use('/weekly-data', require('./routes/weeklyDataRoutes'));
 app.use('/tips', require('./routes/weeklyDataRoutes'));
+app.use('/partner', partnerRoutes);
 
 // Routes
 app.get("/", (req, res) => {

@@ -9,6 +9,13 @@ const UserSchema = new mongoose.Schema({
   phone: { type: String },
   birthday: { type: String },
   accountType: { type: String, default: "Mother" },
+  linkCode: { type: String, sparse: true },
+  // linkedAccount object that contains info about the linked partner
+  linkedAccount: {
+    uid: { type: String, sparse: true },
+    username: { type: String },
+    phone: { type: String }
+  }
 }, { collection: 'users' });  // Ensure it points to 'users' collection
 
 

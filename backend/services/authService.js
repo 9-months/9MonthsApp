@@ -13,6 +13,7 @@ const admin = require("firebase-admin");
 const CryptoJS = require("crypto-js");
 const emailValidator = require("email-validator");
 const { generateToken } = require('../middleware/authMiddleware');
+const partnerService = require('./partnerService');
 
 class AuthService {
   // Create User
@@ -100,7 +101,7 @@ class AuthService {
         return { status: false, message: "Invalid update fields." };
       }
   
-      if (profileData.accountType.toLowerCase !== undefined && !["mother","partner","admin"].includes(profileData.accountType)) {
+      if (profileData.accountType && !["mother","partner","admin"].includes(profileData.accountType.toLowerCase())) {
         return { status: false, message: "Invalid account type." };
       }
   
@@ -113,6 +114,12 @@ class AuthService {
       updates.forEach((update) => {
         user[update] = profileData[update];
       });
+      
+      // Generate link code for mother accounts
+      if (profileData.accountType && profileData.accountType.toLowerCase() === 'mother') {
+        const linkCode = await partnerService.createUniqueLinkCode();
+        user.linkCode = linkCode;
+      }
   
       await user.save();
       return { status: true, message: "Profile updated successfully.", user };
