@@ -182,7 +182,7 @@ class _ProfileFormState extends State<ProfileForm> {
         phone: formattedPhone,
       );
       
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/step');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to complete profile: ${e.toString()}')),

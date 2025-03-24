@@ -21,9 +21,8 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final token = data['token']; // Extract the JWT token
-        // print the token to debug HTML output
-        print('Token: $token');
+        final token = data['token'];
+  
         final userData = user.User.fromJson(data['user']);
         
         // Return both token and user
@@ -36,8 +35,6 @@ class AuthService {
             json.decode(response.body)['message'] ?? 'Login failed');
       }
     } catch (e, s) {
-      print('Login failed with error: $e');
-      print('Stack trace: $s');
       throw Exception('Login failed: ${e.toString()}');
     }
   }
