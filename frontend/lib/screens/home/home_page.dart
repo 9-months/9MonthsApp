@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 4),
                           FutureBuilder(
                             future: pregnancyProvider
-                                .fetchPregnancyData(authProvider.getActiveUserId()),
+                                .fetchPregnancyData(authProvider.username),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
