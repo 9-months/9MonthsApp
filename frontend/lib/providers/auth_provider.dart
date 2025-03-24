@@ -4,7 +4,7 @@
  Created Date: 11/02/2021 CCS-55 State Management
  Author: Dinith Perera
 
- last modified: 15/02/2024 | Chamod | CCS-55 provider functionality updated
+ last modified: 22/03/2024 | Dinith | CCS-55 Store JWT token
 */
 
 import 'package:flutter/foundation.dart';

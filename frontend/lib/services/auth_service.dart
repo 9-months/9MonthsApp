@@ -34,8 +34,6 @@ class AuthService {
             json.decode(response.body)['message'] ?? 'Login failed');
       }
     } catch (e, s) {
-      print('Login failed with error: $e');
-      print('Stack trace: $s');
       throw Exception('Login failed: ${e.toString()}');
     }
   }

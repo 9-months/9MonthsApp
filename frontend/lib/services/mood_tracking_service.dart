@@ -21,7 +21,7 @@ class MoodTrackingService {
       Uri.parse('$baseUrl/moods/create/${mood.userId}'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // Add token to authorization header
+        'Authorization': 'Bearer $token', 
       },
       body: json.encode(mood.toJson()),
     );
@@ -39,7 +39,7 @@ class MoodTrackingService {
       Uri.parse('$baseUrl/moods/getAll/$userId'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // Add token to authorization header
+        'Authorization': 'Bearer $token', 
       },
     );
 
@@ -57,7 +57,7 @@ class MoodTrackingService {
       Uri.parse('$baseUrl/moods/delete/$userId/$moodId'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // Add token to authorization header
+        'Authorization': 'Bearer $token', 
       },
     );
 
@@ -72,7 +72,7 @@ class MoodTrackingService {
       Uri.parse('$baseUrl/moods/update/$userId/$moodId'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // Add token to authorization header
+        'Authorization': 'Bearer $token', 
       },
       body: json.encode(mood.toJson()),
     );

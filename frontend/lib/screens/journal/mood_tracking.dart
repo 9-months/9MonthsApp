@@ -42,6 +42,7 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
     _loadMoods();
   }
 
+  // User Id 
   String? _getUserId() {
     return Provider.of<AuthProvider>(context, listen: false).user?.uid;
   }
