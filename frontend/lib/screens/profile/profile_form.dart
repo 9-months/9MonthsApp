@@ -182,7 +182,12 @@ class _ProfileFormState extends State<ProfileForm> {
         phone: formattedPhone,
       );
       
-      Navigator.pushReplacementNamed(context, '/home');
+      // Route to appropriate homepage based on account type
+      if (_accountType.toLowerCase() == 'partner') {
+        Navigator.pushReplacementNamed(context, '/partner-home');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to complete profile: ${e.toString()}')),

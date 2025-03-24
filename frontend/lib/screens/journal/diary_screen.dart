@@ -37,8 +37,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
 
   void _initialize() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    _userId = authProvider.user?.uid ?? '';
-    _token = authProvider.token; // Get token from authProvider
+    _userId = authProvider.getActiveUserId(); // Changed to use active user ID
+    _token = authProvider.token;
     _diaryService = DiaryService();
     await _fetchDiaries();
   }

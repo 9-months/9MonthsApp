@@ -24,7 +24,16 @@ class _LoginPageState extends State<LoginPage> {
             _passwordController.text,
           );
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      
+      // Get the current user from AuthProvider
+      final user = context.read<AuthProvider>().user;
+      
+      // Check if user is a partner and navigate accordingly
+      if (user?.accountType == 'partner') {
+        Navigator.pushReplacementNamed(context, '/partner-home');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -37,7 +46,16 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await context.read<AuthProvider>().googleSignIn();
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      
+      // Get the current user from AuthProvider
+      final user = context.read<AuthProvider>().user;
+      
+      // Check if user is a partner and navigate accordingly
+      if (user?.accountType == 'partner') {
+        Navigator.pushReplacementNamed(context, '/partner-home');
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/pregnancy_service.dart';
+import '../providers/auth_provider.dart';
+import '../main.dart';
 
 class PregnancyProvider with ChangeNotifier {
   final PregnancyService _pregnancyService = PregnancyService();
@@ -26,6 +29,8 @@ class PregnancyProvider with ChangeNotifier {
 
   Future<Map<String, dynamic>?> fetchPregnancyData(String userId) async {
     try {
+  
+      
       final data = await _pregnancyService.fetchPregnancyData(userId);
 
       if (data != null) {
@@ -52,7 +57,16 @@ class PregnancyProvider with ChangeNotifier {
 
   Future<List<Map<String, dynamic>>> fetchPregnancyTips(int week) async {
     try {
-      final tips = await _pregnancyService.fetchTipsForWeek(week);
+      final authToken = Provider.of<AuthProvider>(
+        navigatorKey.currentContext!,
+        listen: false
+      ).token;
+      
+      if (authToken == null) {
+        throw 'Authentication error: Please login again';
+      }
+      
+      final tips = await _pregnancyService.fetchTipsForWeek(week, authToken);
       return tips;
     } catch (e) {
       print('Error fetching pregnancy tips: $e');
@@ -110,6 +124,20 @@ class PregnancyProvider with ChangeNotifier {
       await _pregnancyService.deletePregnancy(userId);
       notifyListeners();
     } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  // Add this method to refresh data after partner linking
+  Future<void> refreshAfterPartnerLinking(String userId) async {
+    try {
+      print('Refreshing data after partner linking: $userId');
+      // Fetch fresh data after partner linking
+      await fetchPregnancyData(userId);
+      // Notify listeners to update UI
+      notifyListeners();
+    } catch (e) {
+      print('Error refreshing after partner linking: $e');
       throw e.toString();
     }
   }

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../config/config.dart';
 
 class PregnancyService {
+  // Keep this for backward compatibility
   final _storage = const FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
   
@@ -52,13 +53,14 @@ class PregnancyService {
     }
   }
 
+  // Update the fetchPregnancyData method to accept a token
   Future<Map<String, dynamic>?> fetchPregnancyData(String userId) async {
     try {
-      final headers = await _getAuthHeaders();
-      
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}/pregnancy/$userId'),
-        headers: headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -119,13 +121,15 @@ class PregnancyService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchTipsForWeek(int week) async {
+  // Update fetchTipsForWeek to accept a token
+  Future<List<Map<String, dynamic>>> fetchTipsForWeek(int week, String token) async {
     try {
-      final headers = await _getAuthHeaders();
-      
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}/tips/week/$week/tips'),
-        headers: headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
 
       if (response.statusCode == 200) {

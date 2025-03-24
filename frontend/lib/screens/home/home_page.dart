@@ -33,8 +33,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Get userId from the auth provider
-    userId = Provider.of<AuthProvider>(context, listen: false).user?.uid ?? '';
+    // Get activeUserId from the auth provider
+    userId = Provider.of<AuthProvider>(context, listen: false).getActiveUserId();
   }
 
   Future<void> _handleEmergency() async {
@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(height: 4),
                           FutureBuilder(
                             future: pregnancyProvider
-                                .fetchPregnancyData(authProvider.username),
+                                .fetchPregnancyData(authProvider.getActiveUserId()),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {

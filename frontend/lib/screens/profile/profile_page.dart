@@ -11,9 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/partner_service.dart';
 import 'package:flutter/services.dart';
-import 'widgets/link_code.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -30,15 +28,25 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
-  bool _isLinking = false;
-  final TextEditingController _linkCodeController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AuthProvider>().loadUser();
+      loadUserData();
     });
+  }
+
+  void loadUserData() {
+    try {
+      context.read<AuthProvider>().loadUser();
+    } catch (e) {
+      // Handle any errors loading user data
+      print('Error loading user data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading profile: $e')),
+      );
+    }
   }
 
   Future<void> _showImagePickerModal() async {
@@ -183,43 +191,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void _copyLinkCode(String linkCode) {
     Clipboard.setData(ClipboardData(text: linkCode));
     _showSnackBar('Link code copied to clipboard', Colors.green);
-  }
-
-  // Add this method to handle partner linking
-  Future<void> _linkPartner(String uid, String linkCode) async {
-    if (linkCode.isEmpty) {
-      _showSnackBar('Please enter a link code', Colors.red);
-      return;
-    }
-
-    setState(() {
-      _isLinking = true;
-    });
-
-    try {
-      final result = await PartnerService.linkPartner(uid, linkCode);
-      
-      if (result['success']) {
-        _showSnackBar(result['message'], Colors.green);
-        _linkCodeController.clear();
-        // Refresh user data
-        context.read<AuthProvider>().loadUser();
-      } else {
-        _showSnackBar(result['message'], Colors.red);
-      }
-    } catch (e) {
-      _showSnackBar('An error occurred: $e', Colors.red);
-    } finally {
-      setState(() {
-        _isLinking = false;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _linkCodeController.dispose();
-    super.dispose();
   }
 
   @override
@@ -432,20 +403,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                           ],
                         ),
-                      ),
-                    ),
-
-                  // Add partner link section at the top for partners
-                  if ((user.accountType ?? _accountType).toLowerCase() == 'partner')
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
-                      child: PartnerLinkSection(
-                        uid: user.uid,
-                        primaryColor: primaryColor,
-                        linkCodeController: _linkCodeController,
-                        isLinking: _isLinking,
-                        onLinkPartner: _linkPartner,
-                        linkedAccount: user.linkedAccount,
                       ),
                     ),
 

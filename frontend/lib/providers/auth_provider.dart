@@ -192,6 +192,21 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Get the active user ID - returns the user's own ID for mothers or unlinked partners,
+  // but returns the linked mother's ID for linked partners
+  String getActiveUserId() {
+    // If user is null, return an empty string
+    if (_user == null) return '';
+    
+    // If user is a partner and has a linked account, return the linked account's ID
+    if (_user!.accountType.toLowerCase() == 'partner' && _user!.linkedAccount != null) {
+      return _user!.linkedAccount!.uid;
+    }
+    
+    // Otherwise, return the user's own ID
+    return _user!.uid;
+  }
+
   // Storage methods
   Future<void> _saveUser(User user) async {
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));

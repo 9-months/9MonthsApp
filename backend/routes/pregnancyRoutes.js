@@ -101,7 +101,7 @@ const router = express.Router();
  */
 
 router.post("/", verifyToken, PregnancyController.createPregnancy);
-router.get("/:userId", verifyToken, PregnancyController.getPregnancy);
+router.get("/:userId", PregnancyController.getPregnancy);
 router.put("/:userId", verifyToken, PregnancyController.updatePregnancy);
 router.delete("/:userId", verifyToken, PregnancyController.deletePregnancy);
 

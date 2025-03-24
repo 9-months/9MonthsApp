@@ -1,5 +1,7 @@
 import 'package:_9months/models/user_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:_9months/providers/auth_provider.dart';
 
 class MotherLinkCodeSection extends StatelessWidget {
   final String linkCode;
@@ -111,6 +113,7 @@ class PartnerLinkSection extends StatelessWidget {
   final TextEditingController linkCodeController;
   final bool isLinking;
   final Function(String, String) onLinkPartner;
+  final LinkedAccount? linkedAccount;
 
   const PartnerLinkSection({
     Key? key,
@@ -118,7 +121,8 @@ class PartnerLinkSection extends StatelessWidget {
     required this.primaryColor,
     required this.linkCodeController,
     required this.isLinking,
-    required this.onLinkPartner, LinkedAccount? linkedAccount,
+    required this.onLinkPartner,
+    this.linkedAccount,
   }) : super(key: key);
 
   @override
@@ -189,7 +193,21 @@ class PartnerLinkSection extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: isLinking ? null : () => onLinkPartner(uid, linkCodeController.text),
+                  onPressed: isLinking ? null : () {
+                    onLinkPartner(uid, linkCodeController.text).then((_) {
+                      // Force UI refresh by rebuilding after link completes
+                      if (context.mounted) {
+                        // Add a slight delay to ensure backend data is fully updated
+                        Future.delayed(const Duration(milliseconds: 500), () {
+                          // Force AuthProvider to reload user data
+                          Provider.of<AuthProvider>(context, listen: false).loadUser();
+                          
+                          // Force rebuild of UI components that depend on this data
+                          Navigator.pushReplacementNamed(context, '/partner-home');
+                        });
+                      }
+                    });
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 12),

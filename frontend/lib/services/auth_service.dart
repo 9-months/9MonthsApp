@@ -22,8 +22,6 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final token = data['token']; // Extract the JWT token
-        // print the token to debug HTML output
-        print('Token: $token');
         final userData = user.User.fromJson(data['user']);
         
         // Return both token and user
