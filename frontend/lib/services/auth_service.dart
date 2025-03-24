@@ -158,6 +158,40 @@ class AuthService {
     }
   }
 
+  // Get current user data from server
+  Future<user.User> getCurrentUser(String token) async {
+    try {
+      // Check if token is empty
+      if (token.isEmpty) {
+        throw Exception('No authentication token available');
+      }
+      
+      final response = await http.get(
+        Uri.parse('${Config.apiBaseUrl}/auth/current-user'), // Corrected endpoint
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      // Log response for debugging
+      print('getCurrentUser response status: ${response.statusCode}');
+      print('getCurrentUser response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // Handle different response formats
+        final userData = data['user'] ?? data;
+        return user.User.fromJson(userData);
+      } else {
+        throw Exception('Failed to get current user data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('GetCurrentUser failed: $e');
+      throw Exception('Failed to get user data: ${e.toString()}');
+    }
+  }
+
   // Update user details
   Future<user.User> updateProfile(
     String uid, {

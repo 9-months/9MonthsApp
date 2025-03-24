@@ -186,4 +186,32 @@ module.exports = {
       });
     }
   },
+
+  // Get Current User (from token)
+  getCurrentUser: async (req, res) => {
+    try {
+      // The user ID is already extracted from the token in the verifyToken middleware
+      const userId = req.user.id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const result = await authService.getUser(userId);
+      
+      if (!result.status) {
+        return res.status(404).json({ message: result.message });
+      }
+      
+      // Return user data in the same format as other user endpoints
+      return res.status(200).json({
+        user: result.user
+      });
+    } catch (error) {
+      console.error("Get Current User Error:", error.message || error);
+      return res.status(500).json({
+        message: "An error occurred while retrieving current user"
+      });
+    }
+  },
 };

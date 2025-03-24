@@ -11,13 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/pregnancy_provider.dart';
-import '../../widgets/homePregnancy.dart';
-import '../../widgets/homeTIps.dart';
 import '../../widgets/navbar.dart';
 import '../../services/emergency_service.dart';
 import '../../services/partner_service.dart';
-import '../calendar/calendar_screen.dart';
-import '../profile/widgets/link_code.dart';
+
 
 class PartnerHomePage extends StatefulWidget {
   const PartnerHomePage({super.key});
@@ -90,22 +87,35 @@ class _PartnerHomePageState extends State<PartnerHomePage> {
         _showSnackBar(result['message'], Colors.green);
         _linkCodeController.clear();
         
-        // Wait for user data to fully load
-        await context.read<AuthProvider>().loadUser();
-        
-        // Get the pregnancy provider
-        final pregnancyProvider = Provider.of<PregnancyProvider>(context, listen: false);
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        
-        // Refresh the pregnancy data using our dedicated method
-        final activeUserId = authProvider.getActiveUserId();
-        await pregnancyProvider.refreshAfterPartnerLinking(activeUserId);
-        
-        // Force a UI rebuild to refresh the page with pregnancy data
         if (mounted) {
-          setState(() {
-            // UI will be updated showing pregnancy data instead of link form
-          });
+          // Get providers
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          
+          // First clear any cached user data
+          authProvider.clearUserCache();
+          
+          // Force a fresh fetch from server
+          await authProvider.forceLoadUser(forceRefresh: true);
+          
+          // Get the pregnancy provider for data refresh
+          final pregnancyProvider = Provider.of<PregnancyProvider>(context, listen: false);
+          
+          // Refresh pregnancy data with the latest user ID
+          final activeUserId = authProvider.getActiveUserId();
+          await pregnancyProvider.refreshAfterPartnerLinking(activeUserId);
+          
+          // Wait to ensure all backend processes complete
+          await Future.delayed(const Duration(seconds: 1));
+          
+          // Use a complete route refresh to rebuild the app with latest state
+          if (mounted) {
+            // Force rebuild entire navigation stack
+            Navigator.pushNamedAndRemoveUntil(
+              context, 
+              '/partner-home', 
+              (route) => false
+            );
+          }
         }
       } else {
         _showSnackBar(result['message'], Colors.red);
@@ -113,9 +123,11 @@ class _PartnerHomePageState extends State<PartnerHomePage> {
     } catch (e) {
       _showSnackBar('An error occurred: $e', Colors.red);
     } finally {
-      setState(() {
-        _isLinking = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLinking = false;
+        });
+      }
     }
   }
 
@@ -204,182 +216,191 @@ class _PartnerHomePageState extends State<PartnerHomePage> {
     final authProvider = Provider.of<AuthProvider>(context);
     final primaryColor = Theme.of(context).primaryColor;
     
-    // Check if partner is linked to a mother account
+    // Safely check if user exists and has linkedAccount
     final user = authProvider.user;
     final bool isLinked = user?.linkedAccount != null;
-    
-    // Determine which user ID to use for data fetching
-    final String activeUserId = authProvider.getActiveUserId();
 
     return Scaffold(
       body: SafeArea(
         child: Consumer<AuthProvider>(
-          builder: (context, authProvider, _) => SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hello ${authProvider.user?.username ?? "Partner"}',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Partner Account',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/profile'),
-                        child: const CircleAvatar(
-                          radius: 24,
-                          backgroundImage: AssetImage('assets/images/profile_picture.png'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // If not linked, show link code section
-                  if (!isLinked)
-                    _buildLinkSection(user!.uid, primaryColor)
-                  else
-                    Column(
+          builder: (context, authProvider, _) {
+            // Safe null check for user
+            final currentUser = authProvider.user;
+            
+            // Handle case when user is null
+            if (currentUser == null) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Supporting mother information card only
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 20),
-                          padding: const EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.green.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.favorite, color: Colors.green),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'You are supporting:',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                    Text(
-                                      user!.linkedAccount?.username ?? 'Mother',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hello ${currentUser.username ?? "Partner"}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Partner Account',
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        
-                        // Welcome message
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 20),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                'Welcome to 9Months Partner',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Your account is now linked with the mother. '
-                                'You can provide support and stay connected throughout this journey.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        // New card for service update information
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 20),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: const [
-                                  Icon(Icons.update, color: Colors.blue),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'Service Update',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                'We\'re currently updating our partner services with new features to help you better support your partner during pregnancy. '
-                                'Please check back soon for exciting new tools and resources!',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ],
+                        GestureDetector(
+                          onTap: () => Navigator.pushNamed(context, '/profile'),
+                          child: const CircleAvatar(
+                            radius: 24,
+                            backgroundImage: AssetImage('assets/images/profile_picture.png'),
                           ),
                         ),
                       ],
                     ),
-                ],
+                    const SizedBox(height: 24),
+
+                    // If not linked, show link code section
+                    if (!isLinked)
+                      _buildLinkSection(currentUser.uid, primaryColor)
+                    else
+                      Column(
+                        children: [
+                          // Supporting mother information card only
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.green.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.favorite, color: Colors.green),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'You are supporting:',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                      Text(
+                                        currentUser.linkedAccount?.username ?? 'Mother',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // Welcome message
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Welcome to 9Months Partner',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  'Your account is now linked with the mother. '
+                                  'You can provide support and stay connected throughout this journey.',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // New card for service update information
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: const [
+                                    Icon(Icons.update, color: Colors.blue),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'Service Update',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  'We\'re currently updating our partner services with new features to help you better support your partner during pregnancy. '
+                                  'Please check back soon for exciting new tools and resources!',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
       bottomNavigationBar: CustomNavBar(

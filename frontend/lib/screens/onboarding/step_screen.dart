@@ -1,4 +1,6 @@
+import 'package:_9months/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class StepScreen extends StatefulWidget {
   final String accountType;
@@ -12,16 +14,17 @@ class StepScreen extends StatefulWidget {
 class _StepScreenState extends State<StepScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  late String _accountType;
   
   @override
-  void initState() {
-    super.initState();
-    _accountType = widget.accountType;
-  }
-
-  @override
   Widget build(BuildContext context) {
+    // Get the auth provider instance to access the current user's account type
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    // Get the account type directly from the auth provider
+    final String accountType = authProvider.user?.accountType ?? widget.accountType;
+    
+    // Debug print to verify account type
+    print('Current account type: $accountType');
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -56,9 +59,14 @@ class _StepScreenState extends State<StepScreen> {
                   GestureDetector(
                     onTap: () {
                       // Route to appropriate homepage based on account type
-                      if (_accountType.toLowerCase() == 'partner') {
+                      final currentAccountType = Provider.of<AuthProvider>(context, listen: false).user?.accountType ?? 'mother';
+                      print('Navigating with account type: $currentAccountType');
+                      
+                      if (currentAccountType.toLowerCase() == 'partner') {
+                        print('Navigating to partner home');
                         Navigator.pushReplacementNamed(context, '/partner-home');
                       } else {
+                        print('Navigating to regular home');
                         Navigator.pushReplacementNamed(context, '/home');
                       }
                     },
@@ -108,9 +116,14 @@ class _StepScreenState extends State<StepScreen> {
                         );
                       } else {
                         // Route to appropriate homepage based on account type
-                        if (_accountType.toLowerCase() == 'partner') {
+                        final currentAccountType = Provider.of<AuthProvider>(context, listen: false).user?.accountType ?? 'mother';
+                        print('Navigating with account type: $currentAccountType');
+                        
+                        if (currentAccountType.toLowerCase() == 'partner') {
+                          print('Navigating to partner home');
                           Navigator.pushReplacementNamed(context, '/partner-home');
                         } else {
+                          print('Navigating to regular home');
                           Navigator.pushReplacementNamed(context, '/home');
                         }
                       }
