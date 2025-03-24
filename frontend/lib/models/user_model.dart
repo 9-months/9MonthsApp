@@ -7,6 +7,34 @@
  last modified: 11/02/2021 | Dinith | CCS-55 model for user created
 */
 
+class LinkedAccount {
+  final String uid;
+  final String username;
+  final String? phone;
+
+  LinkedAccount({
+    required this.uid,
+    required this.username,
+    this.phone,
+  });
+
+  factory LinkedAccount.fromJson(Map<String, dynamic> json) {
+    return LinkedAccount(
+      uid: json['uid'] ?? '',
+      username: json['username'] ?? '',
+      phone: json['phone'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'username': username,
+      'phone': phone,
+    };
+  }
+}
+
 class User {
   final String uid;
   final String email;
@@ -16,6 +44,8 @@ class User {
   final String? phone;
   final String? birthday;
   final String? token;
+  final String? linkCode;
+  final LinkedAccount? linkedAccount;
 
   User({
     required this.uid,
@@ -26,6 +56,8 @@ class User {
     this.phone,
     this.birthday,
     this.token,
+    this.linkCode,
+    this.linkedAccount,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -38,6 +70,10 @@ class User {
       accountType : json['accountType'] ?? 'mother',
       birthday: json['birthday'] as String?,
       token: json['token'] as String?,
+      linkCode: json['linkCode'] as String?,
+      linkedAccount: json['linkedAccount'] != null 
+          ? LinkedAccount.fromJson(json['linkedAccount']) 
+          : null,
     );
   }
 
@@ -51,6 +87,8 @@ class User {
       'birthday': birthday,
       'accountType': accountType,
       'token': token,
+      'linkCode': linkCode,
+      'linkedAccount': linkedAccount?.toJson(),
     };
   }
 
@@ -63,6 +101,8 @@ class User {
     String? birthday,
     String? accountType,
     String? token,
+    String? linkCode,
+    LinkedAccount? linkedAccount,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -73,6 +113,8 @@ class User {
       birthday: birthday ?? this.birthday,
       accountType: accountType ?? this.accountType,
       token: token ?? this.token,
+      linkCode: linkCode ?? this.linkCode,
+      linkedAccount: linkedAccount ?? this.linkedAccount,
     );
   }
 }

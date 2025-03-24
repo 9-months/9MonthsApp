@@ -8,9 +8,9 @@ class PartnerService {
   /// 
   /// Sends a request to the backend with the current user's uid and the partner's link code
   /// Returns the partner's information if successful
-  static Future<Map<String, dynamic>> linkPartner(String uid, String partnerLinkCode) async {
+  static Future<Map<String, dynamic>> linkPartner(String uid, String linkCode) async {
     try {
-      final url = Uri.parse('${Config.apiBaseUrl}/auth/link-partner');
+      final url = Uri.parse('${Config.apiBaseUrl}/partner/link-partner');
       
       final response = await http.post(
         url,
@@ -19,7 +19,7 @@ class PartnerService {
         },
         body: jsonEncode({
           'uid': uid,
-          'partnerLinkCode': partnerLinkCode,
+          'linkCode': linkCode,
         }),
       );
 
@@ -27,10 +27,10 @@ class PartnerService {
       
       if (response.statusCode == 200) {
         return {
-          'success': true,
+          'success': responseData['status'] ?? false,
           'message': responseData['message'],
-          'partner': responseData['partner'] != null 
-              ? User.fromJson(responseData['partner']) 
+          'motherDetails': responseData['motherDetails'] != null 
+              ? User.fromJson(responseData['motherDetails']) 
               : null,
         };
       } else {

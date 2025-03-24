@@ -12,6 +12,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   String? _username;
@@ -164,9 +165,35 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Complete user profile and update the user data
+  Future<void> completeProfile(String uid, Map<String, dynamic> profileData) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Get the updated user from the service
+      User updatedUser = await ProfileService.completeProfile(uid, profileData);
+      
+      // Update the user object
+      _user = updatedUser;
+      
+      // Save the updated user to secure storage
+      await _saveUser(updatedUser);
+      
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error completing profile: $e');
+      }
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // Storage methods
   Future<void> _saveUser(User user) async {
-    print(user.birthday);
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
   }
 
@@ -187,7 +214,6 @@ class AuthProvider extends ChangeNotifier {
     if (userData != null) {
       try {
         final user = User.fromJson(jsonDecode(userData));
-        print(user.birthday);
         return user;
       } catch (e) {
         if (kDebugMode) {

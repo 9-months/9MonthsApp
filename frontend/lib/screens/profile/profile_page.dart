@@ -11,6 +11,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/partner_service.dart';
+import 'package:flutter/services.dart';
+import 'widgets/link_code.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -27,6 +30,8 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
+  bool _isLinking = false;
+  final TextEditingController _linkCodeController = TextEditingController();
 
   @override
   void initState() {
@@ -172,6 +177,49 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
+  }
+
+  // Add this method to handle copying link code to clipboard
+  void _copyLinkCode(String linkCode) {
+    Clipboard.setData(ClipboardData(text: linkCode));
+    _showSnackBar('Link code copied to clipboard', Colors.green);
+  }
+
+  // Add this method to handle partner linking
+  Future<void> _linkPartner(String uid, String linkCode) async {
+    if (linkCode.isEmpty) {
+      _showSnackBar('Please enter a link code', Colors.red);
+      return;
+    }
+
+    setState(() {
+      _isLinking = true;
+    });
+
+    try {
+      final result = await PartnerService.linkPartner(uid, linkCode);
+      
+      if (result['success']) {
+        _showSnackBar(result['message'], Colors.green);
+        _linkCodeController.clear();
+        // Refresh user data
+        context.read<AuthProvider>().loadUser();
+      } else {
+        _showSnackBar(result['message'], Colors.red);
+      }
+    } catch (e) {
+      _showSnackBar('An error occurred: $e', Colors.red);
+    } finally {
+      setState(() {
+        _isLinking = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _linkCodeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -329,6 +377,65 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   // Spacing to accommodate the overlapping profile image
                   const SizedBox(height: 65),
+                  
+                  // Display link code for mother accounts - more permissive condition
+                  if ((user.accountType ?? "").toLowerCase().contains("mother"))
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: primaryColor.withOpacity(0.3)),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            Icon(Icons.link, color: primaryColor),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Your Link Code',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: primaryColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    user.linkCode ?? 'No link code available',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 1.2,
+                                      color: isDark ? Colors.white : Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (user.linkCode != null && user.linkCode!.isNotEmpty)
+                              IconButton(
+                                onPressed: () => _copyLinkCode(user.linkCode!),
+                                icon: Icon(Icons.copy, color: primaryColor),
+                                tooltip: 'Copy to clipboard',
+                                style: IconButton.styleFrom(
+                                  backgroundColor: theme.cardColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: 10),
 
                   // Personal Information Section with clean design
                   Padding(
@@ -459,6 +566,18 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
+                  const SizedBox(height: 20),
+                  
+                  // Keep partner link code input at the bottom
+                  if ((user.accountType ?? _accountType).toLowerCase() == 'partner')
+                    PartnerLinkSection(
+                      uid: user.uid,
+                      primaryColor: primaryColor,
+                      linkCodeController: _linkCodeController,
+                      isLinking: _isLinking,
+                      onLinkPartner: _linkPartner,
+                    ),
+                    
                   const SizedBox(height: 30),
                 ],
               ),

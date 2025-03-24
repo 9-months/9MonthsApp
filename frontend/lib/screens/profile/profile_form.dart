@@ -170,9 +170,9 @@ class _ProfileFormState extends State<ProfileForm> {
         'location': _location,
         'phone': formattedPhone,
       };
-      print(profileData);
+      
       // Submit profile data to backend
-      await ProfileService.completeProfile(uid, profileData);
+      await authProvider.completeProfile(uid, profileData);
       
       // Update user profile in AuthProvider
       await authProvider.updateUserProfile(

@@ -168,11 +168,13 @@ module.exports = {
 
       const result = await authService.completeProfile(uid, profileData);
 
+
       if (!result.status) {
         return res.status(400).json({ message: result.message });
       }
 
       return res.status(200).json({
+        status: result.status,
         message: result.message,
         user: result.user,
       });
