@@ -63,18 +63,28 @@ class _ReminderFormState extends State<ReminderForm> {
 
   Future<void> _createReminder() async {
     if (_formKey.currentState!.validate()) {
-      print(
-          'Reminder Time (Local): ${_selectedTime!.toIso8601String()}'); // Log local time
-      final userId =
-          Provider.of<AuthProvider>(context, listen: false).user!.uid;
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.user?.uid;
+      final token = authProvider.token;
+
+      if (userId == null || token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Failed to create reminder: User not logged in.')),
+        );
+        return;
+      }
+
       final response = await http.post(
         Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: json.encode({
           'title': _titleController.text,
           'description': _descriptionController.text,
-          'dateTime':
-              _selectedTime!.toIso8601String(), // Send local time to backend
+          'dateTime': _selectedTime!.toIso8601String(),
           'timezone': _timezone,
           'repeat': _repeat,
           'alertOffsets': _alertOffsets,

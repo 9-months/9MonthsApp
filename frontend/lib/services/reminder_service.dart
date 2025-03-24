@@ -10,18 +10,19 @@ import 'package:http/http.dart' as http;
 import '../config/config.dart';
 import '../models/reminder_model.dart';
 
-
 class ReminderService {
   final String baseUrl = Config.apiBaseUrl;
 
   // Create a new reminder
-  Future<Reminder> createReminder(String userId, Map<String, dynamic> reminderData) async {
-     final response = await http.post(
-    Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: json.encode(reminderData), 
+  Future<Reminder> createReminder(
+      String userId, Map<String, dynamic> reminderData, String token) async {
+    final response = await http.post(
+      Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+      body: json.encode(reminderData),
     );
 
     if (response.statusCode == 201) {
@@ -32,12 +33,10 @@ class ReminderService {
   }
 
   // Get all reminders for a user
-  Future<List<Reminder>> getRemindersByUser(String userId) async {
+  Future<List<Reminder>> getRemindersByUser(String userId, String token) async {
     final response = await http.get(
       Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
-      headers: {
-        // Add authorization header here if needed
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -49,12 +48,12 @@ class ReminderService {
   }
 
   // Get a specific reminder
-  Future<Reminder> getReminder(String userId, String reminderId) async {
+  Future<Reminder> getReminder(
+      String userId, String reminderId, String token) async {
     final response = await http.get(
-      Uri.parse('${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
-      headers: {
-        // Add authorization header here if needed
-      },
+      Uri.parse(
+          '${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -65,14 +64,17 @@ class ReminderService {
   }
 
   // Update an existing reminder
-  Future<Reminder> updateReminder(String userId, String reminderId, Map<String, dynamic> reminderData) async {
-     final response = await http.put(
-    Uri.parse('${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode(reminderData),
-  );
+  Future<Reminder> updateReminder(String userId, String reminderId,
+      Map<String, dynamic> reminderData, String token) async {
+    final response = await http.put(
+      Uri.parse(
+          '${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+      body: jsonEncode(reminderData),
+    );
     if (response.statusCode == 200) {
       return Reminder.fromJson(jsonDecode(response.body));
     } else {
@@ -81,12 +83,12 @@ class ReminderService {
   }
 
   // Delete a reminder
-  Future<void> deleteReminder(String userId, String reminderId) async {
+  Future<void> deleteReminder(
+      String userId, String reminderId, String token) async {
     final response = await http.delete(
-      Uri.parse('${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
-      headers: {
-        // Add authorization header here if needed
-      },
+      Uri.parse(
+          '${Config.apiBaseUrl}/reminder/$userId/$reminderId'), // Fixed path
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode != 200) {

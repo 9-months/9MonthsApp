@@ -84,12 +84,25 @@ class _EditReminderFormState extends State<EditReminderForm> {
 
   Future<void> _updateReminder() async {
     if (_formKey.currentState!.validate()) {
-      final userId =
-          Provider.of<AuthProvider>(context, listen: false).user!.uid;
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.user?.uid;
+      final token = authProvider.token;
+
+      if (userId == null || token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Failed to update reminder: User not logged in.')),
+        );
+        return;
+      }
+
       final response = await http.put(
         Uri.parse(
             '${Config.apiBaseUrl}/reminder/$userId/${widget.reminder['_id']}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: json.encode({
           'title': _titleController.text,
           'description': _descriptionController.text,

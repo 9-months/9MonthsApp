@@ -34,17 +34,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Future<void> _fetchReminders() async {
     try {
-      final userId =
-          Provider.of<AuthProvider>(context, listen: false).user?.uid;
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.user?.uid;
+      final token = authProvider.token;
 
-      if (userId == null) {
+      if (userId == null || token == null) {
         _showErrorSnackBar("Failed to load reminders: User not logged in.");
         return;
       }
 
       final response = await http.get(
         Uri.parse('${Config.apiBaseUrl}/reminder/$userId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -188,8 +192,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Future<void> _deleteReminder(String reminderId) async {
     try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final token = authProvider.token;
+
+      if (token == null) {
+        _showErrorSnackBar("Failed to delete reminder: User not logged in.");
+        return;
+      }
+
       final response = await http.delete(
         Uri.parse('${Config.apiBaseUrl}/reminder/${widget.userId}/$reminderId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
       );
       if (response.statusCode == 200) {
         _fetchReminders(); // Refresh reminders
