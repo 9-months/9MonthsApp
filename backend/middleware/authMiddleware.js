@@ -3,9 +3,8 @@ const jwt = require('jsonwebtoken');
 // Secret key for JWT signing - store in .env file
 const JWT_SECRET = process.env.JWT_SECRET;
 
-/**
- * Generate JWT token from user data
- */
+
+// Generate JWT token from user data
 const generateToken = (user) => {
   return jwt.sign(
     { 
@@ -18,9 +17,8 @@ const generateToken = (user) => {
   );
 };
 
-/**
- * Middleware to verify JWT tokens
- */
+
+// Middleware to verify JWT tokens
 const verifyToken = (req, res, next) => {
   try {
     // Get token from header

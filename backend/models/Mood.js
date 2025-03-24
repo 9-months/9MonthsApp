@@ -32,4 +32,8 @@ const MoodSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Add indexes to improve query performance
+MoodSchema.index({ userId: 1, date: -1 }); 
+MoodSchema.index({ userId: 1 });          
+
 module.exports = mongoose.model('Mood', MoodSchema);

@@ -4,7 +4,7 @@
  Created Date: 2025-01-29 CCS-1 Irosh Perera
  Author: Irosh Perera
 
- last modified: 11-02-2025 | Melissa | CCS-50 added diary routes
+ last modified: 24-03-2025 | Dinith | Performance optimization
 */
 
 const express = require("express");
@@ -19,7 +19,8 @@ const pregnancyRouter = require("./routes/pregnancyRoutes");
 const reminderRoutes = require('./routes/reminderRoutes');
 const diaryRoutes = require("./routes/diaryRoutes");
 const partnerRoutes = require('./routes/partnerRoutes');
-
+const performanceMiddleware = require("./middleware/performanceMiddleware");
+const compression = require('compression'); 
 
 // Load environment variables
 dotenv.config();
@@ -43,6 +44,8 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(compression()); // Add compression for all responses
+app.use(performanceMiddleware); // Add performance monitoring
 
 //Routes
 app.use("/emergency", emergencyRouter);
