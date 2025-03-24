@@ -435,6 +435,20 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
 
+                  // Add partner link section at the top for partners
+                  if ((user.accountType ?? _accountType).toLowerCase() == 'partner')
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
+                      child: PartnerLinkSection(
+                        uid: user.uid,
+                        primaryColor: primaryColor,
+                        linkCodeController: _linkCodeController,
+                        isLinking: _isLinking,
+                        onLinkPartner: _linkPartner,
+                        linkedAccount: user.linkedAccount,
+                      ),
+                    ),
+
                   const SizedBox(height: 10),
 
                   // Personal Information Section with clean design
@@ -568,16 +582,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 20),
                   
-                  // Keep partner link code input at the bottom
-                  if ((user.accountType ?? _accountType).toLowerCase() == 'partner')
-                    PartnerLinkSection(
-                      uid: user.uid,
-                      primaryColor: primaryColor,
-                      linkCodeController: _linkCodeController,
-                      isLinking: _isLinking,
-                      onLinkPartner: _linkPartner,
-                    ),
-                    
                   const SizedBox(height: 30),
                 ],
               ),

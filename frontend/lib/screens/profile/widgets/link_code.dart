@@ -1,3 +1,4 @@
+import 'package:_9months/models/user_model.dart';
 import 'package:flutter/material.dart';
 
 class MotherLinkCodeSection extends StatelessWidget {
@@ -117,7 +118,7 @@ class PartnerLinkSection extends StatelessWidget {
     required this.primaryColor,
     required this.linkCodeController,
     required this.isLinking,
-    required this.onLinkPartner,
+    required this.onLinkPartner, LinkedAccount? linkedAccount,
   }) : super(key: key);
 
   @override
@@ -208,6 +209,7 @@ class PartnerLinkSection extends StatelessWidget {
                       : const Text(
                           'Connect',
                           style: TextStyle(
+                            color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
