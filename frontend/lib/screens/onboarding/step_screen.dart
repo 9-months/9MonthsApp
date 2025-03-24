@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class StepScreen extends StatefulWidget {
-  const StepScreen({super.key});
+  final String accountType;
+  
+  const StepScreen({super.key, this.accountType = 'mother'});
 
   @override
   State<StepScreen> createState() => _StepScreenState();
@@ -10,6 +12,13 @@ class StepScreen extends StatefulWidget {
 class _StepScreenState extends State<StepScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  late String _accountType;
+  
+  @override
+  void initState() {
+    super.initState();
+    _accountType = widget.accountType;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +54,14 @@ class _StepScreenState extends State<StepScreen> {
                 children: [
                   // Skip button
                   GestureDetector(
-                    onTap: () =>
-                        Navigator.pushReplacementNamed(context, '/home'),
+                    onTap: () {
+                      // Route to appropriate homepage based on account type
+                      if (_accountType.toLowerCase() == 'partner') {
+                        Navigator.pushReplacementNamed(context, '/partner-home');
+                      } else {
+                        Navigator.pushReplacementNamed(context, '/home');
+                      }
+                    },
                     child: Text(
                       'skip',
                       style: TextStyle(
@@ -92,7 +107,12 @@ class _StepScreenState extends State<StepScreen> {
                           curve: Curves.easeInOut,
                         );
                       } else {
-                        Navigator.pushReplacementNamed(context, '/home');
+                        // Route to appropriate homepage based on account type
+                        if (_accountType.toLowerCase() == 'partner') {
+                          Navigator.pushReplacementNamed(context, '/partner-home');
+                        } else {
+                          Navigator.pushReplacementNamed(context, '/home');
+                        }
                       }
                     },
                     child: Row(
