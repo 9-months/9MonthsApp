@@ -244,4 +244,54 @@ class AuthProvider extends ChangeNotifier {
   Future<String?> _getToken() async {
     return await _storage.read(key: _tokenKey);
   }
+
+  // Clear user cache to force fresh data fetch
+  void clearUserCache() {
+    _user = null; 
+    notifyListeners();
+  }
+
+  // Load user method with force refresh option
+  Future<void> forceLoadUser({bool forceRefresh = false}) async {
+    _isLoading = true;
+    notifyListeners();
+    
+    try {
+      if (forceRefresh && _token != null && _token!.isNotEmpty) {
+        try {
+          // Fetch fresh user data from server using authService
+          final userData = await _authService.getCurrentUser(_token!);
+          _user = userData;
+          
+          // Save updated data to local storage
+          if (_user != null) {
+            await _saveUser(_user!);
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error refreshing user data: $e');
+          }
+          // Fall back to cached data if server fetch fails
+        }
+      }
+      
+      // If we don't have user data yet, try loading from storage
+      if (_user == null) {
+        _user = await _getUser();
+        _token = await _getToken(); 
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in forceLoadUser: $e');
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Get current user from server - new method
+  Future<User?> getCurrentUser(String token) async {
+    return await _authService.getCurrentUser(token);
+  }
 }

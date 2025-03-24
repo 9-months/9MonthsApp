@@ -263,4 +263,23 @@ router.put("/user/:uid", verifyToken, authController.updateUser);
  */
 router.delete("/user/:uid", verifyToken, authController.deleteUser);
 
+/**
+ * @swagger
+ * /current-user:
+ *   get:
+ *     summary: Get current authenticated user
+ *     description: Returns details of the currently authenticated user
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User details retrieved successfully
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *       500:
+ *         description: Server error
+ */
+router.get("/current-user", verifyToken, authController.getCurrentUser);
+
 module.exports = router;
